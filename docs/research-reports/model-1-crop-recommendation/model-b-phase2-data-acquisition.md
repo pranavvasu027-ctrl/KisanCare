@@ -1,69 +1,68 @@
 # Model B Phase 2: Data Acquisition & Source Verification
 
 ## 1. Objective
-Identify, verify, and evaluate REAL external datasets to support Model B's proposed features (N, P, K, pH, Previous Crop, Historical Temperature, Soil Moisture, Soil Texture). This phase strictly prohibits training, fabricating data, or altering the frozen v2 baseline.
+Identify, verify, and collect REAL external datasets to support Model B's proposed features. This phase strictly prohibits model training, fabricating data, generating synthetic data, or altering the frozen v2 baseline. **Explicit NO-TRAIN decision**: NO MODEL TRAINING IN THIS PHASE.
 
-## 2. Existing Data Limitations
-Our current baseline relies entirely on district, season, and crop categorical data from historical Area, Production, and Yield (APY) records. It lacks actual field-level soil and weather measurements. We currently do not have India district shapefiles (.shp or .geojson) in the repository to instantly map gridded data.
+## 2. Sources Searched
+We searched for authoritative Government of India and global scientific sources:
+*   Soil Health Card Portal (N, P, K, pH)
+*   ECMWF Copernicus Climate Data Store / ERA5 / ERA5-Land (Temperature, Moisture)
+*   Open-Meteo Historical Archive (Temperature, Moisture - wraps ERA5-Land)
+*   ISRIC SoilGrids (Texture)
+*   UPAg, ICRISAT, AgriFieldNet (Previous Crop sequences)
 
-## 3. Source-Search Methodology
-We prioritized authoritative Government of India and global scientific sources (e.g., Soil Health Card, ECMWF Copernicus, ISRIC SoilGrids). We evaluated spatial resolution (can it map to our APY districts?), temporal resolution (can we avoid target leakage?), and overall data availability.
+## 3. Sources Obtained
+We successfully identified and verified access to:
+*   **ERA5-Land via Open-Meteo:** For historical temperature and soil moisture.
+*   **ISRIC SoilGrids REST API:** For soil texture.
 
-## 4. Source-by-Source Findings & Dataset URLs
+## 4. Actual Downloaded Files
+Small reproducible JSON samples were downloaded using their respective APIs to verify accessibility, schema, and units. They are saved in `data/model1/external/raw/`:
+*   `era5_land/sample_nagpur_2010.json` (Temp/Moisture)
+*   `soil/sample_texture_nagpur.json` (Texture)
 
-### Soil N, P, K, pH
-*   **Recommended Source:** Soil Health Card Portal (Gov of India) / CoRE Stack
-*   **URL:** https://soilhealth.dac.gov.in/
-*   **Findings:** The government provides a dashboard but no direct programmatic API for bulk raw data. Crucially, SHC data collection largely started around 2015. Attempting to use 2015+ soil nutrient data to predict historical APY observations (e.g., 2000-2014) introduces severe target leakage (using future data to predict past events).
+## 5. Variable Definitions
+*   **ERA5-Land Temp:** `temperature_2m_mean` (°C). Measured at 2m above ground.
+*   **ERA5-Land Moisture:** `soil_moisture_0_to_7cm` (m³/m³). Volumetric water content in layer 1.
+*   **SoilGrids Texture:** `sand`, `silt`, `clay` proportions (g/kg, converted to % via d_factor). Depth: 0-5cm.
 
-### Historical Temperature & Soil Moisture
-*   **Recommended Source:** ERA5-Land (ECMWF Copernicus Climate Data Store)
-*   **URL:** https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-land-hourly-data
-*   **Findings:** Provides hourly `2m_temperature` and `volumetric_soil_water` at ~9km global grid resolution from 1950-present. This is an excellent source. It requires a spatial GIS pipeline to aggregate the NetCDF grids into Indian district polygons.
+## 6. Coverage & Missingness
+*   **ERA5-Land (Temp/Moisture):** 100% spatial and historical temporal coverage for India. Missingness is 0%.
+*   **SoilGrids (Texture):** 100% spatial coverage. Missingness is 0%.
+*   **Soil Health Card (N/P/K/pH):** Near 0% coverage for historical APY years (<2015). Missingness is ~100% for the target historical period.
+*   **Previous Crop:** 0% field-level sequence coverage. Missingness is 100%.
 
-### Soil Texture (Sand, Silt, Clay)
-*   **Recommended Source:** ISRIC SoilGrids
-*   **URL:** https://soilgrids.org/
-*   **Findings:** Provides 250m resolution gridded soil texture. Because soil texture is generally static over historical timeframes, temporal leakage is low. Like ERA5, it requires spatial aggregation using district shapefiles.
+## 7. Spatial Alignment
+*   **Grid to Polygon:** ERA5-Land (0.1° ~9km) and SoilGrids (250m) are continuous gridded products. They require a GIS pipeline (e.g., Zonal Statistics) using District shapefiles to aggregate cell values into single district averages.
 
-### Previous Crop
-*   **Recommended Source:** None viable for historical pan-India APY.
-*   **URL:** N/A
-*   **Findings:** APY data is district-level aggregate. To know "Previous Crop," one needs field-level or farm-level longitudinal surveys. Deducing field-level crop rotations from district aggregates is impossible without inventing data.
-
-## 5. Coverage and Missingness
-*   **ERA5-Land (Temp/Moisture):** 100% spatial and temporal coverage for India.
-*   **SoilGrids (Texture):** 100% spatial coverage. Temporal is static (assumed 100%).
-*   **Soil Health Card (N/P/K/pH):** High spatial coverage for recent years, but ~100% missing for historical APY years (<2015).
-*   **Previous Crop:** 100% missing (no field-level data).
-
-## 6. Leakage Assessment
-| Feature | Leakage Risk | Assessment |
+## 8. Temporal Alignment & Leakage Analysis
+| Feature | Leakage Assessment | Reason |
 | :--- | :--- | :--- |
-| N, P, K, pH | **FAIL** | Using post-2015 SHC measurements for historical APY targets breaks causality. |
-| Historical Temperature | **PASS** | We can strictly filter ERA5 for pre-season months only. |
-| Soil Moisture | **PASS** | Pre-season ERA5 soil moisture can be used. |
-| Soil Texture | **PASS** | Texture is geologically static; low risk. |
-| Previous Crop | **FAIL** | Field sequences cannot be derived from aggregates without leakage/assumptions. |
+| N, P, K, pH | **FAIL** | SHC data is post-2015. Using it for historical APY targets breaks causality. |
+| Historical Temperature | **PASS** | Can strictly filter for pre-season climatology. |
+| Soil Moisture | **PASS** | Can strictly filter for pre-season conditions. |
+| Soil Texture | **PASS** | Texture is geologically static; low leakage risk. |
+| Previous Crop | **FAIL** | Cannot derive sequences from district aggregates without inventing data. |
 
-## 7. Feature Readiness Table
+## 9. Measurement/Model Status
+*   **ERA5-Land:** Modeled/Reanalysis (Physical climate model constrained by historical observations).
+*   **SoilGrids:** Modeled (Machine learning predictions based on global point observations and covariates).
+*   *(Note: Neither are direct "farm measurements," but both are scientifically defensible authoritative proxies).*
 
-| Feature | Dataset | Authority | Spatial Match | Temporal Match | Coverage | Units Clear | Leakage Risk | Usable? | Status |
-| ------- | ------- | --------- | ------------- | -------------- | -------- | ----------- | ------------ | ------- | ------ |
-| N | Soil Health Card | High | District (Aggr) | FAIL (Post-2015) | Low (Hist) | Yes | FAIL | No | **NOT READY** |
-| P | Soil Health Card | High | District (Aggr) | FAIL (Post-2015) | Low (Hist) | Yes | FAIL | No | **NOT READY** |
-| K | Soil Health Card | High | District (Aggr) | FAIL (Post-2015) | Low (Hist) | Yes | FAIL | No | **NOT READY** |
-| pH | Soil Health Card | High | District (Aggr) | FAIL (Post-2015) | Low (Hist) | Yes | FAIL | No | **NOT READY** |
-| Previous Crop | N/A | N/A | FAIL | N/A | 0% | N/A | FAIL | No | **NOT READY** |
-| Hist. Temp | ERA5-Land | High | Grid (Needs SHP) | PASS (1950+) | 100% | Yes (K/°C)| PASS | Yes | **CONDITIONAL** |
-| Soil Moisture | ERA5-Land | High | Grid (Needs SHP) | PASS (1950+) | 100% | Yes (m3/m3)| PASS | Yes | **CONDITIONAL** |
-| Soil Texture | SoilGrids | High | Grid (Needs SHP) | PASS (Static) | 100% | Yes (%) | PASS | Yes | **CONDITIONAL** |
+## 10. Feature Readiness
 
-*Note: CONDITIONAL means the data is scientifically valid but requires a GIS spatial aggregation pipeline (and India district shapefiles, which we currently lack) before fusion.*
+| Feature | Status |
+| ------- | ------ |
+| N | **NOT READY** |
+| P | **NOT READY** |
+| K | **NOT READY** |
+| pH | **NOT READY** |
+| Previous Crop | **NOT READY** |
+| Hist. Temp | **CONDITIONAL** (Needs Spatial Aggregation) |
+| Soil Moisture | **CONDITIONAL** (Needs Spatial Aggregation) |
+| Soil Texture | **CONDITIONAL** (Needs Spatial Aggregation) |
 
-## 8. Explicit NO-TRAIN Decision
-As instructed, **Model B will not be trained** at this time. The frozen v2 model and its API remain completely unaltered. We refuse to fabricate synthetic features or impute 100% missing values for N/P/K/pH or Previous Crop.
-
-## 9. Recommended Next Phase
-1.  **Acknowledge Feature Drop:** Formally drop N, P, K, pH, and Previous Crop from the Model B experiment due to historical leakage and lack of field-level data.
-2.  **GIS Pipeline (Phase 3):** Acquire authoritative Indian District Shapefiles. Build a spatial aggregation pipeline using `geopandas` and `xarray` to extract district-level pre-season averages from ERA5-Land and SoilGrids.
+## 11. Recommended Next Fusion Steps
+1.  **Drop Failed Features:** Permanently exclude N, P, K, pH, and Previous Crop from Model 1.B due to 100% historical missingness and severe target leakage.
+2.  **Acquire Shapefiles:** Obtain definitive Indian District boundary shapefiles matching the APY dataset definitions.
+3.  **Build GIS Pipeline:** Use `geopandas` to perform spatial joins and aggregate the ERA5-Land and SoilGrids data into District-level features suitable for XGBoost.
