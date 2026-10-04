@@ -1,0 +1,21 @@
+{
+    "model_version": "crop-recommendation-mvp-v1",
+    "algorithm": "XGBoostRegressor (Hist)",
+    "training_years": "2005-2012",
+    "test_years": "2014-2015",
+    "features": [
+        "District",
+        "Season",
+        "Crop"
+    ],
+    "target": "Area_Frequency",
+    "metrics": {
+        "val_top1": 0.5416666666666666,
+        "val_top3": 0.8238636363636364,
+        "test_top1": 0.5771513353115727,
+        "test_top3": 0.8664688427299704,
+        "historical_baseline_val_top1": 0.7948232323232324,
+        "historical_baseline_test_top1": 0.8182492581602374,
+        "proxy_exp_val_top1": 0.5700757575757576
+    }
+}
