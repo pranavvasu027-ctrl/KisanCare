@@ -1,4 +1,4 @@
-Feature,Source,Variable,Units,Spatial resolution,Temporal resolution,Aggregation method,Leakage rule,Coverage,Status
-Historical_Temperature,ERA5-Land,2m_temperature,C,0.1 deg,Monthly Climatology,Zonal Area-weighted mean,Pre-season historical only,0% (Rasters missing locally),BLOCKED
-Soil_Moisture,ERA5-Land,volumetric_soil_water_layer_1,m3/m3,0.1 deg,Monthly Climatology,Zonal Area-weighted mean,Pre-season historical only,0% (Rasters missing locally),BLOCKED
-Soil_Texture,ISRIC SoilGrids,sand/silt/clay dominant class,Categorical,250m,Static,Dominant class by area,Geologically stable,0% (Rasters missing locally),BLOCKED
+Feature,Source,Variable,Units,Spatial resolution,Temporal resolution,Extraction dates,Aggregation method,Leakage rule,Coverage,Status
+Historical_Temperature,ERA5-Land via CDS/GEE (Blocked),2m_temperature,C,0.1 deg,Monthly Climatology,Pre-decision,Zonal Area-weighted mean,Pre-season historical only,0%,BLOCKED
+Soil_Moisture,ERA5-Land via CDS/GEE (Blocked),volumetric_soil_water_layer_1,m3/m3,0.1 deg,Monthly Climatology,Pre-decision,Zonal Area-weighted mean,Pre-season historical only,0%,BLOCKED
+Soil_Texture,ISRIC SoilGrids (Blocked),sand/silt/clay dominant class,Categorical,250m,Static,Static,Dominant class by area,Geologically stable,0%,BLOCKED
