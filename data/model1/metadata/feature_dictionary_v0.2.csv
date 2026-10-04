@@ -1,0 +1,11 @@
+Feature,Type,Unit,Meaning,Source,Temporal,Missing
+State,Categorical,Name,Administrative State,APY,Constant,None
+District,Categorical,Name,Administrative District,APY,Constant,None
+Season,Categorical,Name,Planting Season,APY,Constant,None
+Crop_Year,Numeric,Year,Year of observation,APY,Target Year,None
+Crop,Categorical,Name,KisanCare V1 Crop,APY,Target,None
+Hist_Rainfall,Numeric,mm,Historical avg rainfall (State/Season fallback),Fallback,Pre-target,None
+Hist_Temperature,Numeric,C,Historical avg temp (State/Season fallback),Fallback,Pre-target,None
+Soil_N,Numeric,kg/ha,Available N (State fallback),Fallback,Static,None
+Soil_pH,Numeric,pH,Soil pH (State fallback),Fallback,Static,None
+Area_Frequency,Numeric,Ratio,Crop Area / Total All-Crop Area,Derived,Target,0.0 for zeroes
