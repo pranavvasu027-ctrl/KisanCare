@@ -1,177 +1,282 @@
-# Phase 2 — KisanCare Input Mapping
+# Phase 2 — KisanCare Model 1 Input Mapping (Final MVP Specification)
 
-## PART 1 — DEFINE THE FARMER-FACING INPUTS
-
-To generate a realistic crop recommendation, the farmer should only provide what cannot be reliably derived. 
-
-1. **Location / District:** `REQUIRED`. Absolutely necessary to derive climate, soil baselines, and agro-ecological zones.
-2. **Season:** `REQUIRED`. Necessary to determine planting window constraints (Kharif, Rabi, Summer).
-3. **Irrigation / Water Availability:** `REQUIRED`. High-impact constraint. A farmer in a high-rainfall district might still lack irrigation infrastructure, and vice-versa.
-4. **Soil Information (Soil Health Card):** `OPTIONAL`. If a farmer has a recent soil test (N, P, K, pH, etc.), it vastly improves precision. If absent, the system must fallback to regional defaults.
-5. **Farm Area:** `NOT NEEDED (for ML)`. Farm size dictates economics (Model 4) and total yield (Model 2), but does not dictate *biological suitability* (Model 1).
-6. **Current/Past Crop:** `OPTIONAL`. Useful for basic rotation logic, but heavily complex for a V1 ML matrix.
-
-## PART 2 — DISTINGUISH THREE LEVELS
-
-| Information | Farmer Input? | Derived? | External Data? | Actual ML Feature? | Reason |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| District | Yes | No | No | Yes | Anchors geographic suitability and links to historical APY. |
-| Season | Yes | No | No | Yes | Determines climatic alignment (e.g., Kharif vs Rabi). |
-| Hist. Rainfall | No | Yes | Yes (IMD) | Yes | Climatic average dictates long-term crop viability. |
-| Hist. Temp | No | Yes | Yes (IMD) | Yes | Climatic average dictates thermal limits. |
-| Soil N, P, K, pH | Optional | Yes (Fallback) | Yes (ICAR) | Yes | Drives nutrient suitability; can be estimated if missing. |
-| Irrigation Status | Yes | No | No | No (Constraint) | Better used as a post-prediction filter to block water-heavy crops. |
-| Farm Area | Optional | No | No | No | Irrelevant for biological crop suitability. |
-
-## PART 3 — WEATHER / CLIMATE INPUT DESIGN
-
-**The Temporal Leakage Problem:**
-If we train a model using "Realized Seasonal Rainfall" (e.g., exactly 850mm of rain fell in Kharif 2015), the model assumes the farmer knows the exact future weather before planting. This is a classic ML leakage error.
-
-**The Solution: Historical Climatology**
-At the moment of recommendation, the only legitimate weather data available is the *historical average*. 
-*   **Historical Seasonal Rainfall:** 10-year rolling average rainfall for that specific District + Season.
-*   **Temperature Climatology:** 10-year average min/max temperature for the planting window.
-*   **Rainfall Variability (CV):** Coefficient of variation (Risk metric).
-
-## PART 4 — LOCATION / GEOGRAPHY
-
-*   **District:** `PROVISIONAL ML FEATURE`. The primary categorical anchor. It maps perfectly to historical APY data.
-*   **State:** `PROVISIONAL ML FEATURE`. Useful as a hierarchical fallback if a specific district is undersampled.
-*   **Latitude/Longitude:** `REJECTED`. Unnecessary precision that easily causes overfitting since our ground-truth production data (UPAg APY) is only at the District level.
-*   **Agro-Climatic Zone:** `INVESTIGATE`. Scientifically robust, but District boundaries often naturally map to these zones.
-
-## PART 5 — SEASON
-
-*   **Kharif, Rabi, Summer:** `REQUIRED ML FEATURES`. Determines the biological cycle.
-*   **Should it affect climatology?** Yes. Historical rainfall must be partitioned by season (Kharif rain != Rabi rain).
-*   **Filter Constraint:** Yes. If the user selects "Rabi", the ML predicts, but the Decision Engine strictly filters out exclusively Kharif crops.
-*   **Perennials (Mango/Grapes):** Perennials span the "Whole Year". If a farmer selects a specific season, perennials should conceptually bypass seasonal filters, as planting time is more flexible, though harvest is fixed.
-
-## PART 6 — SOIL INPUT DESIGN
-
-We reject the Kaggle NPK interpretation (fertilizer doses). KisanCare needs actual soil availability metrics:
-*   **N, P, K (kg/ha):** Available macronutrients.
-*   **pH:** Acidity/Alkalinity.
-*   **SOC (Soil Organic Carbon):** Soil health indicator.
-*   **Soil Texture (Clay/Sand/Loam):** Water retention.
-
-**Strategy:**
-1.  *Can the farmer provide it?* Yes, via Soil Health Card.
-2.  *Can KisanCare derive it?* Yes, using regional district-level ICAR/SoilGrids soil defaults.
-3.  *Is SHC required?* No. It is strictly optional.
-4.  *ML Feature?* Yes.
-
-*Critical Requirement:* The UI and API must flag whether the data is `MEASURED` (high confidence) or `ESTIMATED` (average confidence).
-
-## PART 7 — WATER / IRRIGATION
-
-*   **Irrigation Type / Water Availability:** `DECISION ENGINE FILTER`.
-*   *Analysis:* If a farmer has "LOW" water availability, an ML model might still give Sugarcane a 15% probability. A Decision Engine rule is much safer: `IF Water == LOW, REMOVE Sugarcane`. This ensures deterministic agronomic safety rather than relying on probabilistic ML approximations.
-
-## PART 8 — FARM HISTORY
-
-*   **Previous Crop:** `Future Digital Twin Input`.
-*   **Previous Yield:** `Future Digital Twin Input`.
-*   *Analysis:* While crop rotation is critical in real farming, embedding it as a strict ML feature in V1 complicates the matrix exponentially and limits cold-start recommendations for new farmers. 
-
-## PART 9 — KISANCARE 20-CROP CONSTRAINT
-
-Current V1 List: Rice, Wheat, Maize, Soybean, Cotton, Sugarcane, Chickpea, Pigeon Pea, Groundnut, Sorghum, Pearl Millet, Green Gram, Black Gram, Mustard, Onion, Potato, Tomato, Banana, Mango, Grapes.
-
-**Feature Availability:**
-*   **District/Season:** Available for all.
-*   **Climatology:** Available for all.
-*   **Soil (Regional):** Available for all.
-*   **Target (Yield/Area Data):** Available for 17 field crops. (Tomato, Mango, Grapes remain critically sparse, awaiting P27 decision).
-
-## PART 10 — FEATURE CANDIDATES
-
-| Name | Definition | Unit | Source | Frmr/Deriv | Avail. | Leakage | Useful | Missing Risk |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| District | Geo boundary | Str | UI | Farmer | 100% | None | High | Low |
-| Season | Plant window | Str | UI | Farmer | 100% | None | High | Low |
-| Hist_Rainfall | 10-yr avg rain | mm | IMD | Derived | High | None | High | Low |
-| Act_Rainfall | Exact rain | mm | IMD | Derived | High | **High** | High | Low |
-| Soil_N | Avail Nitrogen | kg/ha | SHC/ICAR | Both | High | None | High | Med (Impute) |
-| Soil_pH | Soil acidity | pH | SHC/ICAR | Both | High | None | High | Med (Impute) |
-| Water_Avail | Irrigation | Cat | UI | Farmer | High | None | Med | Low |
-| Prev_Yield | Last harvest | t/ha | UI | Farmer | Low | None | Low | High |
-
-## PART 11 — FEATURE ELIMINATION
-
-*   🔴 **Exact future rainfall:** REJECT. Impossible to know at planting. Severe target leakage.
-*   🔴 **Exact future temperature:** REJECT. Severe target leakage.
-*   🔴 **Raw yield:** REJECT. "Yield Fallacy"—biases model toward inherently heavy crops (Sugarcane).
-*   🔴 **Fertilizer doses (Kaggle NPK):** REJECT. Mathematically invalid proxy for soil baseline.
-*   🔴 **Previous Yield:** REJECT. High missing-data risk for V1 cold-start users.
-*   🟢 **Historical Climatology (Rain, Temp):** KEEP. Scientifically valid pre-planting knowledge.
-*   🟢 **Measured/Default Soil (N, P, K, pH):** KEEP. Essential for agronomic limits.
-*   🟡 **Soil Texture / SOC:** INVESTIGATE. Useful, but may be too sparse in regional default databases.
+**Date:** 2026-10-05  
+**Phase Status:** COMPLETE  
+**Mode:** MVP — Validation >70%, end-to-end pipeline, API-ready  
+**Branch:** `research-reports`  
 
 ---
 
-# KisanCare Model 1 — Input Specification v1
+## 1. MVP Scope
 
-## A. Farmer Inputs
-*(Minimum realistic UI payload)*
-1. District (Categorical)
-2. Season (Kharif, Rabi, Summer, Whole Year)
-3. Water Availability (High, Medium, Low/Rainfed)
-4. [Optional] Soil Health Card (N, P, K, pH)
+KisanCare Model 1 is a **Crop Recommendation** classifier.
 
-## B. Automatically Derived Inputs
-*(Backend resolution)*
-1. Historical average rainfall for (District + Season)
-2. Historical average temperature for (District + Season)
-3. Regional soil defaults (if Soil Health Card is missing)
-
-## C. External Data
-1. APY Target Baseline (UPAg)
-2. Weather Climatology (IMD / ERA5)
-3. Soil Grids (ICAR / ISRIC)
-
-## D. Actual ML Features
-*(The final feature matrix fed to the Model)*
-1. `District`
-2. `Season`
-3. `Historical_Rainfall`
-4. `Historical_Temperature`
-5. `Soil_N`
-6. `Soil_P`
-7. `Soil_K`
-8. `Soil_pH`
-
-## E. Decision-Engine Constraints
-*(Applied post-prediction)*
-1. `Water Availability`: Hard filters high-water crops if set to Low.
-2. `Season Constraint`: Hard filters crops that biologically cannot grow in the chosen season (except perennials).
-
-## F. Data Confidence
-*   **MEASURED:** Farmer provided exact Soil Health Card values.
-*   **ESTIMATED:** System used district-level average soil defaults.
+*   **Goal:** Given a farmer's location, season, and available context, recommend the most suitable crops ranked by suitability score.
+*   **Validation target:** >70% accuracy on held-out validation data.
+*   **Crop scope:** 20 priority crops (no silent removals).
+*   **Training data:** Verified 2005–2015 UPAg APY dataset (2016–2020 deferred).
+*   **Weather source:** ERA5 reanalysis historical climatology.
+*   **Soil fallback:** ISRIC SoilGrids (WebDAV/GeoTIFF access; REST API currently paused).
+*   **Target label:** RYI is PROVISIONAL. Area Allocation Frequency retained as a comparison baseline.
 
 ---
 
-## PART 13 — MISSING-DATA STRATEGY
+## 2. Farmer Input Specification
 
-*   **No soil test:** Fallback to District-level soil defaults (ESTIMATED confidence).
-*   **No exact location (District):** Hard failure. District is REQUIRED. Recommendation cannot proceed without geography.
-*   **No irrigation info:** Default to "Low/Rainfed" (safest pessimistic assumption).
-*   **No crop history:** Ignored for V1.
+The farmer should provide **only what the system cannot reliably derive**.
+
+| Input | Classification | Reason |
+|---|---|---|
+| **District** | REQUIRED | Anchors geography, climate, soil, and historical production. Without it, no recommendation is possible. |
+| **Season** | REQUIRED | Determines the planting window (Kharif/Rabi/Summer/Whole Year). Directly constrains which crops are biologically viable. |
+| **Water Availability** | REQUIRED | A high-rainfall district may still lack irrigation. Cannot be derived from climate alone. Simplest form: `Irrigated` / `Rainfed`. |
+| **Soil Health Card (N, P, K, pH)** | OPTIONAL | Dramatically improves precision. If absent, system uses estimated regional defaults. |
+| **Farm Area** | NOT NEEDED | Irrelevant for biological suitability. Feeds Model 2 (Yield) and Model 4 (Economics) only. |
+| **Previous Crop** | NOT NEEDED (V1) | Crop rotation is important but adds cold-start complexity. Deferred to V2/Digital Twin. |
+| **Future Rainfall** | NOT COLLECTED | The farmer cannot know future weather. The system derives historical climatology instead. |
 
 ---
 
-## PART 14 — FINAL DECISION TABLE
+## 3. Derived Variables
 
-| Variable | Farmer Input | Derived | External | ML Feature | Decision Engine | Status |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| District | Yes | No | No | Yes | No | PROVISIONAL |
-| Season | Yes | No | No | Yes | Yes | PROVISIONAL |
-| Exact Rainfall | No | No | No | No | No | REJECTED |
-| Hist. Rainfall | No | Yes | Yes | Yes | No | PROVISIONAL |
-| Hist. Temp | No | Yes | Yes | Yes | No | PROVISIONAL |
-| Soil N, P, K, pH | Optional | Yes | Yes | Yes | No | PROVISIONAL |
-| Water Avail. | Yes | No | No | No | Yes | PROVISIONAL |
-| Kaggle NPK | No | No | No | No | No | REJECTED |
-| Prev. Yield | Optional | No | No | No | No | REJECTED |
+These are computed by the backend from the farmer's District + Season selection.
+
+| Variable | Source | Method |
+|---|---|---|
+| Historical Rainfall | ERA5 reanalysis | Mean seasonal precipitation over 2005–2015 for the grid cells covering the district. |
+| Historical Temperature | ERA5 reanalysis | Mean seasonal 2m-temperature over 2005–2015 for the grid cells covering the district. |
+| Regional Soil N | SoilGrids (ISRIC) | District-centroid Total Nitrogen at 0–30cm depth. Flagged as ESTIMATED. |
+| Regional Soil pH | SoilGrids (ISRIC) | District-centroid pH(H₂O) at 0–30cm depth. Flagged as ESTIMATED. |
+| Regional Soil Clay% | SoilGrids (ISRIC) | District-centroid Clay fraction at 0–30cm. Proxy for texture. Flagged as ESTIMATED. |
+
+---
+
+## 4. External Data Sources
+
+| Source | Data Provided | Access Method | Status |
+|---|---|---|---|
+| UPAg APY (2005–2015) | Area, Production per District × Crop × Season | Local CSV (already downloaded) | ✅ Available |
+| ERA5 Monthly Means | 2m Temperature, Total Precipitation | Copernicus CDS API (free registration) | ✅ Available |
+| ISRIC SoilGrids | Total N, pH, SOC, Clay, Sand, Silt, CEC | WebDAV GeoTIFF download (REST API paused) | ✅ Available (WebDAV) |
+| India District Shapefile | District polygons for zonal statistics | Census / Survey of India open GeoJSON | ✅ Available |
+
+---
+
+## 5. Final Candidate ML Features
+
+| # | Feature | Definition | Unit | Source | Type | Status |
+|---|---|---|---|---|---|---|
+| 1 | `District` | Administrative district | Categorical (encoded) | Farmer | Farmer Input | 🟢 KEEP |
+| 2 | `Season` | Planting season | Categorical (Kharif/Rabi/Summer/Whole Year) | Farmer | Farmer Input | 🟢 KEEP |
+| 3 | `Hist_Rainfall` | Mean seasonal rainfall (2005–2015) | mm | ERA5 | Derived | 🟢 KEEP |
+| 4 | `Hist_Temperature` | Mean seasonal temperature (2005–2015) | °C | ERA5 | Derived | 🟢 KEEP |
+| 5 | `Soil_N` | Available Nitrogen (measured or estimated) | g/kg (SoilGrids) or kg/ha (SHC) | SHC / SoilGrids | Both | 🟡 PROVISIONAL |
+| 6 | `Soil_pH` | Soil acidity (measured or estimated) | pH units | SHC / SoilGrids | Both | 🟡 PROVISIONAL |
+
+**Features investigated and deferred or rejected for MVP:**
+
+| Feature | Status | Reason |
+|---|---|---|
+| `Soil_P` (Phosphorus) | 🟡 PROVISIONAL | SoilGrids does NOT provide Available P directly. Requires SHC or separate ICAR source. If unavailable for estimation, defer. |
+| `Soil_K` (Potassium) | 🟡 PROVISIONAL | Same limitation as P. SoilGrids provides CEC but not Available K. Defer if no reliable default. |
+| `Soil_SOC` | 🟡 PROVISIONAL | SoilGrids provides SOC. Useful soil health indicator, but adds complexity for MVP. |
+| `Soil_Texture (Clay%)` | 🟡 PROVISIONAL | SoilGrids provides Clay/Sand/Silt. Useful for water retention proxy. |
+| `State` | 🟡 PROVISIONAL | Useful as hierarchical fallback if District encoding is too sparse. May be redundant if District is properly encoded. |
+| `Rainfall_CV` | 🟡 PROVISIONAL | Coefficient of variation captures risk but adds complexity. Defer unless it materially improves >70%. |
+| `Lat/Lon` | 🔴 REJECT | Our target data is district-level. Sub-district precision causes overfitting. |
+| `Exact_Rainfall` | 🔴 REJECT | Temporal leakage. Farmer cannot know future season's exact rainfall. |
+| `Exact_Temperature` | 🔴 REJECT | Temporal leakage. Same reasoning. |
+| `Kaggle_NPK` | 🔴 REJECT | Fertilizer doses, not soil state. Proven invalid in Phase 05. |
+| `Previous_Yield` | 🔴 REJECT | High missing-data risk. Cold-start problem for new users. |
+| `Previous_Crop` | 🔴 REJECT (V1) | Deferred to V2/Digital Twin. |
+| `Raw_Yield` | 🔴 REJECT | The Yield Fallacy — biases toward inherently heavy-tonnage crops. |
+
+**MVP Recommended Minimum Feature Set:**
+
+> `District`, `Season`, `Hist_Rainfall`, `Hist_Temperature`, `Soil_N`, `Soil_pH`
+
+This is 6 features: 2 categorical (farmer-entered) + 2 climate (derived) + 2 soil (measured or estimated). This is the smallest set likely to produce >70% validation while remaining scientifically defensible. If soil estimation proves unreliable during Phase 3 data assembly, we can drop soil features and run a 4-feature baseline (District + Season + Rain + Temp).
+
+---
+
+## 6. Leakage Analysis
+
+### Model 1 Leakage Checklist
+
+This checklist MUST be passed before any training begins.
+
+| Check | Risk | Status |
+|---|---|---|
+| ❌ No realized future rainfall used as input | Farmer cannot know exact future rain | PASS (using historical avg) |
+| ❌ No realized future temperature used as input | Same reasoning | PASS (using historical avg) |
+| ❌ No post-harvest variables in features | Yield, production, revenue are outcomes | PASS (not in feature set) |
+| ❌ No target-derived variables fed as features | RYI/suitability label must not leak into X | MUST VERIFY during Phase 3 |
+| ❌ No fertilizer application data treated as soil state | Kaggle NPK flaw | PASS (Kaggle rejected) |
+| ❌ Train/test split respects temporal or geographic structure | Random split on panel data can leak | MUST ENFORCE during Phase 3 |
+
+---
+
+## 7. Missing-Data Strategy
+
+| Situation | Fallback | Confidence Flag |
+|---|---|---|
+| **No Soil Health Card** | Use SoilGrids district-centroid estimates for N and pH | `ESTIMATED` |
+| **No irrigation info** | Default to `Rainfed` (pessimistic safe assumption) | Documented |
+| **No previous crop** | Ignored for V1 | N/A |
+| **No District selected** | Hard failure — recommendation cannot proceed | Error returned |
+| **SoilGrids unavailable for a location** | Use State-level median from SoilGrids | `ESTIMATED` |
+| **ERA5 data gap for a district** | Use nearest-neighbor grid cell or State-level climate | `ESTIMATED` |
+
+---
+
+## 8. Water / Season Decision Rules
+
+These are applied **post-prediction** by the Decision Engine, NOT learned by the ML model.
+
+**Water Availability Rules:**
+*   `IF Water == Rainfed AND crop IN {Sugarcane, Rice (Summer)} → SUPPRESS from recommendations`
+*   Rationale: Deterministic agronomic safety. Sugarcane requires ~2000mm+ water; recommending it to a rainfed farmer is irresponsible regardless of ML probability.
+
+**Season Constraint Rules:**
+*   `IF Season == Rabi AND crop is exclusively Kharif → SUPPRESS`
+*   `IF Season == Kharif AND crop is exclusively Rabi → SUPPRESS`
+*   `IF crop IN {Mango, Grapes} → Always eligible (perennial, "Whole Year")`
+*   Rationale: Biologically impossible crop-season combinations must be hard-filtered, not left to probabilistic ML approximation.
+
+---
+
+## 9. 20-Crop Data Reality Check
+
+| Crop | APY Quality | Weather (ERA5) | Soil (SoilGrids) | Target Feasibility | MVP Status |
+|---|---|---|---|---|---|
+| Rice | 8,704 rows, 33 states | ✅ | ✅ | ✅ | 🟢 Ready |
+| Wheat | 4,402 rows, 28 states | ✅ | ✅ | ✅ | 🟢 Ready |
+| Maize | 8,191 rows, 31 states | ✅ | ✅ | ✅ | 🟢 Ready |
+| Soybean | 1,792 rows, 20 states | ✅ | ✅ | ✅ | 🟢 Ready |
+| Cotton | 2,504 rows, 23 states | ✅ | ✅ | ✅ | 🟢 Ready |
+| Sugarcane | 4,451 rows, 31 states | ✅ | ✅ | ✅ | 🟢 Ready |
+| Chickpea | 4,085 rows, 23 states | ✅ | ✅ | ✅ | 🟢 Ready |
+| Pigeon Pea | 4,229 rows, 26 states | ✅ | ✅ | ✅ | 🟢 Ready |
+| Groundnut | 5,047 rows, 26 states | ✅ | ✅ | ✅ | 🟢 Ready |
+| Sorghum | 3,709 rows, 20 states | ✅ | ✅ | ✅ | 🟢 Ready |
+| Pearl Millet | 2,837 rows, 19 states | ✅ | ✅ | ✅ | 🟢 Ready |
+| Green Gram | 6,365 rows, 25 states | ✅ | ✅ | ✅ | 🟢 Ready |
+| Black Gram | 5,971 rows, 26 states | ✅ | ✅ | ✅ | 🟢 Ready |
+| Mustard | 4,289 rows, 27 states | ✅ | ✅ | ✅ | 🟢 Ready |
+| Onion | 4,161 rows, 20 states | ✅ | ✅ | ✅ | 🟢 Ready |
+| Potato | 4,116 rows, 25 states | ✅ | ✅ | ✅ | 🟢 Ready |
+| Banana | 1,874 rows, 18 states | ✅ | ✅ | ✅ | 🟢 Ready |
+| **Tomato** | **78 rows, 1 state** | ✅ | ✅ | ⚠️ Sparse | 🟡 Limited — seasonal data incomplete; if annual NHB data is used, season is mapped to "Whole Year" and this limitation is documented |
+| **Mango** | **88 rows, 4 states** | ✅ | ✅ | ⚠️ Sparse | 🟡 Limited — perennial, "Whole Year" mapping is agronomically valid |
+| **Grapes** | **12 rows, 1 state** | ✅ | ✅ | ⚠️ Sparse | 🟡 Limited — perennial, "Whole Year" mapping is agronomically valid; extreme geographic bias (likely only Maharashtra) |
+
+**Honest limitation:** Tomato, Mango, and Grapes are included in the 20-crop V1 requirement. The model will attempt to learn their patterns, but predictions for these 3 crops will have lower confidence and narrower geographic validity than the 17 field crops. This is documented, not hidden.
+
+---
+
+## 10. Proposed Minimum ML Feature Matrix
+
+For every training observation (one row = one District × Crop × Season × Year combination):
+
+```
+X = [District_encoded, Season_encoded, Hist_Rainfall_mm, Hist_Temperature_C, Soil_N, Soil_pH]
+y = Crop label (or RYI-derived suitability label — PROVISIONAL)
+```
+
+**Encoding notes:**
+*   `District`: Label-encoded or target-encoded integer. (High cardinality — ~600 districts. Target encoding or frequency encoding preferred over one-hot to avoid matrix explosion.)
+*   `Season`: One-hot or ordinal (4 categories).
+*   All numeric features: Standardized or min-max scaled.
+
+---
+
+## 11. Data Confidence Strategy
+
+Every prediction response must include a `data_confidence` field:
+
+| Level | Meaning | When Applied |
+|---|---|---|
+| `MEASURED` | Farmer provided Soil Health Card values | Soil inputs are from SHC |
+| `ESTIMATED` | System used regional defaults | No SHC; SoilGrids/defaults used |
+| `PARTIAL` | Some inputs measured, some estimated | Mixed provenance |
+
+This is a metadata flag on the API response. It does NOT affect the ML model itself (the model treats all soil values identically). It informs the farmer/UI about how much to trust the result.
+
+---
+
+## 12. Recommended Model 1 Output Structure
+
+```json
+{
+  "recommendations": [
+    {"crop": "Soybean", "rank": 1, "suitability_score": 0.91},
+    {"crop": "Maize",   "rank": 2, "suitability_score": 0.84},
+    {"crop": "Cotton",  "rank": 3, "suitability_score": 0.72}
+  ],
+  "data_confidence": "ESTIMATED",
+  "season": "Kharif",
+  "district": "Nashik",
+  "limitations": [
+    "Soil values estimated from regional defaults"
+  ]
+}
+```
+
+*   `suitability_score` is NOT a calibrated probability. It is a model-derived ranking score (e.g., `predict_proba` output or normalized RYI). Confidence calibration is a V2 enhancement.
+*   Top-K: Return at least **Top-3** recommendations. Top-5 is acceptable.
+*   Decision Engine filters are applied before this output is returned (water-intensive crops removed if Rainfed, biologically impossible season-crop combos removed).
+
+---
+
+## 13. Open Issues That MUST Be Resolved Before Training
+
+| Issue | Blocking? | Resolution Path |
+|---|---|---|
+| RYI formula finalization | Yes | Must define exact RYI computation (median baseline, normalization) during Phase 3 data assembly. Area Allocation Frequency retained as comparison baseline. |
+| District encoding strategy | Yes | Must decide between label encoding, target encoding, or frequency encoding for ~600 district categories. |
+| ERA5 data download and zonal aggregation | Yes | Must download ERA5 monthly means for India (2005–2015), aggregate to district polygons using zonal statistics. |
+| SoilGrids GeoTIFF extraction | Partial | Must download relevant SoilGrids layers (N, pH) and extract district-centroid values. P and K may be deferred if no reliable source found. |
+| Train/test split strategy | Yes | Must avoid naive random split on panel data. Geographic or temporal holdout required. |
+| Tomato/Mango/Grapes target label | Partial | These crops have <100 observations. Model will include them but predictions will be lower confidence. |
+
+---
+
+# PHASE 2 FINAL RECOMMENDATION
+
+**Farmer Inputs:**
+1. District (REQUIRED)
+2. Season (REQUIRED)
+3. Water Availability: Irrigated / Rainfed (REQUIRED)
+4. Soil Health Card: N, pH (OPTIONAL)
+
+**Derived:**
+1. Historical Seasonal Rainfall (ERA5 → district zonal mean, 2005–2015)
+2. Historical Seasonal Temperature (ERA5 → district zonal mean, 2005–2015)
+3. Regional Soil N, pH (SoilGrids → district centroid, when SHC unavailable)
+
+**External:**
+1. UPAg APY 2005–2015 (target data)
+2. ERA5 monthly reanalysis (climate features)
+3. ISRIC SoilGrids v2 (soil features)
+4. India district shapefile (spatial join)
+
+**ML Features:**
+1. `District` (encoded)
+2. `Season` (encoded)
+3. `Hist_Rainfall` (mm)
+4. `Hist_Temperature` (°C)
+5. `Soil_N` (measured or estimated)
+6. `Soil_pH` (measured or estimated)
+
+**Decision Rules (post-prediction):**
+1. Water constraint: Suppress water-intensive crops for Rainfed farmers.
+2. Season constraint: Suppress biologically impossible crop-season combinations.
+
+**Target:**
+RYI — PROVISIONAL. Hierarchical fallback (District → State median) proven mathematically feasible. Scientific validation pending Phase 3 experimental comparison against Area Allocation Frequency baseline.
+
+**Expected MVP Goal:**
+> 70% validation performance
+
+**Training Status:**
+NOT STARTED
