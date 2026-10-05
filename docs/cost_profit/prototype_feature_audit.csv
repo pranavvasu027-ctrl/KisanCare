@@ -1,0 +1,29 @@
+Feature,Type,Action,Reason
+Farm_ID,Input,INCLUDE,Pre-harvest independent variable.
+State,Input,INCLUDE,Pre-harvest independent variable.
+District,Input,INCLUDE,Pre-harvest independent variable.
+Crop,Input,INCLUDE,Pre-harvest independent variable.
+Season,Input,INCLUDE,Pre-harvest independent variable.
+Farm_Area_Hectares,Input,INCLUDE,Pre-harvest independent variable.
+Rainfall_mm,Input,INCLUDE,Pre-harvest independent variable.
+Avg_Temperature_C,Input,INCLUDE,Pre-harvest independent variable.
+Humidity_pct,Input,INCLUDE,Pre-harvest independent variable.
+Sunlight_Hours_Day,Input,INCLUDE,Pre-harvest independent variable.
+Soil_pH,Input,INCLUDE,Pre-harvest independent variable.
+Soil_Moisture_pct,Input,INCLUDE,Pre-harvest independent variable.
+Nitrogen_kg_ha,Input,INCLUDE,Pre-harvest independent variable.
+Phosphorus_kg_ha,Input,INCLUDE,Pre-harvest independent variable.
+Potassium_kg_ha,Input,INCLUDE,Pre-harvest independent variable.
+Irrigation_Method,Input,INCLUDE,Pre-harvest independent variable.
+Fertilizer_kg_ha,Input,INCLUDE,Pre-harvest independent variable.
+Pesticide_Litre_ha,Input,INCLUDE,Pre-harvest independent variable.
+Seed_Quality_Score,Input,INCLUDE,Pre-harvest independent variable.
+Yield_Tonnes_Ha,Input,INCLUDE,Pre-harvest independent variable.
+Production_Tonnes,Input,INCLUDE,Pre-harvest independent variable.
+Market_Price_INR_Tonne,Input,INCLUDE,Pre-harvest independent variable.
+Total_Cost_INR,Leakage,EXCLUDE,Component cost; sums to target.
+Revenue_INR,Input,INCLUDE,Pre-harvest independent variable.
+Profit_INR,Input,INCLUDE,Pre-harvest independent variable.
+Water_Used_m3,Input,INCLUDE,Pre-harvest independent variable.
+Water_Efficiency_t_per_1000m3,Input,INCLUDE,Pre-harvest independent variable.
+Disease_Pest_Risk_pct,Input,INCLUDE,Pre-harvest independent variable.

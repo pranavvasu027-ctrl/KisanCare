@@ -1,0 +1,7 @@
+Dataset Name,Repository,Rows,Columns,Crops,States,Maharashtra Records,Yield Target,Cost Target,Price Target,Profit Target,Data Quality Issues
+crop_production.csv,Repo 1,246091,7,19,33,12628,Yes,No,No,No,"Yield requires calculation (Production/Area), missing values"
+datafile.csv,Repo 1,49,7,10,13,6,Yes,Yes,Yes,No,"Severely undersized, only 49 rows"
+Crop_yield_enriched.csv,Repo 2,19171,14,9,1 (Karnataka),0,Yes,No,No,No,"Geographically biased to Karnataka only"
+crop_price_trends_2015_2025.csv,Repo 2,1320,6,10,0,0,No,No,Yes,No,"Fully synthetic, hardcoded 6% inflation"
+seasonal_agriculture_performance_dataset.csv,Repo 3,4000,28,8,8,512,Yes,Yes,Yes,Yes,"Calculated dataset, requires Hybrid architecture to prevent leakage"
+agriculture-crop-dataset.csv,Repo 4,130,6,17,18,10,No,Yes,No,No,"Lacks Yield column despite README claims, undersized"

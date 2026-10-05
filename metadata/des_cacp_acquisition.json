@@ -1,0 +1,6 @@
+{
+    "status": "BLOCKED_MANUAL_DOWNLOAD_REQUIRED",
+    "official_sources_verified": 1,
+    "files_downloaded": 0,
+    "reason": "The official DES server (desagri.gov.in) drops automated connection requests (ConnectTimeoutError). A manual download from a residential IP/browser is required."
+}

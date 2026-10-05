@@ -1,0 +1,2 @@
+Source,Organization,URL,Format,Rows,Observation Unit,Years,Crops,Geography,Cost Variables
+VDSA (Village Level Studies),ICRISAT,https://vdsa.icrisat.org/,STATA/CSV (Gated),~25000,Farm x Plot x Year,1975-2014,Multiple,Maharashtra/Telangana,Cost A1 to Cost C2 components

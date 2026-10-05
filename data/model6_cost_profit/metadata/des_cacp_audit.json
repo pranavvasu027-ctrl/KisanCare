@@ -1,0 +1,14 @@
+{
+    "actual_source_files_found": 2,
+    "actual_row_count": 53,
+    "observation_level": "State x Crop",
+    "year_range": "2019, Unknown",
+    "crop_count": 14,
+    "state_count": 13,
+    "maharashtra_coverage": 9,
+    "c2_availability": "Yes",
+    "a2_fl_availability": "Yes",
+    "major_quality_issues": "Massive shortfall from 3,000 to 53 rows. Unknown years in Kaggle data.",
+    "v1_crop_coverage_count": 9,
+    "final_recommendation": "The assumption that 3,000 aggregate rows exist in this repository is FALSE. Only 53 rows exist (4 mock, 49 Kaggle). We cannot build a base-rate engine on this."
+}

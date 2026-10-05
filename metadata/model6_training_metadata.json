@@ -1,0 +1,30 @@
+{
+    "status": "MODEL_READY_FOR_INTEGRATION",
+    "best_model": "HistGradientBoosting",
+    "selection_reason": "Highest combined generalization score across Random Split and GroupKFold (State).",
+    "random_split_R2": 0.9506633505726899,
+    "maharashtra_R2": 0.9390673457730683,
+    "input_schema": {
+        "State": "str",
+        "Crop": "str",
+        "Season": "str",
+        "Farm_Area_Hectares": "float64",
+        "Rainfall_mm": "float64",
+        "Avg_Temperature_C": "float64",
+        "Humidity_pct": "float64",
+        "Sunlight_Hours_Day": "float64",
+        "Soil_pH": "float64",
+        "Soil_Moisture_pct": "float64",
+        "Nitrogen_kg_ha": "float64",
+        "Phosphorus_kg_ha": "float64",
+        "Potassium_kg_ha": "float64",
+        "Irrigation_Method": "str",
+        "Fertilizer_kg_ha": "float64",
+        "Pesticide_Litre_ha": "float64",
+        "Seed_Quality_Score": "float64",
+        "Water_Used_m3": "int64",
+        "Water_Efficiency_t_per_1000m3": "float64",
+        "Disease_Pest_Risk_pct": "float64"
+    },
+    "model_path": "C:\\Users\\prana\\OneDrive\\Desktop\\Projects\\KISANcare\\kisan-care\\models\\model6_cost_profit\\artifacts\\cost_model.joblib"
+}

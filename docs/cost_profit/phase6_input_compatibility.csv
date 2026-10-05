@@ -1,0 +1,4 @@
+field,cost_model,yield_model,market_model,economic_engine,datatype,unit,required,transformation_required,notes
+State,Required,Unknown,Unknown,Not Required,str,N/A,Yes,Unknown,
+Crop,Required,Unknown,Unknown,Not Required,str,N/A,Yes,Unknown,
+Farm_Area_Hectares,Required,Unknown,Unknown,Required,float,hectares,Yes,Unknown,

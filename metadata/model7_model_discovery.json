@@ -1,0 +1,21 @@
+{
+    "status": "MODELS_NOT_FOUND_LOCALLY",
+    "search_locations": [
+        "C:\\Users\\prana\\OneDrive\\Desktop\\Projects\\KISANcare\\",
+        "C:\\Users\\prana\\Downloads\\"
+    ],
+    "search_file_types": [
+        "*.joblib",
+        "*.pkl",
+        "*.pickle",
+        "*.onnx",
+        "*.h5",
+        "*.keras",
+        "*.pt",
+        "*.pth",
+        "*.cbm"
+    ],
+    "candidates_found": 0,
+    "git_history_findings": "Checked all branches and commits for 'yield', 'market', 'price', and 'model'. No teammate models or deleted ML artifacts were found in the project's history.",
+    "recommended_next_action": "Coordinate with teammate AD to physically upload/push the Yield and Market model artifacts (.joblib/.pkl) and their inference schemas to the repository."
+}

@@ -1,0 +1,21 @@
+Crop,Maharashtra,Other States,Years,C2 Available,A2+FL Available,Status
+Rice,0,0,None,No,No,NOT_SUPPORTED
+Wheat,0,1,2019,Yes,Yes,SUPPORTED
+Maize,0,5,Unknown,Yes,Yes,SUPPORTED
+Soybean,1,0,2019,Yes,Yes,SUPPORTED
+Cotton,1,0,2019,Yes,Yes,SUPPORTED
+Sugarcane,1,0,2019,Yes,Yes,SUPPORTED
+Chickpea,0,0,None,No,No,NOT_SUPPORTED
+Pigeon Pea,0,0,None,No,No,NOT_SUPPORTED
+Groundnut,1,4,Unknown,Yes,Yes,SUPPORTED
+Sorghum,0,0,None,No,No,NOT_SUPPORTED
+Pearl Millet,0,0,None,No,No,NOT_SUPPORTED
+Green Gram,1,4,Unknown,Yes,Yes,SUPPORTED
+Black Gram,1,4,Unknown,Yes,Yes,SUPPORTED
+Mustard,0,5,Unknown,Yes,Yes,SUPPORTED
+Onion,0,0,None,No,No,NOT_SUPPORTED
+Potato,0,0,None,No,No,NOT_SUPPORTED
+Tomato,0,0,None,No,No,NOT_SUPPORTED
+Banana,0,0,None,No,No,NOT_SUPPORTED
+Mango,0,0,None,No,No,NOT_SUPPORTED
+Grapes,0,0,None,No,No,NOT_SUPPORTED

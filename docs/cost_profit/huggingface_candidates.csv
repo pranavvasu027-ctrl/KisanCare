@@ -1,0 +1,2 @@
+url,name,original_source,license,raw_rows,columns,format,observation_unit,country,india_rows,maharashtra_rows,crop_coverage,year_coverage,cost_variables,is_observed,is_synthetic,is_des_copy,is_duplicate,missing_pct,usable_rows,classification
+https://huggingface.co/datasets/example_agriculture_qa,Various Agriculture NLP QA datasets,Synthetic / LLM Generated,Open,N/A,"Instruction, Response",JSONL,QA Pair,India (Mixed),0,0,Mixed,N/A,None,No,Yes,No,No,N/A,0,E

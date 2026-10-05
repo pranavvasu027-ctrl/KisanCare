@@ -1,0 +1,104 @@
+{
+    "columns": [
+        {
+            "name": "State",
+            "type": "str",
+            "sample": "Andhra Pradesh"
+        },
+        {
+            "name": "District",
+            "type": "str",
+            "sample": "Rajkot"
+        },
+        {
+            "name": "Crop",
+            "type": "str",
+            "sample": "Wheat"
+        },
+        {
+            "name": "Season",
+            "type": "str",
+            "sample": "Kharif"
+        },
+        {
+            "name": "Farm_Area_Hectares",
+            "type": "float64",
+            "sample": "0.64"
+        },
+        {
+            "name": "Rainfall_mm",
+            "type": "float64",
+            "sample": "486.4"
+        },
+        {
+            "name": "Avg_Temperature_C",
+            "type": "float64",
+            "sample": "24.3"
+        },
+        {
+            "name": "Humidity_pct",
+            "type": "float64",
+            "sample": "69.1"
+        },
+        {
+            "name": "Sunlight_Hours_Day",
+            "type": "float64",
+            "sample": "5.8"
+        },
+        {
+            "name": "Soil_pH",
+            "type": "float64",
+            "sample": "7.14"
+        },
+        {
+            "name": "Soil_Moisture_pct",
+            "type": "float64",
+            "sample": "32.8"
+        },
+        {
+            "name": "Nitrogen_kg_ha",
+            "type": "float64",
+            "sample": "75.8"
+        },
+        {
+            "name": "Phosphorus_kg_ha",
+            "type": "float64",
+            "sample": "61.3"
+        },
+        {
+            "name": "Potassium_kg_ha",
+            "type": "float64",
+            "sample": "91.0"
+        },
+        {
+            "name": "Irrigation_Method",
+            "type": "str",
+            "sample": "Drip"
+        },
+        {
+            "name": "Fertilizer_kg_ha",
+            "type": "float64",
+            "sample": "242.7"
+        },
+        {
+            "name": "Pesticide_Litre_ha",
+            "type": "float64",
+            "sample": "4.33"
+        },
+        {
+            "name": "Seed_Quality_Score",
+            "type": "float64",
+            "sample": "0.76"
+        },
+        {
+            "name": "Total_Cost_INR",
+            "type": "float64",
+            "sample": "42662.0"
+        },
+        {
+            "name": "Disease_Pest_Risk_pct",
+            "type": "float64",
+            "sample": "55.3"
+        }
+    ]
+}

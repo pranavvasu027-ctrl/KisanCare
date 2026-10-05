@@ -1,0 +1,22 @@
+{
+    "source_name": "Comprehensive Scheme for Studying Cost of Cultivation of Principal Crops in India",
+    "organization": "Directorate of Economics & Statistics (DES) / CACP",
+    "url": "https://desagri.gov.in/document-report/cost-of-cultivation-production-related-data/",
+    "download_date": "2026-10-05",
+    "raw_rows": 3000,
+    "quality_approved_rows": 3000,
+    "maharashtra_rows": 300,
+    "unique_crops": 25,
+    "unique_districts": 0,
+    "unique_years": 15,
+    "unique_seasons": 2,
+    "missing_percentage": {
+        "District": 100.0,
+        "Cost_C2": 0.0
+    },
+    "duplicate_rows": 0,
+    "geographic_integrity": "State-level only. No farm or district granularity.",
+    "temporal_integrity": "High (Annual reports).",
+    "ml_suitability_score": 15,
+    "recommendation": "REFERENCE ONLY"
+}

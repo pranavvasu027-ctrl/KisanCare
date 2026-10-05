@@ -1,0 +1,16 @@
+{
+    "status": "MODEL_NOT_FOUND",
+    "yield_model_found": false,
+    "yield_artifact_path": null,
+    "market_model_found": false,
+    "market_artifact_path": null,
+    "cost_model_compatibility": "VALIDATED",
+    "integration_risks": [
+        {
+            "risk": "Missing Models",
+            "severity": "BLOCKER",
+            "description": "Yield and Market models do not exist in the repository."
+        }
+    ],
+    "highest_priority_blocker": "No trained Yield or Market artifacts found."
+}

@@ -1,0 +1,6 @@
+Metric,Value,Notes
+Missing Values,0%,Excluding District (which is 100% missing)
+Duplicates,0,
+Outliers,0,Aggregated data smooths all outliers
+Geographic Reliability,High,But strictly at State level
+Financial Consistency,High,Perfect sum of components

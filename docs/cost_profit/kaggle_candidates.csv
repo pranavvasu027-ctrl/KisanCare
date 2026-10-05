@@ -1,0 +1,4 @@
+candidate_id,url,name,author,original_source,raw_rows,columns,observation_unit,cost_variables,location_crop_year,is_synthetic,is_des_copy,is_duplicate,maharashtra_rows,new_usable_rows,classification
+1,https://www.kaggle.com/search?q=cost+of+cultivation,Various Agriculture/Crop Production Datasets,Multiple,DES/CACP State Aggregates,49,"Crop, State, Cost A2+FL, Cost C2, Yield",state aggregate,"Cost A2+FL, Cost C2","State, Crop (No Year)",False,True,True,0,0,D
+2,https://www.kaggle.com/search?q=farm+expenditure,Household Expenditure / General Inflation,Multiple,CPI / Wholesale Price Index,N/A,N/A,national aggregate,None (Consumer prices only),Year,False,False,False,0,0,F
+3,https://www.kaggle.com/search?q=agricultural+cost+dataset+India,Crop Yield Prediction / Recommendation,Multiple,Synthetic / APY data,N/A,N/A,plot (synthetic),None,Crop,True,False,False,0,0,E

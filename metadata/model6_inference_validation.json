@@ -1,0 +1,91 @@
+{
+    "status": "COST_MODEL_VALIDATED",
+    "total_tests": 13,
+    "passed_tests": 13,
+    "failed_tests": 0,
+    "schema_verified": true,
+    "artifact_verified": true,
+    "failures": [],
+    "sample_predictions": [
+        {
+            "Scenario": "Typical Farm",
+            "Area": 2.0,
+            "Crop": "Soybean",
+            "State": "Maharashtra",
+            "Total_Cost": 123119.12,
+            "Cost_Per_Ha": 61559.56
+        },
+        {
+            "Scenario": "Small Farm (0.5ha)",
+            "Area": 0.5,
+            "Crop": "Soybean",
+            "State": "Maharashtra",
+            "Total_Cost": 38956.18,
+            "Cost_Per_Ha": 77912.36
+        },
+        {
+            "Scenario": "Medium Farm (5.0ha)",
+            "Area": 5.0,
+            "Crop": "Soybean",
+            "State": "Maharashtra",
+            "Total_Cost": 269275.34,
+            "Cost_Per_Ha": 53855.07
+        },
+        {
+            "Scenario": "Large Farm (20.0ha)",
+            "Area": 20.0,
+            "Crop": "Soybean",
+            "State": "Maharashtra",
+            "Total_Cost": 796029.69,
+            "Cost_Per_Ha": 39801.48
+        },
+        {
+            "Scenario": "Different Crop (Cotton)",
+            "Area": 2.0,
+            "Crop": "Cotton",
+            "State": "Maharashtra",
+            "Total_Cost": 123119.12,
+            "Cost_Per_Ha": 61559.56
+        },
+        {
+            "Scenario": "Different Season (Rabi/Wheat)",
+            "Area": 2.0,
+            "Crop": "Wheat",
+            "State": "Maharashtra",
+            "Total_Cost": 123119.12,
+            "Cost_Per_Ha": 61559.56
+        },
+        {
+            "Scenario": "Rainfed Irrigation",
+            "Area": 2.0,
+            "Crop": "Soybean",
+            "State": "Maharashtra",
+            "Total_Cost": 125326.1,
+            "Cost_Per_Ha": 62663.05
+        },
+        {
+            "Scenario": "Low Rainfall (150mm)",
+            "Area": 2.0,
+            "Crop": "Soybean",
+            "State": "Maharashtra",
+            "Total_Cost": 126999.83,
+            "Cost_Per_Ha": 63499.92
+        },
+        {
+            "Scenario": "High Rainfall (1200mm)",
+            "Area": 2.0,
+            "Crop": "Soybean",
+            "State": "Maharashtra",
+            "Total_Cost": 120315.79,
+            "Cost_Per_Ha": 60157.9
+        },
+        {
+            "Scenario": "Unknown Category (DragonFruit)",
+            "Area": 2.0,
+            "Crop": "DragonFruit",
+            "State": "Maharashtra",
+            "Total_Cost": 123119.12,
+            "Cost_Per_Ha": 61559.56
+        }
+    ]
+}

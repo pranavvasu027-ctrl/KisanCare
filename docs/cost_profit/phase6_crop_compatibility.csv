@@ -1,0 +1,21 @@
+crop,cost_model,yield_model,market_model,economic_engine,integration_status,notes
+Rice,SUPPORTED,UNKNOWN (Model Not Found),UNKNOWN (Model Not Found),SUPPORTED (Agnostic),UNSUPPORTED,Missing Yield & Market models.
+Wheat,SUPPORTED,UNKNOWN (Model Not Found),UNKNOWN (Model Not Found),SUPPORTED (Agnostic),UNSUPPORTED,Missing Yield & Market models.
+Maize,SUPPORTED,UNKNOWN (Model Not Found),UNKNOWN (Model Not Found),SUPPORTED (Agnostic),UNSUPPORTED,Missing Yield & Market models.
+Soybean,SUPPORTED,UNKNOWN (Model Not Found),UNKNOWN (Model Not Found),SUPPORTED (Agnostic),UNSUPPORTED,Missing Yield & Market models.
+Cotton,SUPPORTED,UNKNOWN (Model Not Found),UNKNOWN (Model Not Found),SUPPORTED (Agnostic),UNSUPPORTED,Missing Yield & Market models.
+Sugarcane,SUPPORTED,UNKNOWN (Model Not Found),UNKNOWN (Model Not Found),SUPPORTED (Agnostic),UNSUPPORTED,Missing Yield & Market models.
+Chickpea,SUPPORTED,UNKNOWN (Model Not Found),UNKNOWN (Model Not Found),SUPPORTED (Agnostic),UNSUPPORTED,Missing Yield & Market models.
+Pigeon Pea,UNSUPPORTED,UNKNOWN (Model Not Found),UNKNOWN (Model Not Found),SUPPORTED (Agnostic),UNSUPPORTED,Missing Yield & Market models.
+Groundnut,SUPPORTED,UNKNOWN (Model Not Found),UNKNOWN (Model Not Found),SUPPORTED (Agnostic),UNSUPPORTED,Missing Yield & Market models.
+Sorghum,SUPPORTED,UNKNOWN (Model Not Found),UNKNOWN (Model Not Found),SUPPORTED (Agnostic),UNSUPPORTED,Missing Yield & Market models.
+Pearl Millet,SUPPORTED,UNKNOWN (Model Not Found),UNKNOWN (Model Not Found),SUPPORTED (Agnostic),UNSUPPORTED,Missing Yield & Market models.
+Green Gram,UNSUPPORTED,UNKNOWN (Model Not Found),UNKNOWN (Model Not Found),SUPPORTED (Agnostic),UNSUPPORTED,Missing Yield & Market models.
+Black Gram,UNSUPPORTED,UNKNOWN (Model Not Found),UNKNOWN (Model Not Found),SUPPORTED (Agnostic),UNSUPPORTED,Missing Yield & Market models.
+Mustard,UNSUPPORTED,UNKNOWN (Model Not Found),UNKNOWN (Model Not Found),SUPPORTED (Agnostic),UNSUPPORTED,Missing Yield & Market models.
+Onion,SUPPORTED,UNKNOWN (Model Not Found),UNKNOWN (Model Not Found),SUPPORTED (Agnostic),UNSUPPORTED,Missing Yield & Market models.
+Potato,UNSUPPORTED,UNKNOWN (Model Not Found),UNKNOWN (Model Not Found),SUPPORTED (Agnostic),UNSUPPORTED,Missing Yield & Market models.
+Tomato,SUPPORTED,UNKNOWN (Model Not Found),UNKNOWN (Model Not Found),SUPPORTED (Agnostic),UNSUPPORTED,Missing Yield & Market models.
+Banana,UNSUPPORTED,UNKNOWN (Model Not Found),UNKNOWN (Model Not Found),SUPPORTED (Agnostic),UNSUPPORTED,Missing Yield & Market models.
+Mango,UNSUPPORTED,UNKNOWN (Model Not Found),UNKNOWN (Model Not Found),SUPPORTED (Agnostic),UNSUPPORTED,Missing Yield & Market models.
+Grapes,UNSUPPORTED,UNKNOWN (Model Not Found),UNKNOWN (Model Not Found),SUPPORTED (Agnostic),UNSUPPORTED,Missing Yield & Market models.

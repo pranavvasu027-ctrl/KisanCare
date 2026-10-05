@@ -1,0 +1,29 @@
+Feature,Action,Reason
+Farm_ID,EXCLUDE,Identifier
+State,INCLUDE,Valid pre-harvest input feature.
+District,EXCLUDE,Suspicious geographic mapping (3485/4000 invalid)
+Crop,INCLUDE,Valid pre-harvest input feature.
+Season,INCLUDE,Valid pre-harvest input feature.
+Farm_Area_Hectares,INCLUDE,Valid pre-harvest input feature.
+Rainfall_mm,INCLUDE,Valid pre-harvest input feature.
+Avg_Temperature_C,INCLUDE,Valid pre-harvest input feature.
+Humidity_pct,INCLUDE,Valid pre-harvest input feature.
+Sunlight_Hours_Day,INCLUDE,Valid pre-harvest input feature.
+Soil_pH,INCLUDE,Valid pre-harvest input feature.
+Soil_Moisture_pct,INCLUDE,Valid pre-harvest input feature.
+Nitrogen_kg_ha,INCLUDE,Valid pre-harvest input feature.
+Phosphorus_kg_ha,INCLUDE,Valid pre-harvest input feature.
+Potassium_kg_ha,INCLUDE,Valid pre-harvest input feature.
+Irrigation_Method,INCLUDE,Valid pre-harvest input feature.
+Fertilizer_kg_ha,INCLUDE,Valid pre-harvest input feature.
+Pesticide_Litre_ha,INCLUDE,Valid pre-harvest input feature.
+Seed_Quality_Score,INCLUDE,Valid pre-harvest input feature.
+Yield_Tonnes_Ha,EXCLUDE,Post-harvest leakage
+Production_Tonnes,EXCLUDE,Post-harvest leakage
+Market_Price_INR_Tonne,EXCLUDE,Post-harvest leakage
+Total_Cost_INR,TARGET,Primary prediction target.
+Revenue_INR,EXCLUDE,Post-harvest leakage
+Profit_INR,EXCLUDE,Post-harvest leakage
+Water_Used_m3,INCLUDE,Valid pre-harvest input feature.
+Water_Efficiency_t_per_1000m3,INCLUDE,Valid pre-harvest input feature.
+Disease_Pest_Risk_pct,INCLUDE,Valid pre-harvest input feature.

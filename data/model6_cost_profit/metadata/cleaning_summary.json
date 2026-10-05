@@ -1,0 +1,38 @@
+{
+    "raw_rows": 4000,
+    "transformations": [
+        {
+            "col": "rainfall_mm",
+            "action": "impute_median",
+            "value": 582.0
+        },
+        {
+            "col": "soil_moisture_pct",
+            "action": "impute_median",
+            "value": 26.4
+        },
+        {
+            "col": "yield_tonnes_ha",
+            "action": "impute_median",
+            "value": 1.74
+        },
+        {
+            "col": "crop",
+            "action": "title_case_strip"
+        },
+        {
+            "col": "state",
+            "action": "title_case_strip"
+        },
+        {
+            "col": "district",
+            "action": "title_case_strip"
+        },
+        {
+            "col": "irrigation_method",
+            "action": "title_case_strip"
+        }
+    ],
+    "clean_rows": 4000,
+    "rows_removed": 0
+}

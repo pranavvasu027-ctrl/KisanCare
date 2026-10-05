@@ -1,0 +1,57 @@
+{
+  "phase": 1,
+  "status": "complete",
+  "problem_definition": "Given a farm's soil, climate, location, season and available farming constraints, rank the most suitable crops for that farm.",
+  "primary_repository": "Sheshank2609/crop-recommendation-system",
+  "secondary_repository": "anant13sharma/A-Machine-Learning-Based-Crop-Recommendation-System",
+  "backup_repository": "KRUTHIKTR/Crop-Recommendation-System-Using-Machine-Learning",
+  "repositories": {
+    "sheshank": {
+      "model": "Ensemble (Random Forest + Statistical Regional Scoring)",
+      "dataset_size": 1603,
+      "crops": 33
+    },
+    "anant": {
+      "model": "Various (Random Forest, Decision Tree, Naive Bayes)",
+      "dataset_size": 69718,
+      "crops": 22
+    },
+    "kruthik": {
+      "model": "Random Forest",
+      "dataset_size": 2200,
+      "crops": 22
+    }
+  },
+  "datasets": {
+    "kaggle_2200": "Original Kaggle dataset. Perfectly balanced. Widely considered synthetic/interpolated.",
+    "anant_69k": "Synthetically exploded version of Kaggle dataset. Massive leakage.",
+    "sheshank_regional": "Real historical frequency data for Maharashtra districts/seasons."
+  },
+  "crop_strategy": {
+    "locked_to_20": false,
+    "locked_to_22": false,
+    "initial_baseline": 22,
+    "future_extensibility": "Model versioning and crop catalogue updates"
+  },
+  "input_features": {
+    "existing": ["N", "P", "K", "pH", "temperature", "humidity", "rainfall", "district", "season"],
+    "useful_unavailable": ["organic carbon", "soil type", "moisture", "growing-season rainfall", "dry-spell information"],
+    "future": ["irrigation", "area", "previous crop"]
+  },
+  "decisions": {
+    "primary_ml_model": "REJECT (Baseline Kaggle RF is too synthetic. Use APY regression approach instead)",
+    "anant_dataset": "REJECT (Synthetic explosion with data leakage)",
+    "kruthik_dataset": "MODIFY (Can be used as a structural baseline, but not for production)",
+    "sheshank_regional_layer": "MODIFY (Formula is useful statistical baseline for Maharashtra)",
+    "features": "MODIFY (NPK+Climate is good, need to add real geographic features)",
+    "deployment_code": "MODIFY (Gradio app is good for prototyping, need FastAPI for production)"
+  },
+  "risks": [
+    "Overfitting to perfectly balanced synthetic Kaggle data (99% accuracy is a mirage).",
+    "Anant dataset suffers from severe data leakage.",
+    "Regional scoring is a statistical formula, not true ML, meaning it doesn't learn feature interactions.",
+    "No true real-world soil/climate field dataset found yet (all point back to Kaggle).",
+    "Missing geographic mapping (State/District) in the soil datasets."
+  ],
+  "phase_2_ready": true
+}

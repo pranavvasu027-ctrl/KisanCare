@@ -1,0 +1,11 @@
+State,Crop,Year,Cost_A2_FL_per_Hectare,Cost_C2_per_Hectare,Cost_C2_per_Quintal,Yield_Quintal_per_Hectare
+Maharashtra,Cotton,2018-19,53120.50,75430.20,5400.10,13.96
+Maharashtra,Cotton,2019-20,55100.10,78210.00,5600.30,13.96
+Maharashtra,Soybean,2018-19,35400.00,52100.00,3200.00,16.28
+Maharashtra,Soybean,2019-20,37150.00,54320.00,3400.50,15.97
+Maharashtra,Sugarcane,2018-19,105000.00,152000.00,210.00,723.80
+Maharashtra,Sugarcane,2019-20,110000.00,158000.00,225.00,702.22
+Maharashtra,Wheat,2018-19,38000.00,55000.00,1800.00,30.55
+Maharashtra,Wheat,2019-20,39500.00,57500.00,1950.00,29.48
+Maharashtra,Maize,2018-19,34000.00,49000.00,1600.00,30.62
+Maharashtra,Maize,2019-20,35200.00,51000.00,1700.00,30.00

@@ -1,6 +1,59 @@
-*.pyc
+# Python
 __pycache__/
-node_modules/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Environments
 .env
+
+# OS specific
 .DS_Store
-.pytest_cache/
+Thumbs.db
+
+# IDEs
+.idea/
+.vscode/
+
+# Large files and datasets
+# Note: Large datasets and models should be stored in cloud storage (e.g., GCS, S3) 
+# or Git LFS, and referenced here. Do not commit large files directly.
+data/raw/*
+data/processed/*
+*.joblib
+*.pkl
+*.h5
+*.onnx
+
+# Secrets
+# Do NOT commit API keys, credentials, or secrets.
+secrets/
+*.pem
+credentials.json

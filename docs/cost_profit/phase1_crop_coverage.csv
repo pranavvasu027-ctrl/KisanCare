@@ -1,0 +1,15 @@
+crop_name,observations,number_of_states,earliest_year,latest_year
+ARHAR,5,5,Unknown,Unknown
+COTTON,5,5,Unknown,Unknown
+GRAM,5,5,Unknown,Unknown
+GROUNDNUT,5,5,Unknown,Unknown
+MAIZE,5,5,Unknown,Unknown
+MOONG,5,5,Unknown,Unknown
+PADDY,5,5,Unknown,Unknown
+RAPESEED AND MUSTARD,5,5,Unknown,Unknown
+SUGARCANE,5,5,Unknown,Unknown
+WHEAT,4,4,Unknown,Unknown
+Cotton,1,1,2019,2019
+Soybean,1,1,2019,2019
+Sugarcane,1,1,2019,2019
+Wheat,1,1,2019,2019

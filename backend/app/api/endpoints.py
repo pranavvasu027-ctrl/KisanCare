@@ -39,7 +39,7 @@ def get_digital_twin(farm_id: str):
 def predict_crop(data: Dict[str, Any]):
     try:
         # Forward to ML service
-        response = requests.post(f"{ML_SERVICE_URL}/predict/crop", json=data)
+        response = requests.post(f"{ML_SERVICE_URL}/predict/crop", json={"data": data})
         return response.json()
     except Exception as e:
         # Fallback mock for demo if ML service is down

@@ -1,0 +1,6 @@
+Metric,Value,Notes
+Missing Values,Low,Highly curated longitudinal panel dataset
+Duplicates,None,Farm IDs strictly tracked
+Outliers,Flagged,ICRISAT researchers manually flag anomalies
+Geographic Reliability,High,Village/Household tracking
+Financial Consistency,High,All components sum correctly

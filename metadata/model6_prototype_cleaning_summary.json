@@ -1,0 +1,52 @@
+{
+    "status": "CLEAN_DATA_READY",
+    "original_rows": 4000,
+    "clean_rows": 4000,
+    "rows_corrected": 0,
+    "rows_unresolved": 0,
+    "max_absolute_difference": 0.005000000000002558,
+    "rows_rejected": 0,
+    "final_features": [
+        "State",
+        "Crop",
+        "Season",
+        "Farm_Area_Hectares",
+        "Rainfall_mm",
+        "Avg_Temperature_C",
+        "Humidity_pct",
+        "Sunlight_Hours_Day",
+        "Soil_pH",
+        "Soil_Moisture_pct",
+        "Nitrogen_kg_ha",
+        "Phosphorus_kg_ha",
+        "Potassium_kg_ha",
+        "Irrigation_Method",
+        "Fertilizer_kg_ha",
+        "Pesticide_Litre_ha",
+        "Seed_Quality_Score",
+        "Water_Used_m3",
+        "Water_Efficiency_t_per_1000m3",
+        "Disease_Pest_Risk_pct"
+    ],
+    "excluded_features": [
+        "Profit_INR",
+        "Revenue_INR",
+        "Production_Tonnes",
+        "Yield_Tonnes_Ha",
+        "Market_Price_INR_Tonne",
+        "District",
+        "Farm_ID"
+    ],
+    "target": "Total_Cost_INR",
+    "maharashtra_rows": 512,
+    "v1_crop_coverage": [
+        "Rice",
+        "Wheat",
+        "Maize",
+        "Cotton",
+        "Sugarcane",
+        "Groundnut"
+    ],
+    "geographic_limitations": "District mappings are highly suspicious; District excluded from predictive features.",
+    "recommended_validation_strategy": "GroupKFold by 'State' or 'Crop' to ensure generalization, or TimeSeriesSplit if temporal data exists."
+}

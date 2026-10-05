@@ -1,0 +1,13 @@
+Variable,Meaning,Unit,Model 6 Role
+State,Indian State,Categorical,SAFE INPUT
+Crop,Crop Name,Categorical,SAFE INPUT
+Year,Agricultural Year,Categorical,SAFE INPUT
+Seed_Cost,Cost of seeds,INR/Hectare,LEAKAGE (Component of Cost)
+Fertilizer_Cost,Cost of fertilizers,INR/Hectare,LEAKAGE (Component of Cost)
+Labour_Cost,Cost of hired labour,INR/Hectare,LEAKAGE (Component of Cost)
+Machine_Cost,Cost of machinery,INR/Hectare,LEAKAGE (Component of Cost)
+Rent,Rent for leased land,INR/Hectare,LEAKAGE (Component of Cost)
+Yield,Crop Yield,Quintal/Hectare,SAFE INPUT (Estimated at planting)
+Cost_A2,Paid out cost,INR/Hectare,TARGET 3
+Cost_A2_FL,Cost A2 + Family Labour,INR/Hectare,TARGET 2
+Cost_C2,Comprehensive Cost,INR/Hectare,TARGET 1

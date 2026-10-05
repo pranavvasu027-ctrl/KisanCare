@@ -1,0 +1,27 @@
+{
+    "source_name": "District-wise Season-wise Crop Production Statistics",
+    "organization": "Directorate of Economics and Statistics (DES), Ministry of Agriculture",
+    "url": "https://www.data.gov.in/catalog/district-wise-season-wise-crop-production-statistics-0",
+    "download_date": "2026-10-05",
+    "raw_rows": 246091,
+    "quality_approved_rows": 242361,
+    "maharashtra_rows": 12496,
+    "unique_crops": 124,
+    "unique_districts": 646,
+    "unique_years": 19,
+    "unique_seasons": 6,
+    "missing_percentage": {
+        "State_Name": 0.0,
+        "District_Name": 0.0,
+        "Crop_Year": 0.0,
+        "Season": 0.0,
+        "Crop": 0.0,
+        "Area": 0.0,
+        "Production": 1.5156994770227274
+    },
+    "duplicate_rows": 0,
+    "geographic_integrity": "High. Official state/district combinations.",
+    "temporal_integrity": "High. Continuous coverage from 1997 to 2015.",
+    "ml_suitability_score": 85,
+    "recommendation": "SECONDARY (For Yield prediction only)"
+}

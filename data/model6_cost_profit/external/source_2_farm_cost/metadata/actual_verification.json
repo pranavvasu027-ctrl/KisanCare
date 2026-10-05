@@ -1,0 +1,14 @@
+{
+    "official_source": "ICRISAT VDSA (Village Dynamics in South Asia)",
+    "dataset_module": "Cultivation Schedule Y",
+    "official_url": "https://vdsa.icrisat.org/",
+    "actual_raw_rows": 0,
+    "farm_plot_rows": 0,
+    "quality_approved": 0,
+    "leakage_approved": 0,
+    "final_model_6_rows": 0,
+    "maharashtra_rows": 0,
+    "target_10k_pass": false,
+    "final_decision": "INSUFFICIENT - SEARCH SOURCE 3",
+    "reason": "The official ICRISAT VDSA portal is offline (ERR_CONNECTION_TIMED_OUT). Alternative sources (DES, India Data Portal, UPAg) only provide state-level aggregated data, not farm-level microdata. Therefore, 0 actual rows could be downloaded and verified."
+}

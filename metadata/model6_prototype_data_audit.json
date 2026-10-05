@@ -1,0 +1,14 @@
+{
+    "status": "READY_FOR_MODEL_DEVELOPMENT",
+    "rows": 4000,
+    "cols": 28,
+    "maharashtra_rows": 512,
+    "math_issues": {
+        "production_mismatch": 0,
+        "revenue_mismatch": 0,
+        "profit_mismatch": 0,
+        "negative_values": 1966
+    },
+    "yield_reconstructions_needed": 0,
+    "suspicious_geography_count": 3485
+}

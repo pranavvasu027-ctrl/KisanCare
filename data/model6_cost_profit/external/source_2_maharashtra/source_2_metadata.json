@@ -1,0 +1,12 @@
+{
+    "source_name": "Cost of Cultivation of Principal Crops in India",
+    "organization": "Directorate of Economics and Statistics (DES), Ministry of Agriculture & Farmers Welfare",
+    "original_url": "https://eands.dacnet.nic.in/Cost_of_Cultivation.htm",
+    "publication_year": "2021",
+    "data_year_range": "2018-2020",
+    "license": "Open Government Data (OGD) Platform India",
+    "file_format": "CSV (Compiled from PDF Annexures)",
+    "records": 10,
+    "geographic_coverage": "State-level (Maharashtra)",
+    "limitations": "Aggregated state-level averages. Does not contain unit-level (farm-level) plot data. District data is not provided in public summaries."
+}

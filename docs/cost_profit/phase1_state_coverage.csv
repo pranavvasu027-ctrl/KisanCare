@@ -1,0 +1,14 @@
+state_name,observations,crops_covered,earliest_year,latest_year
+Maharashtra,9,"Cotton, Soybean, Sugarcane, ARHAR, COTTON, GRAM, GROUNDNUT, MOONG, SUGARCANE",2019,Unknown
+Andhra Pradesh,8,"ARHAR, COTTON, GRAM, GROUNDNUT, MAIZE, MOONG, PADDY, SUGARCANE",Unknown,Unknown
+Uttar Pradesh,7,"ARHAR, GRAM, MAIZE, PADDY, RAPESEED AND MUSTARD, SUGARCANE, WHEAT",Unknown,Unknown
+Karnataka,5,"ARHAR, GROUNDNUT, MAIZE, MOONG, SUGARCANE",Unknown,Unknown
+Rajasthan,5,"GRAM, MAIZE, MOONG, RAPESEED AND MUSTARD, WHEAT",Unknown,Unknown
+Madhya Pradesh,4,"Wheat, GRAM, RAPESEED AND MUSTARD, WHEAT",2019,Unknown
+Gujarat,4,"ARHAR, COTTON, GROUNDNUT, RAPESEED AND MUSTARD",Unknown,Unknown
+Punjab,3,"COTTON, PADDY, WHEAT",Unknown,Unknown
+Haryana,2,"COTTON, RAPESEED AND MUSTARD",Unknown,Unknown
+Tamil Nadu,2,"GROUNDNUT, SUGARCANE",Unknown,Unknown
+Orissa,2,"MOONG, PADDY",Unknown,Unknown
+Bihar,1,MAIZE,Unknown,Unknown
+West Bengal,1,PADDY,Unknown,Unknown

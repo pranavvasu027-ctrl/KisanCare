@@ -1,0 +1,3 @@
+exact_file_path,filename,file_type,file_size_bytes,source,is_official,is_duplicate
+C:\Users\prana\OneDrive\Desktop\Projects\KISANcare\kisan-care\data\model6_cost_profit\external\source_1_des_cost\raw\des_cost_summary_2019.csv,des_cost_summary_2019.csv,CSV,415,Mock DES sample created in Phase 1,No (Mock subset),No
+C:\Users\prana\OneDrive\Desktop\Projects\KISANcare\kisan-care\data\model6_cost_profit\external\kaggle\raw\datafile.csv,datafile.csv,CSV,2912,Kaggle (derived from DES),No (Kaggle extract),Contains overlapping info with DES conceptually
