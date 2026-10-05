@@ -152,18 +152,28 @@ def predict_irrigation(
         gross_quantity_mm = 0.0
         timing = "none"
         decision_reasons.append("SOIL_SATURATED_OR_ABOVE_FIELD_CAPACITY")
+    elif net_irrigation_req_mm <= 0.0:
+        # Sufficient rainfall has replenished the root zone deficit
+        irrigation_required = False
+        gross_quantity_mm = 0.0
+        timing = "none"
+        decision_reasons.append("RAINFALL_COVERS_DEFICIT")
     elif dr_mm >= raw_mm:
         # Depletion has crossed Readily Available Water: immediate irrigation required
         irrigation_required = True
         gross_quantity_mm = round(net_irrigation_req_mm / APPLICATION_EFFICIENCY, 2)
         timing = "today"
         decision_reasons.append("HIGH_ROOT_ZONE_DEPLETION")
-    elif (dr_mm + crop_et) >= raw_mm:
+        if float(rainfall) > 0.0:
+            decision_reasons.append("RAINFALL_REDUCED_DEFICIT")
+    elif (dr_mm + crop_et - float(rainfall)) >= raw_mm:
         # Will cross RAW within 24 hours
         irrigation_required = True
         gross_quantity_mm = round(net_irrigation_req_mm / APPLICATION_EFFICIENCY, 2)
         timing = "within_24h"
         decision_reasons.append("IMPENDING_ROOT_ZONE_DEPLETION")
+        if float(rainfall) > 0.0:
+            decision_reasons.append("RAINFALL_REDUCED_DEFICIT")
     else:
         # Soil water is sufficient
         irrigation_required = False

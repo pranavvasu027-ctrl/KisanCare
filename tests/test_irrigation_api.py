@@ -65,6 +65,26 @@ def test_valid_irrigation_prediction_saturated():
     assert "SOIL_SATURATED_OR_ABOVE_FIELD_CAPACITY" in pred["decision_reason_codes"]
 
 
+def test_valid_irrigation_high_rainfall_covers_deficit():
+    """Test that sufficient rainfall offsetting the root zone deficit results in no irrigation."""
+    payload = {
+        "crop": "wheat",
+        "crop_stage": "mid",
+        "soil_type": "loam",
+        "soil_moisture": 0.15,
+        "rainfall": 160.0,
+    }
+    response = client.post("/api/irrigation/predict", json=payload)
+    assert response.status_code == 200
+
+    data = response.json()
+    pred = data["prediction"]
+    assert pred["irrigation_required"] is False
+    assert pred["irrigation_quantity_mm"] == 0.0
+    assert pred["irrigation_timing"] == "none"
+    assert "RAINFALL_COVERS_DEFICIT" in pred["decision_reason_codes"]
+
+
 def test_invalid_soil_moisture_out_of_bounds():
     """Soil moisture above 1.0 or below 0.0 should be rejected with 422."""
     payload = {
