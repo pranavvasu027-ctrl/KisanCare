@@ -1,0 +1,41 @@
+{
+  "model_name": "India Crop Yield Predictor (Model 2)",
+  "model_id": "crop_yield_prediction_v1",
+  "version": "1.0.0",
+  "purpose": "Predicts crop yield (quintal/hectare) and estimated production (quintal) based on Indian state, crop, season, soil type, cultivated area, and climatic/nutrient parameters.",
+  "algorithm": "RandomForestRegressor",
+  "input_features": [
+    "State",
+    "Crop",
+    "Season",
+    "Soil_Type",
+    "Area",
+    "Rainfall",
+    "Temperature",
+    "Humidity",
+    "Nitrogen",
+    "Phosphorus",
+    "Potassium"
+  ],
+  "target": "Yield (quintal/hectare)",
+  "output_format": "Structured object containing predicted_yield (float), unit (quintal/hectare), estimated_production (float, quintals), input_summary (dict), and model_source (string)",
+  "artifact": "model.pkl",
+  "preprocessing_artifacts": [
+    "le_state.pkl",
+    "le_crop.pkl",
+    "le_season.pkl",
+    "le_soil.pkl"
+  ],
+  "dataset_name": "India Crop Yield Dataset (Ministry of Agriculture & Farmers Welfare / DAC&FW)",
+  "dataset_size": 20000,
+  "evaluation_metrics": {
+    "r2_score": 0.88
+  },
+  "inference_verified": true,
+  "api_available": false,
+  "known_limitations": [
+    "Model artifact is ~347 MB (large binary); requires dynamic download via huggingface_hub or Git LFS rather than standard git commits.",
+    "Restricted to 28 Indian states, 50 crops, 4 seasons, and 5 soil types supported by the label encoders.",
+    "Yield is modeled in quintal/hectare; Area must be provided in hectares. Production = Yield * Area."
+  ]
+}

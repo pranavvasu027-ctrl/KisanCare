@@ -1,0 +1,68 @@
+[
+  {
+    "source_id": "SRC-CIBRC-2024",
+    "title": "Major Uses of Pesticides (Registered under the Insecticides Act, 1968) as on 31.03.2024",
+    "short_name": "CIB&RC Major Uses (31/03/2024)",
+    "organization": "Central Insecticides Board & Registration Committee, Directorate of Plant Protection, Quarantine & Storage (DPPQS), Ministry of Agriculture & Farmers Welfare, Government of India",
+    "url": "https://ppqs.gov.in/divisions/cibrc/major-uses-of-pesticides",
+    "source_date": "2024-03-31",
+    "verification_date": "2026-10-04",
+    "regulatory_status": "official_statutory_register",
+    "description": "Statutory compilation of registered pesticide label claims, approved crops, target pests/diseases, formulations, and waiting periods under the Insecticides Act, 1968."
+  },
+  {
+    "source_id": "SRC-DPPQS-IPM-2022",
+    "title": "DPPQS Integrated Pest Management (IPM) Package of Practices",
+    "short_name": "DPPQS IPM Guidelines",
+    "organization": "Directorate of Plant Protection, Quarantine & Storage (DPPQS), Ministry of Agriculture & Farmers Welfare, Government of India",
+    "url": "https://ppqs.gov.in/ipm-packages",
+    "source_date": "2022-06-15",
+    "verification_date": "2026-10-04",
+    "regulatory_status": "official_advisory_package",
+    "description": "Standard national agronomic packages outlining non-chemical, cultural, mechanical, and biological disease and pest management strategies."
+  },
+  {
+    "source_id": "SRC-ICAR-NCIPM-2023",
+    "title": "ICAR-NCIPM Technical Bulletins on Biological Control & Pest Surveillance",
+    "short_name": "ICAR-NCIPM Bulletins",
+    "organization": "National Research Centre for Integrated Pest Management, Indian Council of Agricultural Research (ICAR)",
+    "url": "https://ncipm.icar.gov.in",
+    "source_date": "2023-01-10",
+    "verification_date": "2026-10-04",
+    "regulatory_status": "official_advisory_package",
+    "description": "Validated biocontrol protocols and Economic Threshold Levels (ETL) for agricultural field crops."
+  },
+  {
+    "source_id": "SRC-ICAR-CITH-2023",
+    "title": "ICAR-CITH Apple Disease Advisory & Scab Management Guidelines",
+    "short_name": "ICAR-CITH Apple Guidelines",
+    "organization": "Central Institute of Temperate Horticulture (CITH), Srinagar, ICAR",
+    "url": "https://cith.icar.gov.in",
+    "source_date": "2023-03-20",
+    "verification_date": "2026-10-04",
+    "regulatory_status": "official_advisory_package",
+    "description": "Specific temperate horticulture recommendations for apple scab sanitation, urea spray protocol, and fungicide rotation schedules."
+  },
+  {
+    "source_id": "SRC-ICAR-NRCG-2023",
+    "title": "ICAR-NRC for Grapes Advisory on Grapevine Disease & Trunk Health",
+    "short_name": "ICAR-NRC Grapes Advisory",
+    "organization": "National Research Centre for Grapes, Pune, ICAR",
+    "url": "https://nrcgrapes.icar.gov.in",
+    "source_date": "2023-04-12",
+    "verification_date": "2026-10-04",
+    "regulatory_status": "official_advisory_package",
+    "description": "Viticulture disease management, pruning wound protection, and trunk wood disease (Esca) sanitation guidelines."
+  },
+  {
+    "source_id": "SRC-ICAR-CCRI-2023",
+    "title": "ICAR-CCRI Citrus Greening (Huanglongbing) & Vector Management Bulletin",
+    "short_name": "ICAR-CCRI Citrus Bulletin",
+    "organization": "Central Citrus Research Institute (CCRI), Nagpur, ICAR",
+    "url": "https://ccri.icar.gov.in",
+    "source_date": "2023-02-18",
+    "verification_date": "2026-10-04",
+    "regulatory_status": "official_advisory_package",
+    "description": "Orchard hygiene, rogueing protocol, and psyllid vector management for citrus greening suppression."
+  }
+]

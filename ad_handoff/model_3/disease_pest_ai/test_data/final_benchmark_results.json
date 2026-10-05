@@ -1,0 +1,493 @@
+{
+  "metadata": {
+    "timestamp": "2026-10-04T18:22:00.202236+00:00",
+    "platform": "Windows-10-10.0.26220-SP0",
+    "python_version": "3.11.9",
+    "cpu_device": "Intel/AMD x86_64",
+    "models": {
+      "primary_disease_model": "BiernyVR/crop-disease-classifier (EfficientNetV2-S)",
+      "primary_pest_model": "underdogquality/yolo11s-pest-detection (YOLO11s)",
+      "treatment_engine": "Deterministic CIB&RC Major Uses (31/03/2024) + DPPQS IPM"
+    },
+    "total_benchmark_cases": 8
+  },
+  "overall_performance": {
+    "average_total_latency_ms": 846.01,
+    "average_disease_latency_ms": 116.71,
+    "average_pest_latency_ms": 423.4,
+    "average_treatment_latency_ms": 0.39,
+    "average_explainability_latency_ms": 334.38,
+    "safety_and_containment": {
+      "crop_mismatch_containment_rate_pct": 100.0,
+      "unsupported_crop_rejection_rate_pct": 100.0,
+      "ad_hoc_tank_mixing_rate_pct": 0.0,
+      "severity_invention_rate_pct": 0.0
+    }
+  },
+  "domain_metrics": {
+    "laboratory": {
+      "sample_count": 1,
+      "average_latency_ms": 1810.58,
+      "mismatch_detected_count": 0,
+      "diagnosed_count": 1,
+      "bypassed_disease_count": 0
+    },
+    "field": {
+      "sample_count": 5,
+      "average_latency_ms": 865.97,
+      "mismatch_detected_count": 2,
+      "diagnosed_count": 3,
+      "bypassed_disease_count": 0
+    },
+    "trap": {
+      "sample_count": 2,
+      "average_latency_ms": 313.8,
+      "mismatch_detected_count": 0,
+      "diagnosed_count": 0,
+      "bypassed_disease_count": 2
+    }
+  },
+  "ablation_study": {
+    "config_a_disease_only": {
+      "description": "EfficientNetV2-S Foliar Disease Classification alone without Pest Detector",
+      "average_latency_ms": 95.71,
+      "pest_detection_capability": "None",
+      "sticky_trap_handling": "Failed / Incompatible (Cardboard misclassified as plant tissue)",
+      "crop_mismatch_containment": "Partial (Basic string check only)",
+      "treatment_lookup": "None"
+    },
+    "config_b_pest_only": {
+      "description": "YOLO11s Object Detection alone without Disease Classifier",
+      "average_latency_ms": 299.12,
+      "disease_classification_capability": "None",
+      "fungal_bacterial_pathology_detection": "Blind to all foliar blights, spots, and rusts",
+      "treatment_lookup": "None"
+    },
+    "config_c_unvalidated_fusion": {
+      "description": "Disease Classifier + Pest Detector executed in parallel without biological host check",
+      "average_latency_ms": 394.83,
+      "false_positive_risk": "High (Cross-crop pests and diseases accepted without host filtering)",
+      "chemical_mixing_risk": "Severe if chemicals are merged without separation",
+      "trap_sheet_risk": "Severe (Trap sheets diagnosed with foliar diseases)"
+    },
+    "config_d_validated_fusion": {
+      "description": "Disease + Pest + ConditionResolver host-crop compatibility filtering and image-type routing",
+      "average_latency_ms": 396.33,
+      "crop_mismatch_containment_rate": "100.0%",
+      "trap_sheet_routing": "Foliar disease model safely bypassed with explicit advisory notice",
+      "treatment_lookup": "None"
+    },
+    "config_e_full_pipeline": {
+      "description": "Unified Section 12 AgricultureDiseaseResult: Vision + Routing + Validation + CIBRC Treatment + Grad-CAM",
+      "average_latency_ms": 846.01,
+      "crop_mismatch_containment_rate": "100.0%",
+      "statutory_compliance": "Strict CIB&RC registration lookup, verified chemical dosage & label safety",
+      "explainability": "Grad-CAM foliar heatmap overlay + YOLO bounding boxes",
+      "chemical_safety": "Independent disease and pest blocks; zero unverified tank mixes"
+    }
+  },
+  "detailed_sample_results": [
+    {
+      "case_id": "CASE-01-LAB-HEALTHY",
+      "filename": "tomato_healthy.jpg",
+      "domain": "laboratory",
+      "crop": "Tomato",
+      "image_type": "leaf",
+      "disease_diagnosis": {
+        "condition": "Healthy",
+        "score": 0.9016,
+        "status": "healthy",
+        "crop_match": true
+      },
+      "pest_detection": {
+        "pest_count": 0,
+        "status": "no_pest_detected",
+        "detections": []
+      },
+      "severity_assessment": {
+        "status": "unavailable",
+        "value": null,
+        "source": "unavailable"
+      },
+      "treatment_recommendation": {
+        "status": "no_treatment_needed_healthy",
+        "disease_chemical_candidates": 0,
+        "disease_ipm_controls": 1,
+        "pest_chemical_candidates": 0,
+        "pest_ipm_controls": 0,
+        "chemical_tank_mixed": false
+      },
+      "explainability": {
+        "type": "gradcam",
+        "has_disease_heatmap": true,
+        "pest_boxes_count": 0
+      },
+      "safety_audit": {
+        "crop_mismatch_detected": false,
+        "severity_invented": false
+      },
+      "latency_breakdown_ms": {
+        "disease_model_ms": 116.08,
+        "pest_detector_ms": 1088.16,
+        "treatment_retrieval_ms": 0.15,
+        "explainability_ms": 605.91,
+        "total_pipeline_ms": 1810.49
+      },
+      "total_latency_ms": 1810.58,
+      "warnings_count": 1
+    },
+    {
+      "case_id": "CASE-02-FIELD-EARLY-BLIGHT",
+      "filename": "tomato_early_blight.jpg",
+      "domain": "field",
+      "crop": "Tomato",
+      "image_type": "leaf",
+      "disease_diagnosis": {
+        "condition": "Early Blight",
+        "score": 0.8881,
+        "status": "diagnosed",
+        "crop_match": true
+      },
+      "pest_detection": {
+        "pest_count": 0,
+        "status": "no_pest_detected",
+        "detections": []
+      },
+      "severity_assessment": {
+        "status": "unavailable",
+        "value": null,
+        "source": "unavailable"
+      },
+      "treatment_recommendation": {
+        "status": "verified_candidates_found",
+        "disease_chemical_candidates": 5,
+        "disease_ipm_controls": 1,
+        "pest_chemical_candidates": 0,
+        "pest_ipm_controls": 0,
+        "chemical_tank_mixed": false
+      },
+      "explainability": {
+        "type": "gradcam",
+        "has_disease_heatmap": true,
+        "pest_boxes_count": 0
+      },
+      "safety_audit": {
+        "crop_mismatch_detected": false,
+        "severity_invented": false
+      },
+      "latency_breakdown_ms": {
+        "disease_model_ms": 144.85,
+        "pest_detector_ms": 372.46,
+        "treatment_retrieval_ms": 0.29,
+        "explainability_ms": 473.54,
+        "total_pipeline_ms": 991.29
+      },
+      "total_latency_ms": 991.42,
+      "warnings_count": 2
+    },
+    {
+      "case_id": "CASE-03-FIELD-APPLE-SCAB",
+      "filename": "apple_scab_bierny.jpg",
+      "domain": "field",
+      "crop": "Apple",
+      "image_type": "leaf",
+      "disease_diagnosis": {
+        "condition": "Apple Scab",
+        "score": 0.9035,
+        "status": "diagnosed",
+        "crop_match": true
+      },
+      "pest_detection": {
+        "pest_count": 0,
+        "status": "no_pest_detected",
+        "detections": []
+      },
+      "severity_assessment": {
+        "status": "unavailable",
+        "value": null,
+        "source": "unavailable"
+      },
+      "treatment_recommendation": {
+        "status": "verified_candidates_found",
+        "disease_chemical_candidates": 4,
+        "disease_ipm_controls": 1,
+        "pest_chemical_candidates": 0,
+        "pest_ipm_controls": 0,
+        "chemical_tank_mixed": false
+      },
+      "explainability": {
+        "type": "gradcam",
+        "has_disease_heatmap": true,
+        "pest_boxes_count": 0
+      },
+      "safety_audit": {
+        "crop_mismatch_detected": false,
+        "severity_invented": false
+      },
+      "latency_breakdown_ms": {
+        "disease_model_ms": 107.27,
+        "pest_detector_ms": 352.77,
+        "treatment_retrieval_ms": 0.68,
+        "explainability_ms": 349.49,
+        "total_pipeline_ms": 810.42
+      },
+      "total_latency_ms": 810.64,
+      "warnings_count": 2
+    },
+    {
+      "case_id": "CASE-04-FIELD-CORN-RUST",
+      "filename": "corn_common_rust.jpg",
+      "domain": "field",
+      "crop": "Corn",
+      "image_type": "leaf",
+      "disease_diagnosis": {
+        "condition": "Common Rust",
+        "score": 0.9188,
+        "status": "diagnosed",
+        "crop_match": true
+      },
+      "pest_detection": {
+        "pest_count": 1,
+        "status": "detected",
+        "detections": [
+          {
+            "pest": "Flatid Planthopper",
+            "score": 0.8578,
+            "crop_compatible": true,
+            "box": [
+              1.2,
+              0.5,
+              213.9,
+              251.1
+            ]
+          }
+        ]
+      },
+      "severity_assessment": {
+        "status": "unavailable",
+        "value": null,
+        "source": "unavailable"
+      },
+      "treatment_recommendation": {
+        "status": "verified_candidates_found",
+        "disease_chemical_candidates": 2,
+        "disease_ipm_controls": 1,
+        "pest_chemical_candidates": 0,
+        "pest_ipm_controls": 0,
+        "chemical_tank_mixed": false
+      },
+      "explainability": {
+        "type": "gradcam_and_bounding_boxes",
+        "has_disease_heatmap": true,
+        "pest_boxes_count": 1
+      },
+      "safety_audit": {
+        "crop_mismatch_detected": false,
+        "severity_invented": false
+      },
+      "latency_breakdown_ms": {
+        "disease_model_ms": 118.01,
+        "pest_detector_ms": 345.89,
+        "treatment_retrieval_ms": 1.87,
+        "explainability_ms": 451.47,
+        "total_pipeline_ms": 917.53
+      },
+      "total_latency_ms": 917.62,
+      "warnings_count": 3
+    },
+    {
+      "case_id": "CASE-05-TRAP-COTTON-MOTH",
+      "filename": "wadhwani_cotton_trap.jpg",
+      "domain": "trap",
+      "crop": "Cotton",
+      "image_type": "trap_sticky_sheet",
+      "disease_diagnosis": {
+        "condition": "Not Applicable (Trap Sheet)",
+        "score": 0.0,
+        "status": "bypassed",
+        "crop_match": true
+      },
+      "pest_detection": {
+        "pest_count": 0,
+        "status": "no_pest_detected",
+        "detections": []
+      },
+      "severity_assessment": {
+        "status": "unavailable",
+        "value": null,
+        "source": "unavailable"
+      },
+      "treatment_recommendation": {
+        "status": "no_action_needed",
+        "disease_chemical_candidates": 0,
+        "disease_ipm_controls": 0,
+        "pest_chemical_candidates": 0,
+        "pest_ipm_controls": 0,
+        "chemical_tank_mixed": false
+      },
+      "explainability": {
+        "type": "none",
+        "has_disease_heatmap": false,
+        "pest_boxes_count": 0
+      },
+      "safety_audit": {
+        "crop_mismatch_detected": false,
+        "severity_invented": false
+      },
+      "latency_breakdown_ms": {
+        "pest_detector_ms": 283.5,
+        "treatment_retrieval_ms": 0.0,
+        "explainability_ms": 3.48,
+        "total_pipeline_ms": 287.16
+      },
+      "total_latency_ms": 287.27,
+      "warnings_count": 2
+    },
+    {
+      "case_id": "CASE-06-TRAP-COTTON-PBW",
+      "filename": "wadhwani_cotton_trap_sample1.jpg",
+      "domain": "trap",
+      "crop": "Cotton",
+      "image_type": "trap_sticky_sheet",
+      "disease_diagnosis": {
+        "condition": "Not Applicable (Trap Sheet)",
+        "score": 0.0,
+        "status": "bypassed",
+        "crop_match": true
+      },
+      "pest_detection": {
+        "pest_count": 0,
+        "status": "no_pest_detected",
+        "detections": []
+      },
+      "severity_assessment": {
+        "status": "unavailable",
+        "value": null,
+        "source": "unavailable"
+      },
+      "treatment_recommendation": {
+        "status": "no_action_needed",
+        "disease_chemical_candidates": 0,
+        "disease_ipm_controls": 0,
+        "pest_chemical_candidates": 0,
+        "pest_ipm_controls": 0,
+        "chemical_tank_mixed": false
+      },
+      "explainability": {
+        "type": "none",
+        "has_disease_heatmap": false,
+        "pest_boxes_count": 0
+      },
+      "safety_audit": {
+        "crop_mismatch_detected": false,
+        "severity_invented": false
+      },
+      "latency_breakdown_ms": {
+        "pest_detector_ms": 334.28,
+        "treatment_retrieval_ms": 0.0,
+        "explainability_ms": 5.8,
+        "total_pipeline_ms": 340.25
+      },
+      "total_latency_ms": 340.33,
+      "warnings_count": 2
+    },
+    {
+      "case_id": "CASE-07-MISMATCH-TOMATO-ON-COTTON",
+      "filename": "tomato_early_blight.jpg",
+      "domain": "field",
+      "crop": "Cotton",
+      "image_type": "leaf",
+      "disease_diagnosis": {
+        "condition": "Early Blight",
+        "score": 0.8881,
+        "status": "crop_mismatch",
+        "crop_match": false
+      },
+      "pest_detection": {
+        "pest_count": 0,
+        "status": "no_pest_detected",
+        "detections": []
+      },
+      "severity_assessment": {
+        "status": "unavailable",
+        "value": null,
+        "source": "unavailable"
+      },
+      "treatment_recommendation": {
+        "status": "manual_review_required",
+        "disease_chemical_candidates": 0,
+        "disease_ipm_controls": 0,
+        "pest_chemical_candidates": 0,
+        "pest_ipm_controls": 0,
+        "chemical_tank_mixed": false
+      },
+      "explainability": {
+        "type": "gradcam",
+        "has_disease_heatmap": true,
+        "pest_boxes_count": 0
+      },
+      "safety_audit": {
+        "crop_mismatch_detected": true,
+        "severity_invented": false
+      },
+      "latency_breakdown_ms": {
+        "disease_model_ms": 111.21,
+        "pest_detector_ms": 312.34,
+        "treatment_retrieval_ms": 0.05,
+        "explainability_ms": 371.55,
+        "total_pipeline_ms": 795.28
+      },
+      "total_latency_ms": 795.41,
+      "warnings_count": 4
+    },
+    {
+      "case_id": "CASE-08-UNSUPPORTED-CROP",
+      "filename": "apple_scab_bierny.jpg",
+      "domain": "field",
+      "crop": "Dragonfruit",
+      "image_type": "leaf",
+      "disease_diagnosis": {
+        "condition": "Apple Scab",
+        "score": 0.9035,
+        "status": "crop_mismatch",
+        "crop_match": false
+      },
+      "pest_detection": {
+        "pest_count": 0,
+        "status": "no_pest_detected",
+        "detections": []
+      },
+      "severity_assessment": {
+        "status": "unavailable",
+        "value": null,
+        "source": "unavailable"
+      },
+      "treatment_recommendation": {
+        "status": "manual_review_required",
+        "disease_chemical_candidates": 0,
+        "disease_ipm_controls": 0,
+        "pest_chemical_candidates": 0,
+        "pest_ipm_controls": 0,
+        "chemical_tank_mixed": false
+      },
+      "explainability": {
+        "type": "gradcam",
+        "has_disease_heatmap": true,
+        "pest_boxes_count": 0
+      },
+      "safety_audit": {
+        "crop_mismatch_detected": true,
+        "severity_invented": false
+      },
+      "latency_breakdown_ms": {
+        "disease_model_ms": 102.85,
+        "pest_detector_ms": 297.78,
+        "treatment_retrieval_ms": 0.05,
+        "explainability_ms": 413.83,
+        "total_pipeline_ms": 814.68
+      },
+      "total_latency_ms": 814.78,
+      "warnings_count": 4
+    }
+  ]
+}

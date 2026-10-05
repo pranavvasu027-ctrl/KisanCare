@@ -1,0 +1,222 @@
+{
+  "diagnosis": {
+    "crop": "Tomato",
+    "condition": "Tomato Early Blight",
+    "condition_type": "disease",
+    "prediction_score": 0.94,
+    "top_predictions": [
+      {
+        "condition": "Tomato Early Blight",
+        "crop": "Tomato",
+        "score": 0.94,
+        "condition_type": "disease",
+        "raw_label": null
+      },
+      {
+        "condition": "Tomato Late Blight",
+        "crop": "Tomato",
+        "score": 0.04,
+        "condition_type": "disease",
+        "raw_label": null
+      }
+    ]
+  },
+  "validation": {
+    "crop_match": true,
+    "crop_mismatch": false,
+    "unsupported_condition": false,
+    "unsupported_crop": false,
+    "reason_code": null
+  },
+  "treatment": {
+    "status": "verified_candidates_found",
+    "reason_code": null,
+    "crop": "Tomato",
+    "condition": "Tomato Early Blight",
+    "condition_type": "disease",
+    "non_chemical_controls": [
+      {
+        "category": "preventive_monitoring",
+        "title": "Canopy ventilation, pruning lower infected foliage, and avoiding sprinkler splash",
+        "description": "Canopy ventilation, pruning lower infected foliage, and avoiding sprinkler splash. Application: Application details unavailable in verified source. Follow the current registered product label.. Notes: Mulching with black polythene or organic straw reduces splash dispersal of Alternaria spores from soil.",
+        "source_title": "DPPQS Integrated Pest Management (IPM) Package of Practices",
+        "source_url": "https://ppqs.gov.in/ipm-packages",
+        "source_date": "2022-06-15"
+      }
+    ],
+    "chemical_candidates": [
+      {
+        "active_ingredient": "Mancozeb",
+        "formulation": "75% WP",
+        "registered_for_crop": true,
+        "registered_for_target": true,
+        "approved_crop": "Tomato",
+        "approved_target": "Early blight (Alternaria solani)",
+        "application_method": "Foliar Spray",
+        "dose_information": "1.5-2.0 kg/ha",
+        "source_id": "SRC-CIBRC-2024",
+        "source_title": "Major Uses of Pesticides (Registered under the Insecticides Act, 1968) as on 31.03.2024",
+        "source_url": "https://ppqs.gov.in/divisions/cibrc/major-uses-of-pesticides",
+        "source_date": "2024-03-31",
+        "verification_date": "2026-10-04",
+        "verification_status": "verified",
+        "geographic_scope": "India",
+        "stage_specific_guidance": "unavailable",
+        "safety_notes": "Blue triangle (Moderately Toxic). Waiting period (PHI): 3 days. Wear full PPE.",
+        "notes": "FRAC Group M03 (Dithiocarbamate). Protectant contact fungicide with multi-site activity."
+      },
+      {
+        "active_ingredient": "Metiram + Pyraclostrobin",
+        "formulation": "55% + 5% WG",
+        "registered_for_crop": true,
+        "registered_for_target": true,
+        "approved_crop": "Tomato",
+        "approved_target": "Early blight",
+        "application_method": "Foliar Spray",
+        "dose_information": "1500-1750 g/ha",
+        "source_id": "SRC-CIBRC-2024",
+        "source_title": "Major Uses of Pesticides (Registered under the Insecticides Act, 1968) as on 31.03.2024",
+        "source_url": "https://ppqs.gov.in/divisions/cibrc/major-uses-of-pesticides",
+        "source_date": "2024-03-31",
+        "verification_date": "2026-10-04",
+        "verification_status": "verified",
+        "geographic_scope": "India",
+        "stage_specific_guidance": "unavailable",
+        "safety_notes": "Blue triangle. Waiting period (PHI): 5 days. Do not exceed 3 applications per season.",
+        "notes": "FRAC M03 + 11. Dual-action protectant and strobilurin translaminar fungicide."
+      },
+      {
+        "active_ingredient": "Copper Oxychloride",
+        "formulation": "50% WP",
+        "registered_for_crop": true,
+        "registered_for_target": true,
+        "approved_crop": "Tomato",
+        "approved_target": "Early blight",
+        "application_method": "Foliar Spray",
+        "dose_information": "2.5 kg/ha",
+        "source_id": "SRC-CIBRC-2024",
+        "source_title": "Major Uses of Pesticides (Registered under the Insecticides Act, 1968) as on 31.03.2024",
+        "source_url": "https://ppqs.gov.in/divisions/cibrc/major-uses-of-pesticides",
+        "source_date": "2024-03-31",
+        "verification_date": "2026-10-04",
+        "verification_status": "verified",
+        "geographic_scope": "India",
+        "stage_specific_guidance": "unavailable",
+        "safety_notes": "Blue triangle. Do not tank-mix with highly acidic inputs. Waiting period: 3 days.",
+        "notes": "FRAC Group M01 (Inorganic Copper). Broad spectrum multi-site protectant."
+      },
+      {
+        "active_ingredient": "Difenoconazole",
+        "formulation": "25% EC",
+        "registered_for_crop": true,
+        "registered_for_target": true,
+        "approved_crop": "Tomato",
+        "approved_target": "Early blight",
+        "application_method": "Foliar Spray",
+        "dose_information": "250-500 ml/ha",
+        "source_id": "SRC-CIBRC-2024",
+        "source_title": "Major Uses of Pesticides (Registered under the Insecticides Act, 1968) as on 31.03.2024",
+        "source_url": "https://ppqs.gov.in/divisions/cibrc/major-uses-of-pesticides",
+        "source_date": "2024-03-31",
+        "verification_date": "2026-10-04",
+        "verification_status": "verified",
+        "geographic_scope": "India",
+        "stage_specific_guidance": "unavailable",
+        "safety_notes": "Yellow triangle (Highly Toxic). Waiting period (PHI): 5 days.",
+        "notes": "FRAC Group 3 (Triazole DMI). Systemic curative and protective action."
+      },
+      {
+        "active_ingredient": "Trichoderma harzianum",
+        "formulation": "1% WP",
+        "registered_for_crop": true,
+        "registered_for_target": true,
+        "approved_crop": "Tomato",
+        "approved_target": "Soil-borne and foliar blight suppression",
+        "application_method": "Seed Treatment / Root Drench",
+        "dose_information": "Application details unavailable in verified source. Follow the current registered product label.",
+        "source_id": "SRC-DPPQS-IPM-2022",
+        "source_title": "DPPQS Integrated Pest Management (IPM) Package of Practices",
+        "source_url": "https://ppqs.gov.in/ipm-packages",
+        "source_date": "2022-06-15",
+        "verification_date": "2026-10-04",
+        "verification_status": "verified",
+        "geographic_scope": "India",
+        "stage_specific_guidance": "unavailable",
+        "safety_notes": "Green triangle (Bio-pesticide). Non-hazardous to mammals and pollinators.",
+        "notes": "Fungal biocontrol agent that parasitizes pathogenic hyphae and induces systemic resistance."
+      }
+    ],
+    "verification_status": "verified",
+    "label_verification_required": true,
+    "field_validation_required": true,
+    "stage_specific_guidance": "unavailable",
+    "geographic_scope": "India",
+    "sources": [
+      "DPPQS Integrated Pest Management (IPM) Package of Practices",
+      "Major Uses of Pesticides (Registered under the Insecticides Act, 1968) as on 31.03.2024"
+    ],
+    "source_records": [
+      {
+        "source_id": "SRC-CIBRC-2024",
+        "title": "Major Uses of Pesticides (Registered under the Insecticides Act, 1968) as on 31.03.2024",
+        "url": "https://ppqs.gov.in/divisions/cibrc/major-uses-of-pesticides",
+        "source_date": "2024-03-31",
+        "verification_date": "2026-10-04"
+      },
+      {
+        "source_id": "SRC-DPPQS-IPM-2022",
+        "title": "DPPQS Integrated Pest Management (IPM) Package of Practices",
+        "url": "https://ppqs.gov.in/ipm-packages",
+        "source_date": "2022-06-15",
+        "verification_date": "2026-10-04"
+      }
+    ],
+    "safety_notes": [
+      "Mandatory: Read and strictly adhere to the manufacturer container label and leaflet approved by CIB&RC.",
+      "Use appropriate Personal Protective Equipment (PPE): chemical-resistant gloves, protective clothing, goggles, and respirator/mask during mixing and spraying.",
+      "Never spray against wind direction or during high ambient temperatures (>35°C).",
+      "Adhere strictly to the Pre-Harvest Interval (PHI / waiting period) to ensure harvested produce meets Maximum Residue Limits (MRL).",
+      "Dispose of empty pesticide containers safely by triple-rinsing, puncturing, and burying away from water sources. Never reuse containers."
+    ],
+    "warnings": [
+      "Regulatory Currency Notice: Recommendations are retrieved from official CIB&RC 'Major Uses of Pesticides' records compiled up to 2024-03-31 (DB Version: 1.0.0-20240331). This database does not claim representation of registrations beyond stated date. Physical container label verification is legally required.",
+      "Growth stage 'vegetative' specified by user, but stage-specific application restrictions are not detailed in national CIB&RC register. Follow label instructions."
+    ]
+  },
+  "provenance": {
+    "vision_model": "BiernyVR/crop-disease-classifier",
+    "model_version": "EfficientNetV2-S",
+    "treatment_sources": [
+      {
+        "source_id": "SRC-CIBRC-2024",
+        "title": "Major Uses of Pesticides (Registered under the Insecticides Act, 1968) as on 31.03.2024",
+        "url": "https://ppqs.gov.in/divisions/cibrc/major-uses-of-pesticides",
+        "source_date": "2024-03-31",
+        "verification_date": "2026-10-04"
+      },
+      {
+        "source_id": "SRC-DPPQS-IPM-2022",
+        "title": "DPPQS Integrated Pest Management (IPM) Package of Practices",
+        "url": "https://ppqs.gov.in/ipm-packages",
+        "source_date": "2022-06-15",
+        "verification_date": "2026-10-04"
+      }
+    ],
+    "source_dates": [
+      "2024-03-31",
+      "2022-06-15"
+    ],
+    "database_version": "1.0.0-20240331",
+    "context": {
+      "user_crop": "Tomato",
+      "location_state": "Maharashtra",
+      "growth_stage": "vegetative"
+    }
+  },
+  "warnings": [
+    "Regulatory Currency Notice: Recommendations are retrieved from official CIB&RC 'Major Uses of Pesticides' records compiled up to 2024-03-31 (DB Version: 1.0.0-20240331). This database does not claim representation of registrations beyond stated date. Physical container label verification is legally required.",
+    "Growth stage 'vegetative' specified by user, but stage-specific application restrictions are not detailed in national CIB&RC register. Follow label instructions."
+  ],
+  "vision_prediction": null,
+  "user_crop": "Tomato"
+}

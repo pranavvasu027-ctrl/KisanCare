@@ -1,0 +1,1397 @@
+[
+  {
+    "class_id": 0,
+    "raw_model_name": "rice leaf roller",
+    "canonical_name": "Rice Leaf Roller",
+    "aliases": [
+      "Cnaphalocrocis medinalis"
+    ],
+    "supported_crops": [
+      "Rice"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 1,
+    "raw_model_name": "rice leaf caterpillar",
+    "canonical_name": "Rice Leaf Caterpillar",
+    "aliases": [
+      "Naranga aenescens"
+    ],
+    "supported_crops": [
+      "Rice"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 2,
+    "raw_model_name": "paddy stem maggot",
+    "canonical_name": "Paddy Stem Maggot",
+    "aliases": [
+      "Chlorops oryzae"
+    ],
+    "supported_crops": [
+      "Rice"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 3,
+    "raw_model_name": "asiatic rice borer",
+    "canonical_name": "Asiatic Rice Borer",
+    "aliases": [
+      "Chilo suppressalis"
+    ],
+    "supported_crops": [
+      "Rice"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 4,
+    "raw_model_name": "yellow rice borer",
+    "canonical_name": "Yellow Rice Borer",
+    "aliases": [
+      "Scirpophaga incertulas"
+    ],
+    "supported_crops": [
+      "Rice"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 5,
+    "raw_model_name": "rice gall midge",
+    "canonical_name": "Rice Gall Midge",
+    "aliases": [
+      "Orseolia oryzae"
+    ],
+    "supported_crops": [
+      "Rice"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 6,
+    "raw_model_name": "Rice Stemfly",
+    "canonical_name": "Rice Stemfly",
+    "aliases": [
+      "Atherigona oryzae"
+    ],
+    "supported_crops": [
+      "Rice"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 7,
+    "raw_model_name": "brown plant hopper",
+    "canonical_name": "Brown Plant Hopper",
+    "aliases": [
+      "Nilaparvata lugens",
+      "BPH"
+    ],
+    "supported_crops": [
+      "Rice"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 8,
+    "raw_model_name": "white backed plant hopper",
+    "canonical_name": "White-backed Plant Hopper",
+    "aliases": [
+      "Sogatella furcifera",
+      "WBPH"
+    ],
+    "supported_crops": [
+      "Rice"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 9,
+    "raw_model_name": "small brown plant hopper",
+    "canonical_name": "Small Brown Plant Hopper",
+    "aliases": [
+      "Laodelphax striatellus"
+    ],
+    "supported_crops": [
+      "Rice",
+      "Wheat"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 10,
+    "raw_model_name": "rice water weevil",
+    "canonical_name": "Rice Water Weevil",
+    "aliases": [
+      "Lissorhoptrus oryzophilus"
+    ],
+    "supported_crops": [
+      "Rice"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 11,
+    "raw_model_name": "rice leafhopper",
+    "canonical_name": "Rice Leafhopper",
+    "aliases": [
+      "Nephotettix cincticeps",
+      "Green leafhopper"
+    ],
+    "supported_crops": [
+      "Rice"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 12,
+    "raw_model_name": "grain spreader thrips",
+    "canonical_name": "Grain Spreader Thrips",
+    "aliases": [
+      "Haplothrips aculeatus"
+    ],
+    "supported_crops": [
+      "Rice",
+      "Wheat"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 13,
+    "raw_model_name": "rice shell pest",
+    "canonical_name": "Rice Shell Pest",
+    "aliases": [
+      "Echthrodelphax bifasciatus"
+    ],
+    "supported_crops": [
+      "Rice"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 14,
+    "raw_model_name": "grub",
+    "canonical_name": "White Grub",
+    "aliases": [
+      "Holotrichia",
+      "Scarabaeidae larva"
+    ],
+    "supported_crops": [
+      "Corn",
+      "Potato",
+      "Soybean",
+      "Cotton"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 15,
+    "raw_model_name": "mole cricket",
+    "canonical_name": "Mole Cricket",
+    "aliases": [
+      "Gryllotalpa gryllotalpa"
+    ],
+    "supported_crops": [
+      "Potato",
+      "Tomato",
+      "Corn"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 16,
+    "raw_model_name": "wireworm",
+    "canonical_name": "Wireworm",
+    "aliases": [
+      "Agriotes",
+      "Elateridae larva"
+    ],
+    "supported_crops": [
+      "Potato",
+      "Corn",
+      "Wheat"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 17,
+    "raw_model_name": "white margined moth",
+    "canonical_name": "White Margined Moth",
+    "aliases": [
+      "Dargida procinctus"
+    ],
+    "supported_crops": [
+      "Corn",
+      "Wheat"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 18,
+    "raw_model_name": "black cutworm",
+    "canonical_name": "Black Cutworm",
+    "aliases": [
+      "Agrotis ipsilon"
+    ],
+    "supported_crops": [
+      "Corn",
+      "Cotton",
+      "Tomato",
+      "Potato",
+      "Soybean"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 19,
+    "raw_model_name": "large cutworm",
+    "canonical_name": "Large Cutworm",
+    "aliases": [
+      "Agrotis tokionis"
+    ],
+    "supported_crops": [
+      "Corn",
+      "Potato",
+      "Tomato"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 20,
+    "raw_model_name": "yellow cutworm",
+    "canonical_name": "Yellow Cutworm",
+    "aliases": [
+      "Agrotis segetum"
+    ],
+    "supported_crops": [
+      "Potato",
+      "Corn",
+      "Wheat"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 21,
+    "raw_model_name": "red spider",
+    "canonical_name": "Red Spider Mite",
+    "aliases": [
+      "Tetranychus urticae",
+      "Two-Spotted Spider Mite",
+      "spider mites"
+    ],
+    "supported_crops": [
+      "Tomato",
+      "Cotton",
+      "Bell Pepper",
+      "Apple",
+      "Strawberry"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 22,
+    "raw_model_name": "corn borer",
+    "canonical_name": "Corn Borer",
+    "aliases": [
+      "Ostrinia furnacalis",
+      "Ostrinia nubilalis",
+      "Asian corn borer"
+    ],
+    "supported_crops": [
+      "Corn",
+      "Bell Pepper"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 23,
+    "raw_model_name": "army worm",
+    "canonical_name": "Armyworm",
+    "aliases": [
+      "Mythimna separata",
+      "Spodoptera frugiperda",
+      "Fall armyworm"
+    ],
+    "supported_crops": [
+      "Corn",
+      "Wheat",
+      "Rice",
+      "Cotton"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 24,
+    "raw_model_name": "aphids",
+    "canonical_name": "Aphids",
+    "aliases": [
+      "Aphididae",
+      "Aphis",
+      "Plant lice"
+    ],
+    "supported_crops": [
+      "Tomato",
+      "Potato",
+      "Bell Pepper",
+      "Corn",
+      "Wheat",
+      "Apple",
+      "Peach",
+      "Cotton"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 25,
+    "raw_model_name": "Potosiabre vitarsis",
+    "canonical_name": "White-spotted Flower Chafer",
+    "aliases": [
+      "Protaetia brevitarsis"
+    ],
+    "supported_crops": [
+      "Corn",
+      "Peach",
+      "Apple"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 26,
+    "raw_model_name": "peach borer",
+    "canonical_name": "Peach Borer",
+    "aliases": [
+      "Synanthedon exitiosa",
+      "Peach tree borer"
+    ],
+    "supported_crops": [
+      "Peach",
+      "Cherry"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 27,
+    "raw_model_name": "english grain aphid",
+    "canonical_name": "English Grain Aphid",
+    "aliases": [
+      "Sitobion avenae"
+    ],
+    "supported_crops": [
+      "Wheat"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 28,
+    "raw_model_name": "green bug",
+    "canonical_name": "Greenbug Aphid",
+    "aliases": [
+      "Schizaphis graminum"
+    ],
+    "supported_crops": [
+      "Wheat"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 29,
+    "raw_model_name": "bird cherry-oataphid",
+    "canonical_name": "Bird Cherry-Oat Aphid",
+    "aliases": [
+      "Rhopalosiphum padi"
+    ],
+    "supported_crops": [
+      "Wheat",
+      "Cherry"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 30,
+    "raw_model_name": "wheat blossom midge",
+    "canonical_name": "Wheat Blossom Midge",
+    "aliases": [
+      "Sitodiplosis mosellana"
+    ],
+    "supported_crops": [
+      "Wheat"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 31,
+    "raw_model_name": "penthaleus major",
+    "canonical_name": "Winter Grain Mite",
+    "aliases": [
+      "Penthaleus major"
+    ],
+    "supported_crops": [
+      "Wheat"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 32,
+    "raw_model_name": "longlegged spider mite",
+    "canonical_name": "Long-legged Spider Mite",
+    "aliases": [
+      "Bryobia praetiosa"
+    ],
+    "supported_crops": [
+      "Wheat",
+      "Apple",
+      "Peach"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 33,
+    "raw_model_name": "wheat phloeothrips",
+    "canonical_name": "Wheat Phloeothrips",
+    "aliases": [
+      "Haplothrips tritici"
+    ],
+    "supported_crops": [
+      "Wheat"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 34,
+    "raw_model_name": "wheat sawfly",
+    "canonical_name": "Wheat Stem Sawfly",
+    "aliases": [
+      "Cephus cinctus"
+    ],
+    "supported_crops": [
+      "Wheat"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 35,
+    "raw_model_name": "cerodonta denticornis",
+    "canonical_name": "Cereal Leaf Miner",
+    "aliases": [
+      "Cerodontha denticornis"
+    ],
+    "supported_crops": [
+      "Wheat"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 36,
+    "raw_model_name": "beet fly",
+    "canonical_name": "Beet Leafminer Fly",
+    "aliases": [
+      "Pegomya hyoscyami"
+    ],
+    "supported_crops": [
+      "Sugar Beet"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 37,
+    "raw_model_name": "flea beetle",
+    "canonical_name": "Flea Beetle",
+    "aliases": [
+      "Phyllotreta",
+      "Epitrix"
+    ],
+    "supported_crops": [
+      "Potato",
+      "Tomato",
+      "Bell Pepper"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 38,
+    "raw_model_name": "cabbage army worm",
+    "canonical_name": "Cabbage Armyworm",
+    "aliases": [
+      "Mamestra brassicae"
+    ],
+    "supported_crops": [
+      "Tomato",
+      "Bell Pepper"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 39,
+    "raw_model_name": "beet army worm",
+    "canonical_name": "Beet Armyworm",
+    "aliases": [
+      "Spodoptera exigua"
+    ],
+    "supported_crops": [
+      "Cotton",
+      "Tomato",
+      "Corn",
+      "Soybean"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 40,
+    "raw_model_name": "Beet spot flies",
+    "canonical_name": "Beet Spot Fly",
+    "aliases": [
+      "Psilopa leucostoma"
+    ],
+    "supported_crops": [
+      "Sugar Beet"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 41,
+    "raw_model_name": "meadow moth",
+    "canonical_name": "Beet Webworm / Meadow Moth",
+    "aliases": [
+      "Loxostege sticticalis"
+    ],
+    "supported_crops": [
+      "Soybean",
+      "Corn"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 42,
+    "raw_model_name": "beet weevil",
+    "canonical_name": "Beet Weevil",
+    "aliases": [
+      "Bothynoderes punctiventris"
+    ],
+    "supported_crops": [
+      "Sugar Beet"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 43,
+    "raw_model_name": "sericaorient alismots chulsky",
+    "canonical_name": "Asian Chafer Beetle",
+    "aliases": [
+      "Maladera orientalis"
+    ],
+    "supported_crops": [
+      "Soybean",
+      "Corn",
+      "Potato"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 44,
+    "raw_model_name": "alfalfa weevil",
+    "canonical_name": "Alfalfa Weevil",
+    "aliases": [
+      "Hypera postica"
+    ],
+    "supported_crops": [
+      "Soybean"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 45,
+    "raw_model_name": "flax budworm",
+    "canonical_name": "Flax Budworm",
+    "aliases": [
+      "Heliothis viriplaca"
+    ],
+    "supported_crops": [
+      "Soybean"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 46,
+    "raw_model_name": "alfalfa plant bug",
+    "canonical_name": "Alfalfa Plant Bug",
+    "aliases": [
+      "Adelphocoris lineolatus"
+    ],
+    "supported_crops": [
+      "Cotton",
+      "Soybean"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 47,
+    "raw_model_name": "tarnished plant bug",
+    "canonical_name": "Tarnished Plant Bug",
+    "aliases": [
+      "Lygus lineolaris"
+    ],
+    "supported_crops": [
+      "Cotton",
+      "Strawberry",
+      "Peach",
+      "Apple"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 48,
+    "raw_model_name": "Locustoidea",
+    "canonical_name": "Locust / Grasshopper",
+    "aliases": [
+      "Locust",
+      "Schistocerca",
+      "Locusta migratoria"
+    ],
+    "supported_crops": [
+      "Corn",
+      "Wheat",
+      "Rice",
+      "Cotton"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 49,
+    "raw_model_name": "lytta polita",
+    "canonical_name": "Blister Beetle (Lytta)",
+    "aliases": [
+      "Lytta polita"
+    ],
+    "supported_crops": [
+      "Soybean"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 50,
+    "raw_model_name": "legume blister beetle",
+    "canonical_name": "Legume Blister Beetle",
+    "aliases": [
+      "Epicauta gorhami"
+    ],
+    "supported_crops": [
+      "Soybean",
+      "Potato",
+      "Tomato"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 51,
+    "raw_model_name": "blister beetle",
+    "canonical_name": "Blister Beetle",
+    "aliases": [
+      "Meloidae",
+      "Epicauta"
+    ],
+    "supported_crops": [
+      "Soybean",
+      "Tomato",
+      "Potato",
+      "Cotton"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 52,
+    "raw_model_name": "therioaphis maculata Buckton",
+    "canonical_name": "Spotted Alfalfa Aphid",
+    "aliases": [
+      "Therioaphis maculata"
+    ],
+    "supported_crops": [
+      "Soybean"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 53,
+    "raw_model_name": "odontothrips loti",
+    "canonical_name": "Legume Thrips",
+    "aliases": [
+      "Odontothrips loti"
+    ],
+    "supported_crops": [
+      "Soybean"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 54,
+    "raw_model_name": "Thrips",
+    "canonical_name": "Thrips",
+    "aliases": [
+      "Thripidae",
+      "Frankliniella",
+      "Scirtothrips"
+    ],
+    "supported_crops": [
+      "Cotton",
+      "Tomato",
+      "Bell Pepper",
+      "Grape",
+      "Orange",
+      "Strawberry"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 55,
+    "raw_model_name": "alfalfa seed chalcid",
+    "canonical_name": "Alfalfa Seed Chalcid",
+    "aliases": [
+      "Bruchophagus roddi"
+    ],
+    "supported_crops": [
+      "Soybean"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 56,
+    "raw_model_name": "Pieris canidia",
+    "canonical_name": "Indian Cabbage White",
+    "aliases": [
+      "Pieris canidia"
+    ],
+    "supported_crops": [
+      "Tomato",
+      "Bell Pepper"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 57,
+    "raw_model_name": "Apolygus lucorum",
+    "canonical_name": "Green Mirid Bug",
+    "aliases": [
+      "Apolygus lucorum"
+    ],
+    "supported_crops": [
+      "Cotton",
+      "Apple",
+      "Peach",
+      "Grape"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 58,
+    "raw_model_name": "Limacodidae",
+    "canonical_name": "Slug Caterpillar / Cup Moth",
+    "aliases": [
+      "Limacodidae",
+      "Parasa"
+    ],
+    "supported_crops": [
+      "Apple",
+      "Peach",
+      "Cherry",
+      "Orange"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 59,
+    "raw_model_name": "Viteus vitifoliae",
+    "canonical_name": "Grape Phylloxera",
+    "aliases": [
+      "Viteus vitifoliae",
+      "Daktulosphaira vitifoliae"
+    ],
+    "supported_crops": [
+      "Grape"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 60,
+    "raw_model_name": "Colomerus vitis",
+    "canonical_name": "Grape Erineum Mite",
+    "aliases": [
+      "Colomerus vitis",
+      "Grape blister mite"
+    ],
+    "supported_crops": [
+      "Grape"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 61,
+    "raw_model_name": "Brevipoalpus lewisi McGregor",
+    "canonical_name": "Citrus Flat Mite / Lewis Mite",
+    "aliases": [
+      "Brevipalpus lewisi"
+    ],
+    "supported_crops": [
+      "Grape",
+      "Orange",
+      "Peach"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 62,
+    "raw_model_name": "oides decempunctata",
+    "canonical_name": "Ten-spotted Leaf Beetle",
+    "aliases": [
+      "Oides decempunctata"
+    ],
+    "supported_crops": [
+      "Grape"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 63,
+    "raw_model_name": "Polyphagotars onemus latus",
+    "canonical_name": "Broad Mite",
+    "aliases": [
+      "Polyphagotarsonemus latus",
+      "Yellow mite"
+    ],
+    "supported_crops": [
+      "Bell Pepper",
+      "Tomato",
+      "Cotton"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 64,
+    "raw_model_name": "Pseudococcus comstocki Kuwana",
+    "canonical_name": "Comstock Mealybug",
+    "aliases": [
+      "Pseudococcus comstocki"
+    ],
+    "supported_crops": [
+      "Apple",
+      "Peach",
+      "Grape"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 65,
+    "raw_model_name": "parathrene regalis",
+    "canonical_name": "Grape Clearwing Moth",
+    "aliases": [
+      "Paranthrene regalis"
+    ],
+    "supported_crops": [
+      "Grape"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 66,
+    "raw_model_name": "Ampelophaga",
+    "canonical_name": "Grapevine Sphinx Moth",
+    "aliases": [
+      "Ampelophaga rubiginosa"
+    ],
+    "supported_crops": [
+      "Grape"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 67,
+    "raw_model_name": "Lycorma delicatula",
+    "canonical_name": "Spotted Lanternfly",
+    "aliases": [
+      "Lycorma delicatula"
+    ],
+    "supported_crops": [
+      "Grape",
+      "Apple",
+      "Peach"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 68,
+    "raw_model_name": "Xylotrechus",
+    "canonical_name": "Grape Wood Borer",
+    "aliases": [
+      "Xylotrechus quadripes"
+    ],
+    "supported_crops": [
+      "Grape"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 69,
+    "raw_model_name": "Cicadella viridis",
+    "canonical_name": "Green Leafhopper",
+    "aliases": [
+      "Cicadella viridis"
+    ],
+    "supported_crops": [
+      "Rice",
+      "Grape",
+      "Corn"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 70,
+    "raw_model_name": "Miridae",
+    "canonical_name": "Plant Bug (Miridae)",
+    "aliases": [
+      "Miridae",
+      "Capsid bug"
+    ],
+    "supported_crops": [
+      "Cotton",
+      "Tomato",
+      "Apple"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 71,
+    "raw_model_name": "Trialeurodes vaporariorum",
+    "canonical_name": "Greenhouse Whitefly",
+    "aliases": [
+      "Trialeurodes vaporariorum",
+      "Whitefly"
+    ],
+    "supported_crops": [
+      "Tomato",
+      "Bell Pepper",
+      "Potato",
+      "Strawberry",
+      "Cotton"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 72,
+    "raw_model_name": "Erythroneura apicalis",
+    "canonical_name": "Grape Leafhopper",
+    "aliases": [
+      "Erythroneura apicalis"
+    ],
+    "supported_crops": [
+      "Grape"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 73,
+    "raw_model_name": "Papilio xuthus",
+    "canonical_name": "Asian Swallowtail / Citrus Dog",
+    "aliases": [
+      "Papilio xuthus",
+      "Papilio demoleus"
+    ],
+    "supported_crops": [
+      "Orange"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 74,
+    "raw_model_name": "Panonchus citri McGregor",
+    "canonical_name": "Citrus Red Mite",
+    "aliases": [
+      "Panonychus citri"
+    ],
+    "supported_crops": [
+      "Orange"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 75,
+    "raw_model_name": "Phyllocoptes oleiverus ashmead",
+    "canonical_name": "Citrus Rust Mite",
+    "aliases": [
+      "Phyllocoptruta oleivora"
+    ],
+    "supported_crops": [
+      "Orange"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 76,
+    "raw_model_name": "Icerya purchasi Maskell",
+    "canonical_name": "Cottony Cushion Scale",
+    "aliases": [
+      "Icerya purchasi"
+    ],
+    "supported_crops": [
+      "Orange",
+      "Peach",
+      "Apple"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 77,
+    "raw_model_name": "Unaspis yanonensis",
+    "canonical_name": "Arrowhead Scale",
+    "aliases": [
+      "Unaspis yanonensis"
+    ],
+    "supported_crops": [
+      "Orange"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 78,
+    "raw_model_name": "Ceroplastes rubens",
+    "canonical_name": "Red Wax Scale",
+    "aliases": [
+      "Ceroplastes rubens"
+    ],
+    "supported_crops": [
+      "Orange",
+      "Apple"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 79,
+    "raw_model_name": "Chrysomphalus aonidum",
+    "canonical_name": "Florida Red Scale",
+    "aliases": [
+      "Chrysomphalus aonidum"
+    ],
+    "supported_crops": [
+      "Orange"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 80,
+    "raw_model_name": "Parlatoria zizyphus Lucus",
+    "canonical_name": "Black Parlatoria Scale",
+    "aliases": [
+      "Parlatoria ziziphi"
+    ],
+    "supported_crops": [
+      "Orange"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 81,
+    "raw_model_name": "Nipaecoccus vastalor",
+    "canonical_name": "Citrus Mealybug",
+    "aliases": [
+      "Nipaecoccus viridis"
+    ],
+    "supported_crops": [
+      "Orange",
+      "Cotton",
+      "Soybean"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 82,
+    "raw_model_name": "Aleurocanthus spiniferus",
+    "canonical_name": "Orange Spiny Blackfly",
+    "aliases": [
+      "Aleurocanthus spiniferus"
+    ],
+    "supported_crops": [
+      "Orange",
+      "Grape",
+      "Peach"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 83,
+    "raw_model_name": "Tetradacus c Bactrocera minax",
+    "canonical_name": "Chinese Citrus Fly",
+    "aliases": [
+      "Bactrocera minax"
+    ],
+    "supported_crops": [
+      "Orange"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 84,
+    "raw_model_name": "Dacus dorsalis(Hendel)",
+    "canonical_name": "Oriental Fruit Fly",
+    "aliases": [
+      "Bactrocera dorsalis"
+    ],
+    "supported_crops": [
+      "Orange",
+      "Peach",
+      "Apple"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 85,
+    "raw_model_name": "Bactrocera tsuneonis",
+    "canonical_name": "Japanese Orange Fly",
+    "aliases": [
+      "Bactrocera tsuneonis"
+    ],
+    "supported_crops": [
+      "Orange"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 86,
+    "raw_model_name": "Prodenia litura",
+    "canonical_name": "Tobacco Cutworm / Cotton Leafworm",
+    "aliases": [
+      "Spodoptera litura"
+    ],
+    "supported_crops": [
+      "Cotton",
+      "Tomato",
+      "Soybean",
+      "Corn",
+      "Potato"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 87,
+    "raw_model_name": "Adristyrannus",
+    "canonical_name": "Citrus Sawfly",
+    "aliases": [
+      "Ametastegia"
+    ],
+    "supported_crops": [
+      "Orange"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 88,
+    "raw_model_name": "Phyllocnistis citrella Stainton",
+    "canonical_name": "Citrus Leafminer",
+    "aliases": [
+      "Phyllocnistis citrella"
+    ],
+    "supported_crops": [
+      "Orange"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 89,
+    "raw_model_name": "Toxoptera citricidus",
+    "canonical_name": "Brown Citrus Aphid",
+    "aliases": [
+      "Toxoptera citricida"
+    ],
+    "supported_crops": [
+      "Orange"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 90,
+    "raw_model_name": "Toxoptera aurantii",
+    "canonical_name": "Black Citrus Aphid",
+    "aliases": [
+      "Toxoptera aurantii"
+    ],
+    "supported_crops": [
+      "Orange"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 91,
+    "raw_model_name": "Aphis citricola Vander Goot",
+    "canonical_name": "Spirea Aphid",
+    "aliases": [
+      "Aphis spiraecola"
+    ],
+    "supported_crops": [
+      "Orange",
+      "Apple"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 92,
+    "raw_model_name": "Scirtothrips dorsalis Hood",
+    "canonical_name": "Chilli / Citrus Thrips",
+    "aliases": [
+      "Scirtothrips dorsalis"
+    ],
+    "supported_crops": [
+      "Bell Pepper",
+      "Cotton",
+      "Orange",
+      "Strawberry"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 93,
+    "raw_model_name": "Dasineura sp",
+    "canonical_name": "Gall Midge",
+    "aliases": [
+      "Dasineura"
+    ],
+    "supported_crops": [
+      "Apple",
+      "Orange"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 94,
+    "raw_model_name": "Lawana imitata Melichar",
+    "canonical_name": "Flatid Planthopper",
+    "aliases": [
+      "Lawana imitata",
+      "Flatidae"
+    ],
+    "supported_crops": [
+      "Corn",
+      "Tomato"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 95,
+    "raw_model_name": "Salurnis marginella Guerr",
+    "canonical_name": "Green Planthopper",
+    "aliases": [
+      "Salurnis marginella"
+    ],
+    "supported_crops": [
+      "Tomato",
+      "Orange"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 96,
+    "raw_model_name": "Deporaus marginatus Pascoe",
+    "canonical_name": "Mango Leaf Cutting Weevil",
+    "aliases": [
+      "Deporaus marginatus"
+    ],
+    "supported_crops": [
+      "Mango"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 97,
+    "raw_model_name": "Chlumetia transversa",
+    "canonical_name": "Mango Shoot Borer",
+    "aliases": [
+      "Chlumetia transversa"
+    ],
+    "supported_crops": [
+      "Mango"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 98,
+    "raw_model_name": "Mango flat beak leafhopper",
+    "canonical_name": "Mango Leafhopper",
+    "aliases": [
+      "Idioscopus",
+      "Amritodus atkinsoni"
+    ],
+    "supported_crops": [
+      "Mango"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 99,
+    "raw_model_name": "Rhytidodera bowrinii white",
+    "canonical_name": "Mango Trunk Borer",
+    "aliases": [
+      "Rhytidodera bowringii"
+    ],
+    "supported_crops": [
+      "Mango"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 100,
+    "raw_model_name": "Sternochetus frigidus",
+    "canonical_name": "Mango Pulp Weevil",
+    "aliases": [
+      "Sternochetus frigidus"
+    ],
+    "supported_crops": [
+      "Mango"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 101,
+    "raw_model_name": "Cicadellidae",
+    "canonical_name": "Leafhopper (General)",
+    "aliases": [
+      "Cicadellidae"
+    ],
+    "supported_crops": [
+      "Rice",
+      "Wheat",
+      "Corn",
+      "Cotton",
+      "Tomato"
+    ],
+    "dataset_source": "IP102"
+  },
+  {
+    "class_id": 102,
+    "raw_model_name": "pbw",
+    "canonical_name": "Pink Bollworm",
+    "aliases": [
+      "Pectinophora gossypiella",
+      "PBW"
+    ],
+    "supported_crops": [
+      "Cotton"
+    ],
+    "dataset_source": "WadhwaniAI_BOLLWM"
+  },
+  {
+    "class_id": 103,
+    "raw_model_name": "abw",
+    "canonical_name": "American Bollworm",
+    "aliases": [
+      "Helicoverpa armigera",
+      "ABW",
+      "Cotton bollworm"
+    ],
+    "supported_crops": [
+      "Cotton",
+      "Tomato",
+      "Corn",
+      "Soybean"
+    ],
+    "dataset_source": "WadhwaniAI_BOLLWM"
+  }
+]

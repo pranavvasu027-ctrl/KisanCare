@@ -1,0 +1,37 @@
+{
+  "model_name": "Crop Recommendation System (Model 1)",
+  "model_id": "crop_recommendation_v1",
+  "version": "1.0.0",
+  "purpose": "Recommends optimal crops based on soil test NPK, pH, and local climatic conditions, adjusted by regional suitability and history-based crop rotation scoring.",
+  "algorithm": "RandomForestClassifier",
+  "input_features": [
+    "N",
+    "P",
+    "K",
+    "temperature",
+    "humidity",
+    "ph",
+    "rainfall",
+    "crop_history",
+    "state"
+  ],
+  "target": "recommended_crops",
+  "output_format": "Ranked list of recommended crops with blended final score (soil/climate, regional, rotation), nutrient status, and agronomic rationale",
+  "artifact": "model1_npk.pkl",
+  "preprocessing_artifacts": [
+    "model1_label_encoder.pkl",
+    "knowledge_base.json"
+  ],
+  "dataset_name": "Crop Recommendation Dataset (ICAR / Indian Agricultural Benchmark)",
+  "dataset_size": 2200,
+  "evaluation_metrics": {
+    "accuracy": 0.99
+  },
+  "inference_verified": true,
+  "api_available": true,
+  "known_limitations": [
+    "Trained on 22 specific crop classes (rice, maize, chickpea, kidneybeans, pigeonpeas, mothbeans, mungbean, blackgram, lentil, pomegranate, banana, mango, grapes, watermelon, muskmelon, apple, orange, papaya, coconut, cotton, jute, coffee).",
+    "Does not simulate simultaneous intercropping.",
+    "Soil-Test Primacy Invariant: Crop history adjusts rotation bonus/penalty but does not override current measured soil NPK deficiencies."
+  ]
+}

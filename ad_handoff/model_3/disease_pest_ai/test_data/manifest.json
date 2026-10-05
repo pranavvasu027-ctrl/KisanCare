@@ -1,0 +1,42 @@
+[
+  {
+    "filename": "apple_scab_bierny.jpg",
+    "url": "https://huggingface.co/BiernyVR/crop-disease-classifier/resolve/main/sample_leaf.jpg",
+    "crop": "Apple",
+    "condition": "Apple Scab",
+    "source": "BiernyVR/crop-disease-classifier (Hugging Face)",
+    "license": "MIT"
+  },
+  {
+    "filename": "corn_common_rust.jpg",
+    "url": "https://raw.githubusercontent.com/spMohanty/PlantVillage-Dataset/master/raw/color/Corn_(maize)___Common_rust_/RS_Rust%201563.JPG",
+    "crop": "Corn (Maize)",
+    "condition": "Common Rust",
+    "source": "spMohanty/PlantVillage-Dataset (GitHub)",
+    "license": "CC0 1.0 Universal / Public Domain"
+  },
+  {
+    "filename": "tomato_early_blight.jpg",
+    "url": "https://raw.githubusercontent.com/spMohanty/PlantVillage-Dataset/master/raw/color/Tomato___Early_blight/0012b9d2-2130-4a06-a834-b1f3af34f57e___RS_Erly.B%208389.JPG",
+    "crop": "Tomato",
+    "condition": "Early Blight",
+    "source": "spMohanty/PlantVillage-Dataset (GitHub)",
+    "license": "CC0 1.0 Universal / Public Domain"
+  },
+  {
+    "filename": "tomato_healthy.jpg",
+    "url": "https://raw.githubusercontent.com/spMohanty/PlantVillage-Dataset/master/raw/color/Tomato___healthy/000146ff-92a4-4db6-90ad-8fce2ae4fddd___GH_HL%20Leaf%20259.1.JPG",
+    "crop": "Tomato",
+    "condition": "Healthy",
+    "source": "spMohanty/PlantVillage-Dataset (GitHub)",
+    "license": "CC0 1.0 Universal / Public Domain"
+  },
+  {
+    "filename": "wadhwani_cotton_trap.jpg",
+    "url": "https://raw.githubusercontent.com/WadhwaniAI/pest-monitoring/main/sample-data/images/000000006818.jpg",
+    "crop": "Cotton",
+    "condition": "Cotton Bollworm Trap",
+    "source": "WadhwaniAI/pest-monitoring (GitHub)",
+    "license": "Apache-2.0"
+  }
+]
