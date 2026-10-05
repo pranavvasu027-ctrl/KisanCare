@@ -4,3 +4,9 @@ node_modules/
 .env
 .DS_Store
 .pytest_cache/
+
+# Large ML model weight binaries (downloaded and cached via huggingface_hub)
+model.pkl
+**/model.pkl
+*.pkl.part
+*.download
