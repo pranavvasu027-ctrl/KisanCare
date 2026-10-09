@@ -3,9 +3,11 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field, validator
 from typing import List, Optional
+from fastapi.middleware.cors import CORSMiddleware
 import time
 
 from ml.crop_recommendation.predict import PredictionPipeline
+from ml.routers import farms
 
 pipeline_instance = None
 
@@ -20,7 +22,16 @@ async def lifespan(app: FastAPI):
     yield
     pipeline_instance = None
 
-app = FastAPI(title="KisanCare Crop Recommendation API", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="KisanCare API", version="1.0.0", lifespan=lifespan)
+app.include_router(farms.router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class CropRequest(BaseModel):
     district: str = Field(..., example="NASHIK")

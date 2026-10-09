@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from .model1.router import router as model1_router
 from .model1.service import model1_service
 from .digital_twin.router import router as digital_twin_router
+from .market_price.router import router as market_price_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -25,6 +26,7 @@ app = FastAPI(
 
 app.include_router(model1_router)
 app.include_router(digital_twin_router)
+app.include_router(market_price_router)
 
 @app.get("/health")
 def health_check():

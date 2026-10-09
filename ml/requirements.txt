@@ -6,3 +6,7 @@ pandas
 numpy
 joblib
 xgboost
+supabase
+python-dotenv
+pytest
+httpx

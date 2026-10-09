@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import Onboarding from './screens/Onboarding';
 
 function App() {
+  const [showOnboarding, setShowOnboarding] = useState(true);
   const [twin, setTwin] = useState<any>(null);
   const [simulation, setSimulation] = useState<any>(null);
 
@@ -32,9 +34,16 @@ function App() {
     fetchTwin();
   }, []);
 
+  if (showOnboarding) {
+    return <Onboarding />;
+  }
+
   return (
     <div className="p-8 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold text-green-700 mb-6">KisanCare Dashboard</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-green-700">KisanCare Dashboard</h1>
+        <button onClick={() => setShowOnboarding(true)} className="text-sm text-gray-500 underline">Back to Login</button>
+      </div>
       
       <div className="bg-white p-6 rounded-lg shadow-md mb-6">
         <h2 className="text-xl font-semibold mb-4">Digital Twin State</h2>
