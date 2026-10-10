@@ -4,10 +4,11 @@ import { api } from '../../services/api';
 
 export default function MarketIntelligence() {
   const [crop, setCrop] = useState('onion');
-  const [market, setMarket] = useState('Pune');
+  const [market, setMarket] = useState('Pune Pimpri');
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isDemo, setIsDemo] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchMarketData();
@@ -15,13 +16,24 @@ export default function MarketIntelligence() {
 
   const fetchMarketData = async () => {
     setLoading(true);
+    setError(null);
     try {
       const today = new Date().toISOString().split('T')[0];
       const res = await api.getMarketPrice(crop, market, today);
       setData(res.data);
       setIsDemo(res.isDemo);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      // Determine error message based on common API failure patterns
+      const msg = e.toString().toLowerCase();
+      if (msg.includes("422")) {
+        setError("Insufficient historical data for reliable forecasting. Please try a different market or ingest fresh data.");
+      } else if (msg.includes("404")) {
+        setError("Market price model not available for this crop and market combination.");
+      } else {
+        setError("An error occurred while communicating with the forecast model.");
+      }
+      setData(null);
     } finally {
       setLoading(false);
     }
@@ -83,12 +95,21 @@ export default function MarketIntelligence() {
               {loading ? <Loader2 className="w-5 h-5 animate-spin text-[#17643E]" /> : (
                 <>
                   {data?.trend === 'Up' ? 'Upward' : data?.trend === 'Down' ? 'Downward' : 'Stable'}
-                  <span className="text-sm text-[#17643E] ml-2">(₹{data?.forecast_min || '--'} - ₹{data?.forecast_max || '--'})</span>
+                  <span className="text-sm text-[#17643E] ml-2">(₹{data?.forecast_7d || '--'})</span>
                 </>
               )}
             </div>
           </div>
         </div>
+
+        {error && (
+          <div className="p-6 bg-red-50 border-t border-red-100">
+            <h3 className="text-red-800 font-bold mb-2">Error Generating Forecast</h3>
+            <p className="text-red-700">{error}</p>
+          </div>
+        )}
+
+        {!error && (
 
         <div className="p-6">
           <div className="flex justify-between items-center mb-4">
@@ -127,6 +148,7 @@ export default function MarketIntelligence() {
             </table>
           </div>
         </div>
+        )}
       </div>
     </div>
   );

@@ -54,7 +54,7 @@ def run_tests():
             assert response.status_code == 200
             
             # Test market price forecasting (8)
-            response = client.post("/api/v1/models/market-price", json={"crop": "Onion", "market": "Pune Pimpri", "current_price": 2500, "month": 10, "day_of_week": 3})
+            response = client.post("/api/v1/models/market-price", json={"crop": "Onion", "market": "Pune(Pimpri)", "date": "2025-11-04"})
             print(f"Market Price Response: {response.status_code}")
             if response.status_code != 200:
                 print(response.json())

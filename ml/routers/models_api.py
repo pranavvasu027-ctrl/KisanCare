@@ -88,18 +88,11 @@ def assess_weather_risk(req: WeatherRiskRequest):
 class MarketPriceRequest(BaseModel):
     crop: str
     market: str
-    current_price: float
-    month: int
-    day_of_week: int
+    date: str
 
 @router.post("/market-price")
 def forecast_market_price(req: MarketPriceRequest):
-    if req.month < 1 or req.month > 12:
-        raise HTTPException(status_code=422, detail="Month must be between 1 and 12.")
-    if req.day_of_week < 0 or req.day_of_week > 6:
-        raise HTTPException(status_code=422, detail="Day of week must be between 0 and 6.")
-        
-    res = market_predictor.predict(req.crop, req.market, req.current_price, req.month, req.day_of_week)
+    res = market_predictor.predict(req.crop, req.market, req.date)
     if res.get("status") == "error":
-        raise HTTPException(status_code=404 if "not found" in res["message"] else 500, detail=res["message"])
+        raise HTTPException(status_code=404 if "not found" in res["message"].lower() else 422 if "insufficient" in res["message"].lower() or "gap" in res["message"].lower() else 500, detail=res["message"])
     return res
