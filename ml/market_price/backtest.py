@@ -73,14 +73,18 @@ def run_backtest(crop="Onion", market="Pune(Pimpri)", start_date="2025-01-01", e
         
     if results_14d:
         df_14d = pd.DataFrame(results_14d)
-        mae_14 = mean_absolute_error(df_14d['actual'], df_14d['predicted'])
-        rmse_14 = np.sqrt(mean_squared_error(df_14d['actual'], df_14d['predicted']))
-        naive_mae_14 = mean_absolute_error(df_14d['actual'], df_14d['naive_baseline'])
-        naive_rmse_14 = np.sqrt(mean_squared_error(df_14d['actual'], df_14d['naive_baseline']))
-        
-        print(f"\n14-Day Forecast (n={len(df_14d)}):")
-        print(f"  Model MAE: {mae_14:.2f} | Naive MAE: {naive_mae_14:.2f}")
-        print(f"  Model RMSE: {rmse_14:.2f} | Naive RMSE: {naive_rmse_14:.2f}")
+        df_14d = df_14d[pd.to_numeric(df_14d['predicted'], errors='coerce').notnull()]
+        if not df_14d.empty:
+            mae_14 = mean_absolute_error(df_14d['actual'], df_14d['predicted'])
+            rmse_14 = np.sqrt(mean_squared_error(df_14d['actual'], df_14d['predicted']))
+            naive_mae_14 = mean_absolute_error(df_14d['actual'], df_14d['naive_baseline'])
+            naive_rmse_14 = np.sqrt(mean_squared_error(df_14d['actual'], df_14d['naive_baseline']))
+            
+            print(f"\n14-Day Forecast (n={len(df_14d)}):")
+            print(f"  Model MAE: {mae_14:.2f} | Naive MAE: {naive_mae_14:.2f}")
+            print(f"  Model RMSE: {rmse_14:.2f} | Naive RMSE: {naive_rmse_14:.2f}")
+        else:
+            print("\n14-Day Forecast is currently disabled by the API.")
     else:
         print("Not enough valid backtest points for 14-day forecast.")
 
