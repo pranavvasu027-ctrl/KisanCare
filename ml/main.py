@@ -8,6 +8,7 @@ import time
 
 from ml.crop_recommendation.predict import PredictionPipeline
 from ml.routers import farms
+from ml.routers import models_api
 
 pipeline_instance = None
 
@@ -24,6 +25,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="KisanCare API", version="1.0.0", lifespan=lifespan)
 app.include_router(farms.router)
+app.include_router(models_api.router)
 
 app.add_middleware(
     CORSMiddleware,

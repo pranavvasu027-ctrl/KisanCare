@@ -58,18 +58,63 @@ def predict_crop(data: Dict[str, Any]):
             "isDemo": True
         }
 
-@router.post("/market-price/")
-def get_market_price_dummy(data: Dict[str, Any]):
-    # Temporary mock since market_price module is missing
-    return {
-        "current_price": 4650,
-        "trend": "+4.2%",
-        "forecast_min": 4700,
-        "forecast_max": 4800,
-        "nearby_markets": [
-            { "name": "Nagpur APMC", "distance": 24, "price": 4680, "arrivals": 450, "trend": "+20" }
-        ]
-    }
+@router.post("/market-price")
+def get_market_price(data: Dict[str, Any]):
+    try:
+        response = requests.post(f"{ML_SERVICE_URL}/api/v1/models/market-price", json=data)
+        if response.status_code == 200:
+            return response.json()
+        raise HTTPException(status_code=response.status_code, detail=response.text)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/disease-detection")
+def detect_disease(data: Dict[str, Any]):
+    try:
+        response = requests.post(f"{ML_SERVICE_URL}/api/v1/models/disease-detection", json=data)
+        return response.json()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/pest-detection")
+def detect_pest(data: Dict[str, Any]):
+    try:
+        response = requests.post(f"{ML_SERVICE_URL}/api/v1/models/pest-detection", json=data)
+        return response.json()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/soil-assessment")
+def assess_soil(data: Dict[str, Any]):
+    try:
+        response = requests.post(f"{ML_SERVICE_URL}/api/v1/models/soil-assessment", json=data)
+        return response.json()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/yield-prediction")
+def predict_yield(data: Dict[str, Any]):
+    try:
+        response = requests.post(f"{ML_SERVICE_URL}/api/v1/models/yield-prediction", json=data)
+        return response.json()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/irrigation")
+def recommend_irrigation(data: Dict[str, Any]):
+    try:
+        response = requests.post(f"{ML_SERVICE_URL}/api/v1/models/irrigation", json=data)
+        return response.json()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/weather-risk")
+def assess_weather_risk(data: Dict[str, Any]):
+    try:
+        response = requests.post(f"{ML_SERVICE_URL}/api/v1/models/weather-risk", json=data)
+        return response.json()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/economics/calculate")
 def get_economics(data: Dict[str, Any]):
