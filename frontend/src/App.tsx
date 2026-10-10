@@ -1,87 +1,71 @@
-import React, { useState, useEffect } from 'react';
-import Onboarding from './screens/Onboarding';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import AppShell from './components/layout/AppShell';
+import { AuthProvider, useAuth } from './hooks/useAuth';
+
+// Pages
+import Login from './screens/Auth/Login';
+import Dashboard from './screens/Dashboard/Dashboard';
+import FarmSetup from './screens/FarmSetup/FarmSetup';
+import DigitalTwin from './screens/DigitalTwin/DigitalTwin';
+import CropRecommendation from './screens/CropRecommendation/CropRecommendation';
+import CropComparison from './screens/CropComparison/CropComparison';
+import WhatIfSimulator from './screens/WhatIfSimulator/WhatIfSimulator';
+import AiRecommendation from './screens/AiRecommendation/AiRecommendation';
+import SoilIntelligence from './screens/SoilIntelligence/SoilIntelligence';
+import DiseaseDetection from './screens/DiseaseDetection/DiseaseDetection';
+import IrrigationClimate from './screens/IrrigationClimate/IrrigationClimate';
+import FarmEconomics from './screens/FarmEconomics/FarmEconomics';
+import MarketIntelligence from './screens/MarketIntelligence/MarketIntelligence';
+import FarmMemory from './screens/FarmMemory/FarmMemory';
+import Copilot from './screens/Copilot/Copilot';
+import GovernmentSchemes from './screens/GovernmentSchemes/GovernmentSchemes';
+import Documents from './screens/Documents/Documents';
+import Settings from './screens/Settings/Settings';
+
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { session, loading } = useAuth();
+  
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center bg-[#FBF7EF]">Loading...</div>;
+  }
+  
+  if (!session) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return <>{children}</>;
+};
 
 function App() {
-  const [showOnboarding, setShowOnboarding] = useState(true);
-  const [twin, setTwin] = useState<any>(null);
-  const [simulation, setSimulation] = useState<any>(null);
-
-  const fetchTwin = async () => {
-    try {
-      const res = await fetch('/api/v1/farms/F001/digital-twin');
-      const data = await res.json();
-      setTwin(data);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const runSim = async () => {
-    try {
-      const res = await fetch('/api/v1/simulate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ farm_id: 'F001', changes: { rainfall_change_percent: -20 } })
-      });
-      const data = await res.json();
-      setSimulation(data);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  useEffect(() => {
-    fetchTwin();
-  }, []);
-
-  if (showOnboarding) {
-    return <Onboarding />;
-  }
-
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-green-700">KisanCare Dashboard</h1>
-        <button onClick={() => setShowOnboarding(true)} className="text-sm text-gray-500 underline">Back to Login</button>
-      </div>
-      
-      <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-        <h2 className="text-xl font-semibold mb-4">Digital Twin State</h2>
-        {twin ? (
-          <pre className="bg-gray-100 p-4 rounded">{JSON.stringify(twin, null, 2)}</pre>
-        ) : (
-          <p>Loading...</p>
-        )}
-      </div>
-
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <h2 className="text-xl font-semibold mb-4">What-If Simulator</h2>
-        <p className="mb-4 text-gray-600">Simulate -20% rainfall impact</p>
-        <button 
-          onClick={runSim}
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-        >
-          Run Simulation
-        </button>
-
-        {simulation && (
-          <div className="mt-6 grid grid-cols-2 gap-4">
-            <div className="p-4 bg-gray-50 border rounded">
-              <h3 className="font-bold text-gray-700 mb-2">Baseline</h3>
-              <p>Yield: {simulation.baseline.yield}</p>
-              <p>Profit: ₹{simulation.baseline.profit}</p>
-              <p>Risk: {simulation.baseline.risk}</p>
-            </div>
-            <div className="p-4 bg-red-50 border border-red-200 rounded">
-              <h3 className="font-bold text-red-700 mb-2">Scenario</h3>
-              <p>Yield: {simulation.scenario.yield}</p>
-              <p>Profit: ₹{simulation.scenario.profit}</p>
-              <p>Risk: {simulation.scenario.risk}</p>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          
+          <Route path="/" element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
+            <Route index element={<Dashboard />} />
+            <Route path="farm-setup" element={<FarmSetup />} />
+            <Route path="digital-twin" element={<DigitalTwin />} />
+            <Route path="crop-recommendation" element={<CropRecommendation />} />
+            <Route path="crop-comparison" element={<CropComparison />} />
+            <Route path="simulator" element={<WhatIfSimulator />} />
+            <Route path="recommendations" element={<AiRecommendation />} />
+            <Route path="soil" element={<SoilIntelligence />} />
+            <Route path="disease" element={<DiseaseDetection />} />
+            <Route path="irrigation" element={<IrrigationClimate />} />
+            <Route path="economics" element={<FarmEconomics />} />
+            <Route path="market" element={<MarketIntelligence />} />
+            <Route path="memory" element={<FarmMemory />} />
+            <Route path="copilot" element={<Copilot />} />
+            <Route path="schemes" element={<GovernmentSchemes />} />
+            <Route path="documents" element={<Documents />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 

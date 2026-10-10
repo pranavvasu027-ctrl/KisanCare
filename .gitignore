@@ -57,3 +57,7 @@ data/processed/*
 secrets/
 *.pem
 credentials.json
+
+# Node
+node_modules/
+
