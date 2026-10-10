@@ -86,10 +86,19 @@ class RuleBasedModels:
             "Rice": 1.5,
             "Soybean": 0.8,
             "Cotton": 0.6,
-            "Corn": 2.0
+            "Corn": 2.0,
+            "Onion": 8.0,
+            "Tomato": 10.0
         }
         
-        base = base_yield_per_acre.get(crop, 1.0)
+        if crop not in base_yield_per_acre:
+            return {
+                "model_type": "rule_based",
+                "status": "error",
+                "message": f"Yield prediction not supported for unknown crop: {crop}"
+            }
+            
+        base = base_yield_per_acre[crop]
         
         # Adjust based on scores (0-100)
         soil_factor = soil_health_score / 100.0
@@ -99,6 +108,7 @@ class RuleBasedModels:
         
         return {
             "model_type": "rule_based",
+            "status": "success",
             "crop": crop,
             "predicted_yield_tons": round(predicted_yield, 2),
             "factors": {
@@ -141,7 +151,8 @@ class RuleBasedModels:
         water_needed = False
         amount_liters = 0
         
-        if soil_moisture < 30.0 or days_since_rain > 7:
+        # Do not overwater if soil is already moist, regardless of rain drought
+        if soil_moisture < 30.0 or (days_since_rain > 7 and soil_moisture < 50.0):
             water_needed = True
             amount_liters = 5000 if crop in ["Rice", "Sugarcane"] else 2000
             
