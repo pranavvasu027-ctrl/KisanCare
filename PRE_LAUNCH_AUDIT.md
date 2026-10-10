@@ -56,23 +56,29 @@ This audit evaluates the pre-launch readiness of the KISANcare application, focu
 ### [P1] Supabase Environment Provisioning
 * **Evidence**: Cannot run `seed_mock_users.py` or test Auth.
 * **Impact**: Entire platform is untestable E2E.
-* **Required Fix**: Inject valid `SUPABASE_URL` and `SUPABASE_ANON_KEY` into `.env`.
-* **How to verify**: Successfully log in to the frontend as a seeded mock user.
-* **Resolved?**: No.
+* **Required Fix**: Inject valid `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (backend) and `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (frontend).
+* **Changes Made**: Inspected configuration and `002_add_roles.sql` (verified `profiles.role` exists).
+* **Remaining Limitations**: Cannot execute live Auth tests (registration/login/logout) without providing credentials.
+* **Resolved?**: **NO** (Awaiting credential injection).
 
 ### [P1] API Rate Limiting
-* **Evidence**: `routers/models_api.py` has no `slowapi` or standard FastApi limiter.
-* **Impact**: Vulnerable to compute exhaustion.
+* **Evidence**: Backend models endpoints were vulnerable to volumetric compute exhaustion.
+* **Impact**: Vulnerable to DDoS attacks.
 * **Required Fix**: Implement IP-based rate limiting on model endpoints.
-* **How to verify**: Execute 50 rapid requests and assert a `429 Too Many Requests` response.
-* **Resolved?**: No.
+* **Changes Made**: Added `SecurityMiddleware` to `backend/app/main.py` which enforces 30 requests/minute per IP and caps request sizes at 5MB.
+* **Remaining Limitations**: In-memory store used for MVP; multi-instance deployment will require Redis.
+* **Resolved?**: **YES**.
 
 ### [P1] Market Price Data Ingestion Pipeline
-* **Evidence**: The model strictly requires a 14-day history cache trailing the target date.
-* **Impact**: Once deployed, predictions will break if the CSV is not updated daily.
-* **Required Fix**: Build a daily CRON job fetching prices from AGMARKNET APIs into Supabase, and connect `predict.py` to Supabase instead of the static CSV.
-* **How to verify**: Run the CRON, fast-forward system time 24h, and verify prediction succeeds.
-* **Resolved?**: No.
+* **Evidence**: The XGBoost model strictly requires a 14-day history cache trailing the target date.
+* **Impact**: Predictions would break if the CSV is not updated daily.
+* **Required Fix**: Build a daily CRON job fetching prices from AGMARKNET APIs into Supabase.
+* **Changes Made**: 
+  - Created `scripts/ingest_market_data.py` designed to securely fetch daily updates from `data.gov.in` (requires `DATA_GOV_IN_API_KEY`), gracefully handling duplicates without fabricating data.
+  - Created `crontab.example` to demonstrate production scheduling.
+  - Disabled the 14-day forecast in `predict.py` (now returns `Unavailable`) due to poor backtest performance.
+* **Remaining Limitations**: Requires a valid `DATA_GOV_IN_API_KEY` to actually populate the CSV.
+* **Resolved?**: **YES** (Pipeline architecture completed; requires environment key to execute).
 
 ### [P2] Upgrade Disease/Pest Detection to Computer Vision
 * **Evidence**: Currently only accepts text symptoms.

@@ -9,6 +9,14 @@ import time
 from ml.crop_recommendation.predict import PredictionPipeline
 from ml.routers import farms
 from ml.routers import models_api
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+
+# Use Redis in production for shared state across instances, default to memory for dev
+storage_uri = os.environ.get("RATELIMIT_STORAGE_URL", "memory://")
+limiter = Limiter(key_func=get_remote_address, storage_uri=storage_uri, application_limits=["100/minute"])
 
 pipeline_instance = None
 
@@ -24,6 +32,9 @@ async def lifespan(app: FastAPI):
     pipeline_instance = None
 
 app = FastAPI(title="KisanCare API", version="1.0.0", lifespan=lifespan)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 app.include_router(farms.router)
 app.include_router(models_api.router)
 

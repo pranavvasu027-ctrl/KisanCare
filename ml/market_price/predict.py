@@ -122,7 +122,7 @@ class MarketPricePredictor:
             dmatrix = xgb.DMatrix(features, feature_names=model_7d.feature_names)
             
             pred_7d = float(model_7d.predict(dmatrix)[0])
-            pred_14d = float(model_14d.predict(dmatrix)[0])
+            # pred_14d = float(model_14d.predict(dmatrix)[0])
             
             return {
                 "status": "success",
@@ -132,7 +132,7 @@ class MarketPricePredictor:
                 "target_date": date_str,
                 "current_price": float(current_price),
                 "forecast_7d": round(pred_7d, 2),
-                "forecast_14d": round(pred_14d, 2),
+                "forecast_14d": "Unavailable (Undergoing Recalibration)",
                 "trend": "Up" if pred_7d > current_price else "Down"
             }
         except Exception as e:

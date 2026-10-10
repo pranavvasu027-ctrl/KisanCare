@@ -27,8 +27,8 @@
 * **Test Results**: PASSED.
 * **Evaluation (Backtest)**: Evaluated chronologically on genuine historical data (Onion at Pune Pimpri, n=268 days).
   * **7-Day Forecast**: Model MAE: 260.11 (RMSE: 318.34) vs. Naive MAE: 284.89 (RMSE: 402.75). The model **outperforms** the naive baseline (current price) at 7 days.
-  * **14-Day Forecast**: Model MAE: 569.79 (RMSE: 847.32) vs. Naive MAE: 295.52 (RMSE: 419.51). The model **underperforms** the naive baseline at 14 days, indicating potential overfitting or signal decay.
-* **Limitations & Assumptions**: The underlying XGBoost model (`['Modal_Price', 'lag_1', 'lag_3', 'lag_7', 'lag_14', 'rolling_mean_7', 'rolling_mean_14', 'rolling_std_7', 'day_of_week', 'month']`) requires genuine historical data for lags and rolling windows. The inference engine successfully extracts this from `mandi_prices.csv`, but it explicitly rejects requests (returning 422) if there is an unfillable gap or insufficient history (<14 days) prior to the requested date. Live forecasting requires continual daily ingestion of market data.
+  * **14-Day Forecast**: Model MAE: 569.79 (RMSE: 847.32) vs. Naive MAE: 295.52 (RMSE: 419.51). The model **underperforms** the naive baseline at 14 days, indicating potential overfitting or signal decay. **(UPDATE: 14-day prediction explicitly disabled in API; now returns 'Unavailable')**
+* **Limitations & Assumptions**: The underlying XGBoost model (`['Modal_Price', 'lag_1', 'lag_3', 'lag_7', 'lag_14', 'rolling_mean_7', 'rolling_mean_14', 'rolling_std_7', 'day_of_week', 'month']`) requires genuine historical data for lags and rolling windows. The inference engine successfully extracts this from `mandi_prices.csv`, but it explicitly rejects requests (returning 422) if there is an unfillable gap or insufficient history (<14 days) prior to the requested date. A daily ingestion script (`scripts/ingest_market_data.py`) has been architected to hydrate this dataset from AGMARKNET.
 
 ### 3. Crop Disease Detection (Rule-Based)
 * **Status**: [A] Fully implemented and tested
