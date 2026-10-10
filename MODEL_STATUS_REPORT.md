@@ -21,11 +21,14 @@
 ### 2. Market Price Forecasting (Trained ML)
 * **Status**: [A] Fully implemented and tested
 * **Model Files**: `models/*_*_7d.json` and `14d.json` (XGBoost)
-* **Input**: `crop`, `market`, `current_price`, `month`, `day_of_week`
+* **Input**: `crop`, `market`, `date`
 * **Output**: Forecasted price for 7 and 14 days, alongside current trend.
 * **Backend Endpoint**: `/api/v1/models/market-price`
 * **Test Results**: PASSED.
-* **Limitations & Assumptions**: The underlying XGBoost model (`['Modal_Price', 'lag_1', 'lag_3', 'lag_7', 'lag_14', 'rolling_mean_7', 'rolling_mean_14', 'rolling_std_7', 'day_of_week', 'month']`) requires genuine historical data for lags and rolling windows. Since a live timeseries cache doesn't exist yet, the inference pipeline mathematically synthesizes realistic window boundaries based on `current_price`. This prevents execution crashes but means output forecasts are not currently based on real historical market momentum.
+* **Evaluation (Backtest)**: Evaluated chronologically on genuine historical data (Onion at Pune Pimpri, n=268 days).
+  * **7-Day Forecast**: Model MAE: 260.11 (RMSE: 318.34) vs. Naive MAE: 284.89 (RMSE: 402.75). The model **outperforms** the naive baseline (current price) at 7 days.
+  * **14-Day Forecast**: Model MAE: 569.79 (RMSE: 847.32) vs. Naive MAE: 295.52 (RMSE: 419.51). The model **underperforms** the naive baseline at 14 days, indicating potential overfitting or signal decay.
+* **Limitations & Assumptions**: The underlying XGBoost model (`['Modal_Price', 'lag_1', 'lag_3', 'lag_7', 'lag_14', 'rolling_mean_7', 'rolling_mean_14', 'rolling_std_7', 'day_of_week', 'month']`) requires genuine historical data for lags and rolling windows. The inference engine successfully extracts this from `mandi_prices.csv`, but it explicitly rejects requests (returning 422) if there is an unfillable gap or insufficient history (<14 days) prior to the requested date. Live forecasting requires continual daily ingestion of market data.
 
 ### 3. Crop Disease Detection (Rule-Based)
 * **Status**: [A] Fully implemented and tested
