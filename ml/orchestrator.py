@@ -66,9 +66,12 @@ class ModelOrchestrator:
                 model_version=res.get("model_version", "unknown"),
                 status=res.get("status", "error"),
                 prediction={"recommendations": res.get("recommendations", [])},
-                unit="probability/rank",
+                # The artifact estimates historical area frequency.  It is used to
+                # rank candidates after deterministic eligibility rules; it is not
+                # a calibrated probability or an agronomic outcome prediction.
+                unit="predicted_historical_area_frequency_rank",
                 inputs_used=features,
-                data_provenance="digital_twin",
+                data_provenance="historical_agricultural_data_plus_rules",
                 timestamp=datetime.datetime.utcnow(),
                 warnings=[]
             )

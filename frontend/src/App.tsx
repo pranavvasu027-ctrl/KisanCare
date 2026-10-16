@@ -60,6 +60,7 @@ function App() {
             <Route path="simulator" element={<WhatIfSimulator />} />
             <Route path="recommendations" element={<AiRecommendation />} />
             <Route path="soil" element={<SoilIntelligence />} />
+            <Route path="soil-intelligence" element={<SoilIntelligence />} />
             <Route path="disease" element={<DiseaseDetection />} />
             <Route path="irrigation" element={<IrrigationClimate />} />
             <Route path="economics" element={<FarmEconomics />} />
