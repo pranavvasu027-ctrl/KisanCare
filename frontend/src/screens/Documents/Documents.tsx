@@ -137,6 +137,23 @@ export default function Documents() {
     setErrorMessage(null);
     setStatusMessage(null);
 
+    // File validation: Size limit (max 10MB)
+    const MAX_FILE_SIZE = 10 * 1024 * 1024;
+    if (file.size > MAX_FILE_SIZE) {
+      setErrorMessage(`File size exceeds 10MB limit (Selected file size: ${formatBytes(file.size)}).`);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    // File validation: Allowed formats
+    const allowedExtensions = ['pdf', 'png', 'jpg', 'jpeg', 'doc', 'docx'];
+    const fileExt = file.name.split('.').pop()?.toLowerCase() || '';
+    if (!allowedExtensions.includes(fileExt)) {
+      setErrorMessage(`Unsupported file format (.${fileExt}). Please upload PDF, JPG, PNG, or DOC documents.`);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
     // If unauthenticated or demo mode without Supabase session
     if (!user || !isAuthenticated) {
       const newDemoDoc: DocumentItem[] = [{

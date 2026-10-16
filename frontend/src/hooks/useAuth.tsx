@@ -9,6 +9,7 @@ interface AuthContextType {
   role: string | null;
   loading: boolean;
   isDemoMode: boolean;
+  isAuthenticated: boolean;
   signOut: () => Promise<void>;
 }
 
@@ -18,6 +19,7 @@ const AuthContext = createContext<AuthContextType>({
   role: null,
   loading: true,
   isDemoMode: false,
+  isAuthenticated: false,
   signOut: async () => {},
 });
 
@@ -28,31 +30,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState<boolean>(!IS_DEMO_MODE);
 
   useEffect(() => {
-    // In demo mode, bypass remote Supabase network polling and state subscriptions
-    if (IS_DEMO_MODE) {
-      setLoading(false);
-      return;
-    }
-
-    // Fetch initial session
+    // Attempt to read session from Supabase client (if credentials configured)
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchRole(session.user.id);
+        fetchProfile(session.user.id);
       } else {
         setLoading(false);
       }
+    }).catch(() => {
+      setLoading(false);
     });
 
-    // Listen for auth changes
+    // Listen for auth state changes (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchRole(session.user.id);
+        fetchProfile(session.user.id);
       } else {
-        setRole(null);
+        setRole(IS_DEMO_MODE ? 'Not authenticated' : null);
         setLoading(false);
       }
     });
@@ -60,33 +58,47 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchRole = async (userId: string) => {
+  const fetchProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('role')
+        .select('name, preferred_language')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
       if (data && !error) {
-        setRole(data.role);
+        setRole('farmer');
+      } else {
+        setRole('farmer');
       }
     } catch (e) {
-      console.error("Error fetching role", e);
+      console.error("Error fetching profile", e);
+      setRole('farmer');
     } finally {
       setLoading(false);
     }
   };
 
   const signOut = async () => {
-    if (IS_DEMO_MODE) {
-      return;
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      throw error;
     }
-    await supabase.auth.signOut();
+    setSession(null);
+    setUser(null);
+    setRole(IS_DEMO_MODE ? 'Not authenticated' : null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, role, loading, isDemoMode: IS_DEMO_MODE, signOut }}>
+    <AuthContext.Provider value={{
+      user,
+      session,
+      role,
+      loading,
+      isDemoMode: IS_DEMO_MODE && !session,
+      isAuthenticated: !!session,
+      signOut
+    }}>
       {children}
     </AuthContext.Provider>
   );

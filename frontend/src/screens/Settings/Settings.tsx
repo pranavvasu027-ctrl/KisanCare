@@ -92,12 +92,28 @@ export default function Settings() {
     setStatusMessage(null);
 
     // Validation
-    if (!farmerName.trim()) {
-      setErrorMessage('Farmer profile name is required.');
+    const trimmedName = farmerName.trim();
+    if (!trimmedName || trimmedName.length < 2) {
+      setErrorMessage('Farmer profile name must be at least 2 characters long.');
       return;
     }
 
-    // 1. Save local preferences (Client Persistence)
+    const supportedLanguages = ['en', 'hi', 'mr'];
+    if (!supportedLanguages.includes(preferredLanguage)) {
+      setErrorMessage('Selected language is not supported. Please select English, Hindi, or Marathi.');
+      return;
+    }
+
+    const trimmedPhone = phoneNumber.trim();
+    if (trimmedPhone) {
+      const numericDigits = trimmedPhone.replace(/[^0-9]/g, '');
+      if (numericDigits.length < 10 || numericDigits.length > 15) {
+        setErrorMessage('Phone number must contain between 10 and 15 digits (e.g. +91 98765 43210).');
+        return;
+      }
+    }
+
+    // 1. Save local preferences (Client localStorage Persistence)
     try {
       localStorage.setItem('kisancare_user_preferences', JSON.stringify(preferences));
     } catch {
@@ -118,9 +134,9 @@ export default function Settings() {
         .from('profiles')
         .upsert({
           user_id: user.id,
-          name: farmerName.trim(),
+          name: trimmedName,
           preferred_language: preferredLanguage,
-          phone: phoneNumber.trim(),
+          phone: trimmedPhone || null,
           updated_at: new Date().toISOString()
         }, { onConflict: 'user_id' });
 
@@ -130,19 +146,27 @@ export default function Settings() {
       setTimeout(() => setStatusMessage(null), 5000);
     } catch (err: any) {
       console.error('Failed to save profile:', err);
-      setErrorMessage(`Failed to update profile: ${err.message || String(err)}`);
+      setErrorMessage(`Failed to update profile in database: ${err.message || String(err)}`);
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleSignOut = async () => {
+    setErrorMessage(null);
+    setStatusMessage(null);
     try {
       await signOut();
+      // Verify session termination
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData?.session) {
+        setErrorMessage('Sign out failed: active session is still present on the server.');
+        return;
+      }
       navigate('/login');
     } catch (err: any) {
       console.error('Sign out error:', err);
-      navigate('/login');
+      setErrorMessage(`Failed to sign out: ${err.message || String(err)}`);
     }
   };
 
