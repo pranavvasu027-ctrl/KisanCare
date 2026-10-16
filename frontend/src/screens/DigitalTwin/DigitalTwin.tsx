@@ -49,16 +49,16 @@ export default function DigitalTwin() {
         {/* Map View (Spans 3 cols) */}
         <div className="lg:col-span-3 bg-white rounded-2xl border border-[#E5DDCF] overflow-hidden shadow-sm relative min-h-[500px]">
           <img src="https://images.unsplash.com/photo-1590055531615-f16d36ffe8ea?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Satellite Map" className="absolute inset-0 w-full h-full object-cover mix-blend-overlay" />
-          
+
           <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 1000 800">
             {/* Field 1 */}
             <polygon points="100,200 400,150 500,450 150,550" fill="rgba(23, 100, 62, 0.4)" stroke="#A8C69A" strokeWidth="3" className="hover:fill-rgba(23, 100, 62, 0.6) transition-all cursor-pointer" />
             <text x="300" y="350" fill="white" fontSize="24" fontWeight="bold" textAnchor="middle" className="pointer-events-none drop-shadow-md">Field 1</text>
-            
+
             {/* Field 2 - Stress alert */}
             <polygon points="550,100 900,200 850,500 450,400" fill="rgba(182, 83, 42, 0.5)" stroke="#B6532A" strokeWidth="3" className="hover:fill-rgba(182, 83, 42, 0.7) transition-all cursor-pointer" />
             <text x="680" y="300" fill="white" fontSize="24" fontWeight="bold" textAnchor="middle" className="pointer-events-none drop-shadow-md">Field 2</text>
-            
+
             {/* Tooltip mockup for Field 2 */}
             <g transform="translate(680, 220)">
               <rect x="-80" y="-40" width="160" height="30" rx="4" fill="white" className="shadow-lg" />
@@ -80,7 +80,7 @@ export default function DigitalTwin() {
         <div className="space-y-6">
           <div className="bg-white rounded-2xl border border-[#E5DDCF] shadow-sm p-5">
             <h3 className="font-bold text-[#103D2C] mb-4 border-b border-[#E5DDCF] pb-2">Field 2 Details</h3>
-            
+
             {loading ? (
               <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-[#17643E]" /></div>
             ) : (
@@ -103,7 +103,7 @@ export default function DigitalTwin() {
                     <span className="font-bold text-[#103D2C]">1.2 t/ac</span>
                   </div>
                 </div>
-                
+
                 <div className="mt-6 bg-[#FBF7EF] p-4 rounded-xl border border-[#B6532A]/30">
                   <div className="flex items-start gap-2 mb-2">
                     <AlertTriangle size={16} className="text-[#B6532A] mt-0.5" />
@@ -114,10 +114,10 @@ export default function DigitalTwin() {
               </>
             )}
           </div>
-          
+
           <div className="bg-white rounded-2xl border border-[#E5DDCF] shadow-sm p-5">
             <h3 className="font-bold text-[#103D2C] mb-4 border-b border-[#E5DDCF] pb-2">Micro-Climate</h3>
-            
+
             {loading ? (
               <div className="flex justify-center py-6"><Loader2 className="w-6 h-6 animate-spin text-[#17643E]" /></div>
             ) : (

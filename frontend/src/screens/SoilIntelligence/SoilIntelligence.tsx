@@ -1,18 +1,52 @@
-import React from 'react';
-import { TestTube, Upload, MapPin, Activity, Check, AlertTriangle } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { TestTube, Upload, MapPin, Activity, Check, AlertTriangle, CheckCircle2 } from 'lucide-react';
 
 export default function SoilIntelligence() {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadMsg, setUploadMsg] = useState<string | null>(null);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setUploadMsg(`Soil report "${file.name}" received for Field 1. Nutrient parameters calibrated for demo session.`);
+      setTimeout(() => setUploadMsg(null), 4000);
+    }
+  };
+
   return (
     <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-6">
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileUpload}
+        accept=".pdf,image/*"
+        className="hidden"
+      />
+
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-serif font-bold text-[#103D2C]">Soil Intelligence</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-serif font-bold text-[#103D2C]">Soil Intelligence</h1>
+            <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-amber-300">
+              Sample Soil Data
+            </span>
+          </div>
           <p className="text-[#292B26]/70 mt-1">Manage soil health reports and nutrient guidance.</p>
         </div>
-        <button className="bg-[#103D2C] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#17643E] flex items-center gap-2">
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className="bg-[#103D2C] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#17643E] flex items-center gap-2 cursor-pointer transition-colors"
+        >
           <Upload size={18} /> Upload Report
         </button>
       </div>
+
+      {uploadMsg && (
+        <div className="bg-emerald-50 border border-emerald-300 text-emerald-900 px-4 py-3 rounded-xl text-xs flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span>{uploadMsg}</span>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
@@ -21,7 +55,7 @@ export default function SoilIntelligence() {
               <h3 className="font-bold text-[#103D2C] flex items-center gap-2"><TestTube className="text-[#17643E]"/> Nutrient Profile</h3>
               <span className="text-xs font-semibold bg-[#FBF7EF] px-2 py-1 rounded text-[#292B26]/60">Field 1 (Black Cotton)</span>
             </div>
-            
+
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="border border-[#E5DDCF] rounded-xl p-4 text-center">
                 <div className="text-xs text-[#292B26]/60 mb-1">Nitrogen (N)</div>

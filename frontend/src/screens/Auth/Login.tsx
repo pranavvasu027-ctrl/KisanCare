@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Leaf, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../services/supabase';
+import { IS_DEMO_MODE } from '../../config/demo';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -14,14 +15,14 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    
+
     setLoading(false);
-    
+
     if (error) {
       setError(error.message);
     } else {
@@ -53,23 +54,45 @@ export default function Login() {
       {/* Right Login Section */}
       <div className="w-full lg:w-1/2 flex items-center justify-center bg-[#FBF7EF] p-8">
         <div className="w-full max-w-md">
-          <div className="text-center mb-10">
+          <div className="text-center mb-8">
             <h2 className="text-3xl font-serif font-bold text-[#103D2C] mb-2">Welcome Back</h2>
             <p className="text-[#292B26]/60">Sign in to your KISANcare account</p>
           </div>
+
+          {IS_DEMO_MODE && (
+            <div className="mb-6 p-4 bg-amber-50 border border-amber-300 rounded-xl text-amber-900 shadow-sm">
+              <div className="flex items-center justify-between mb-2">
+                <span className="bg-amber-200 text-amber-900 text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded">
+                  Demo Mode Active
+                </span>
+                <span className="text-xs text-amber-700 font-medium">Authentication Optional</span>
+              </div>
+              <p className="text-xs text-amber-800 mb-3">
+                The application is running in demonstration mode with mock farm data. You can access the entire application without logging in.
+              </p>
+              <button
+                type="button"
+                onClick={() => navigate('/')}
+                className="w-full bg-[#103D2C] hover:bg-[#17643E] text-white font-semibold py-2.5 px-4 rounded-lg text-xs transition-colors flex items-center justify-center gap-2 shadow-sm"
+              >
+                <span>Explore Dashboard as Demo Farmer</span>
+                <ArrowRight size={14} />
+              </button>
+            </div>
+          )}
 
           {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">{error}</div>}
 
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-[#292B26] mb-1">Email Address</label>
-              <input 
-                type="email" 
-                placeholder="Enter your email" 
+              <input
+                type="email"
+                placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white border border-[#E5DDCF] rounded-lg px-4 py-3 focus:outline-none focus:border-[#17643E]" 
-                required 
+                className="w-full bg-white border border-[#E5DDCF] rounded-lg px-4 py-3 focus:outline-none focus:border-[#17643E]"
+                required
               />
             </div>
 
@@ -78,13 +101,13 @@ export default function Login() {
                 <label className="block text-sm font-medium text-[#292B26]">Password</label>
                 <a href="#" className="text-sm font-medium text-[#17643E] hover:underline">Forgot password?</a>
               </div>
-              <input 
-                type="password" 
-                placeholder="Enter your password" 
+              <input
+                type="password"
+                placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-white border border-[#E5DDCF] rounded-lg px-4 py-3 focus:outline-none focus:border-[#17643E]" 
-                required 
+                className="w-full bg-white border border-[#E5DDCF] rounded-lg px-4 py-3 focus:outline-none focus:border-[#17643E]"
+                required
               />
             </div>
 

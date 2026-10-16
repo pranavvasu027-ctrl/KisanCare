@@ -3,6 +3,7 @@ import joblib
 import json
 import time
 import warnings
+from pathlib import Path
 
 warnings.filterwarnings('ignore')
 
@@ -29,8 +30,8 @@ class CropDecisionEngine:
         return True, None
 
 class PredictionPipeline:
-    def __init__(self, model_dir='C:/Users/prana/OneDrive/Desktop/Projects/KISANcare/kisan-care/models/crop_recommendation'):
-        self.model_dir = model_dir
+    def __init__(self, model_dir=None):
+        self.model_dir = Path(model_dir) if model_dir else Path(__file__).resolve().parents[2] / 'models' / 'crop_recommendation'
         self.model = None
         self.cat_levels = None
         self.metadata = None
@@ -39,9 +40,9 @@ class PredictionPipeline:
         
     def load_model(self):
         try:
-            self.model = joblib.load(f'{self.model_dir}/crop_recommendation_mvp_v2.pkl')
-            self.cat_levels = joblib.load(f'{self.model_dir}/preprocessing_mvp_v2.pkl')
-            with open(f'{self.model_dir}/metadata_mvp_v2.json', 'r') as f:
+            self.model = joblib.load(self.model_dir / 'crop_recommendation_mvp_v2.pkl')
+            self.cat_levels = joblib.load(self.model_dir / 'preprocessing_mvp_v2.pkl')
+            with (self.model_dir / 'metadata_mvp_v2.json').open('r', encoding='utf-8') as f:
                 self.metadata = json.load(f)
         except FileNotFoundError:
             raise Exception('Model load failure: Artifacts not found')

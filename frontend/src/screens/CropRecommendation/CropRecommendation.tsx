@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Sprout, Check, ChevronRight, TrendingUp, Droplets, MapPin, Search, ArrowRight, Loader2 } from 'lucide-react';
 import { api } from '../../services/api';
 
 export default function CropRecommendation() {
+  const navigate = useNavigate();
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDemo, setIsDemo] = useState(false);
+  const [season, setSeason] = useState('Kharif');
 
   useEffect(() => {
-    fetchRecommendations();
+    fetchRecommendations(season);
   }, []);
 
-  const fetchRecommendations = async () => {
+  const fetchRecommendations = async (selectedSeason = season) => {
     setLoading(true);
     try {
       // In a real app, these parameters would come from Digital Twin / Context
-      const response = await api.predictCrop('NASHIK', 'Kharif', 'Medium');
+      const response = await api.predictCrop('NASHIK', selectedSeason, 'Medium');
       setRecommendations(response.data);
       setIsDemo(response.isDemo);
     } catch (error) {
@@ -33,12 +36,19 @@ export default function CropRecommendation() {
           <p className="text-[#292B26]/70 mt-1">AI-driven recommendations based on your soil and climate data.</p>
         </div>
         <div className="flex gap-2 items-center">
-          {isDemo && <span className="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-1 rounded-full uppercase tracking-wider">Demo Mode</span>}
-          <select className="border border-[#E5DDCF] bg-white rounded-lg px-4 py-2 font-medium text-[#103D2C] outline-none">
-            <option>Kharif Season 2026</option>
-            <option>Rabi Season 2026</option>
+          {isDemo && <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-1 rounded-full border border-amber-300">Sample Recommendations</span>}
+          <select
+            value={season}
+            onChange={(e) => {
+              setSeason(e.target.value);
+              fetchRecommendations(e.target.value);
+            }}
+            className="border border-[#E5DDCF] bg-white rounded-lg px-4 py-2 font-medium text-[#103D2C] outline-none cursor-pointer"
+          >
+            <option value="Kharif">Kharif Season 2026</option>
+            <option value="Rabi">Rabi Season 2026</option>
           </select>
-          <button onClick={fetchRecommendations} className="bg-[#103D2C] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#17643E]">Generate New</button>
+          <button onClick={() => fetchRecommendations(season)} className="bg-[#103D2C] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#17643E]">Generate New</button>
         </div>
       </div>
 
@@ -74,7 +84,7 @@ export default function CropRecommendation() {
         {/* Recommendations List */}
         <div className="lg:col-span-2 space-y-4">
           <h3 className="font-bold text-[#103D2C]">Top Recommendations</h3>
-          
+
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12 bg-white rounded-2xl border border-[#E5DDCF]">
                <Loader2 className="w-8 h-8 text-[#17643E] animate-spin mb-4" />
@@ -105,7 +115,7 @@ export default function CropRecommendation() {
                     <div className="text-2xl font-bold text-[#17643E]">{rec.score}%</div>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-3 gap-4 mt-6 pt-4 border-t border-[#E5DDCF]">
                   <div>
                     <div className="text-xs text-[#292B26]/60">Est. Yield</div>
@@ -126,10 +136,13 @@ export default function CropRecommendation() {
               </div>
             ))
           )}
-          
+
           {!loading && (
             <div className="flex justify-center mt-6">
-              <button className="text-[#17643E] font-medium hover:underline flex items-center gap-2">
+              <button
+                onClick={() => navigate('/crop-comparison')}
+                className="text-[#17643E] font-medium hover:underline flex items-center gap-2 cursor-pointer"
+              >
                 Compare selected crops <ArrowRight size={16} />
               </button>
             </div>

@@ -47,7 +47,7 @@ export default function MarketIntelligence() {
           <p className="text-[#292B26]/70 mt-1">Live market prices and AI-driven price forecasts.</p>
         </div>
         <div className="flex items-center gap-4 w-full md:w-auto">
-          {isDemo && <span className="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">Demo Mode</span>}
+          {isDemo && <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-1 rounded-full border border-amber-300 uppercase tracking-wider whitespace-nowrap">Sample Market Data</span>}
           <div className="relative w-full md:w-64">
             <input type="text" placeholder="Search crops or markets..." className="w-full pl-10 pr-4 py-2 bg-white border border-[#E5DDCF] rounded-lg focus:outline-none focus:border-[#17643E]" />
             <Search className="absolute left-3 top-2.5 text-[#292B26]/40 w-4 h-4" />
@@ -59,7 +59,7 @@ export default function MarketIntelligence() {
         <div className="grid grid-cols-1 md:grid-cols-4 border-b border-[#E5DDCF]">
           <div className="p-4 border-r border-[#E5DDCF]">
             <label className="text-xs text-[#292B26]/60 font-medium">Crop</label>
-            <select 
+            <select
               value={crop}
               onChange={(e) => setCrop(e.target.value)}
               className="w-full text-lg font-bold text-[#103D2C] outline-none mt-1 bg-transparent cursor-pointer"
@@ -72,7 +72,7 @@ export default function MarketIntelligence() {
           </div>
           <div className="p-4 border-r border-[#E5DDCF]">
             <label className="text-xs text-[#292B26]/60 font-medium">Market Location</label>
-            <select 
+            <select
               value={market}
               onChange={(e) => setMarket(e.target.value)}
               className="w-full text-lg font-bold text-[#103D2C] outline-none mt-1 bg-transparent cursor-pointer"
@@ -91,12 +91,18 @@ export default function MarketIntelligence() {
           </div>
           <div className="p-4 bg-[#FBF7EF]">
             <label className="text-xs text-[#292B26]/60 font-medium">AI Forecast (Next 7 Days)</label>
-            <div className="text-lg font-bold text-[#103D2C] mt-1">
+            <div className="text-base font-bold text-[#103D2C] mt-1">
               {loading ? <Loader2 className="w-5 h-5 animate-spin text-[#17643E]" /> : (
-                <>
-                  {data?.trend === 'Up' ? 'Upward' : data?.trend === 'Down' ? 'Downward' : 'Stable'}
-                  <span className="text-sm text-[#17643E] ml-2">(₹{data?.forecast_7d || '--'})</span>
-                </>
+                <div className="flex flex-col sm:flex-row sm:items-baseline gap-1">
+                  <span className={data?.trend?.startsWith('+') || data?.trend === 'Up' ? 'text-[#17643E]' : data?.trend?.startsWith('-') || data?.trend === 'Down' ? 'text-[#B6532A]' : 'text-[#103D2C]'}>
+                    {data?.trend?.startsWith('+') ? `Upward (${data.trend})` : data?.trend?.startsWith('-') ? `Downward (${data.trend})` : data?.trend || 'Stable'}
+                  </span>
+                  {(data?.forecast_min || data?.forecast_7d) && (
+                    <span className="text-xs text-[#292B26]/70 font-normal">
+                      ₹{data?.forecast_min ? `${data.forecast_min} - ₹${data.forecast_max}` : data?.forecast_7d}
+                    </span>
+                  )}
+                </div>
               )}
             </div>
           </div>

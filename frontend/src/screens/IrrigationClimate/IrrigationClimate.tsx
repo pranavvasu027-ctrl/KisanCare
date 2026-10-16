@@ -6,7 +6,12 @@ export default function IrrigationClimate() {
     <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-serif font-bold text-[#103D2C]">Irrigation & Climate</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-serif font-bold text-[#103D2C]">Irrigation & Climate</h1>
+            <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-amber-300">
+              Sample Advisory Data
+            </span>
+          </div>
           <p className="text-[#292B26]/70 mt-1">Weather forecasts and precise irrigation scheduling.</p>
         </div>
       </div>
@@ -64,7 +69,7 @@ export default function IrrigationClimate() {
         <div className="space-y-6">
           <div className="bg-[#FBF7EF] rounded-2xl shadow-sm border border-[#E5DDCF] p-6">
             <h3 className="font-bold text-[#103D2C] mb-4 flex items-center gap-2"><Droplets className="text-[#17643E]" /> Irrigation Schedule</h3>
-            
+
             <div className="bg-white rounded-xl border border-[#E5DDCF] p-4 mb-4">
               <div className="flex justify-between items-center mb-2">
                 <span className="font-bold text-[#103D2C]">Field 1 (Soybean)</span>

@@ -1,15 +1,28 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Leaf, TrendingUp, Droplets, ShieldAlert, BarChart2 } from 'lucide-react';
 
 export default function CropComparison() {
+  const navigate = useNavigate();
+
   return (
     <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-serif font-bold text-[#103D2C]">Crop Comparison</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-serif font-bold text-[#103D2C]">Crop Comparison</h1>
+            <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-amber-300">
+              Sample Comparison
+            </span>
+          </div>
           <p className="text-[#292B26]/70 mt-1">Side-by-side analysis of candidate crops for your farm.</p>
         </div>
-        <button className="bg-[#103D2C] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#17643E]">Run Simulator</button>
+        <button
+          onClick={() => navigate('/simulator')}
+          className="bg-[#103D2C] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#17643E] transition-colors cursor-pointer"
+        >
+          Run Simulator
+        </button>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-[#E5DDCF] overflow-hidden">

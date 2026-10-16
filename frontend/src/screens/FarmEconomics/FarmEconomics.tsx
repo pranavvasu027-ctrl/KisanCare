@@ -5,7 +5,12 @@ export default function FarmEconomics() {
   return (
     <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-serif font-bold text-[#103D2C]">Farm Economics</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-3xl font-serif font-bold text-[#103D2C]">Farm Economics</h1>
+          <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-amber-300">
+            Sample Economics Data
+          </span>
+        </div>
         <p className="text-[#292B26]/70 mt-1">Track costs, expected revenue, and overall profitability.</p>
       </div>
 

@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api.endpoints import router as api_router
+from .api.endpoints import router as api_router
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -14,6 +14,15 @@ app = FastAPI(title="KisanCare API", description="AI-powered Farm Decision Intel
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
+
+from fastapi.middleware.cors import CORSMiddleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 from fastapi import Request, HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware

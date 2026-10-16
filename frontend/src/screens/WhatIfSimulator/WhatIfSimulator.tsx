@@ -17,11 +17,11 @@ export default function WhatIfSimulator() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1">
-        
+
         {/* Controls Panel */}
         <div className="lg:col-span-4 bg-white rounded-2xl shadow-sm border border-[#E5DDCF] p-5 flex flex-col">
           <h3 className="font-bold text-[#103D2C] mb-4 pb-2 border-b border-[#E5DDCF]">Scenario Parameters</h3>
-          
+
           <div className="space-y-5 flex-1 overflow-y-auto pr-2 custom-scrollbar">
             <div>
               <label className="block text-sm font-medium text-[#292B26] mb-1">Crop Selection</label>
@@ -30,7 +30,7 @@ export default function WhatIfSimulator() {
                 <option>Cotton</option>
               </select>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-[#292B26] mb-1">Irrigation Schedule</label>
               <select className="w-full border border-[#E5DDCF] rounded-lg px-3 py-2 bg-[#FBF7EF] text-sm outline-none">
@@ -39,7 +39,7 @@ export default function WhatIfSimulator() {
                 <option>Rainfed only</option>
               </select>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-[#292B26] mb-1">Fertilizer Strategy</label>
               <select className="w-full border border-[#E5DDCF] rounded-lg px-3 py-2 bg-[#FBF7EF] text-sm outline-none">
@@ -48,7 +48,7 @@ export default function WhatIfSimulator() {
                 <option>High Yield (Chemical)</option>
               </select>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-[#292B26] mb-1">Weather Assumption</label>
               <select className="w-full border border-[#E5DDCF] rounded-lg px-3 py-2 bg-[#FBF7EF] text-sm outline-none">
@@ -57,7 +57,7 @@ export default function WhatIfSimulator() {
                 <option>Excess Rain (+20%)</option>
               </select>
             </div>
-            
+
             <div className="pt-4 mt-2 border-t border-[#E5DDCF]">
               <label className="block text-sm font-medium text-[#292B26] mb-3">Expected Market Price</label>
               <input type="range" min="3000" max="6000" defaultValue="4500" className="w-full accent-[#17643E]" />
@@ -68,7 +68,7 @@ export default function WhatIfSimulator() {
               </div>
             </div>
           </div>
-          
+
           <div className="pt-4 border-t border-[#E5DDCF] mt-4 flex gap-2">
             <button className="flex-1 bg-[#FBF7EF] text-[#292B26] border border-[#E5DDCF] rounded-lg py-2 font-medium hover:bg-[#E5DDCF] flex items-center justify-center gap-2">
               <RotateCcw size={16} /> Reset
@@ -78,7 +78,7 @@ export default function WhatIfSimulator() {
             </button>
           </div>
         </div>
-        
+
         {/* Results Panel */}
         <div className="lg:col-span-8 flex flex-col gap-6">
           <div className="grid grid-cols-2 gap-4">
@@ -88,7 +88,7 @@ export default function WhatIfSimulator() {
               <div className="text-3xl font-bold text-[#103D2C] mb-1">₹38,500 <span className="text-sm font-normal">/ ac</span></div>
               <div className="text-sm text-[#292B26]/70">Est. Yield: 2.6 t/ac</div>
             </div>
-            
+
             <div className="bg-white rounded-2xl border border-[#E5DDCF] p-5 relative overflow-hidden shadow-sm">
               <h4 className="text-sm font-bold text-[#103D2C] mb-1">Simulated Outcome</h4>
               <p className="text-xs text-[#292B26]/60 mb-4">With adjusted parameters</p>
@@ -103,7 +103,7 @@ export default function WhatIfSimulator() {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-2xl shadow-sm border border-[#E5DDCF] p-5 flex-1 flex flex-col">
             <div className="flex justify-between items-center mb-6">
               <h3 className="font-bold text-[#103D2C]">Comparison Chart</h3>
@@ -112,7 +112,7 @@ export default function WhatIfSimulator() {
                 <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-[#17643E]"></span> Simulated</span>
               </div>
             </div>
-            
+
             <div className="flex-1 flex items-end justify-around pb-4 border-b border-[#E5DDCF] px-4">
               {/* Fake Bar Chart */}
               <div className="w-16 flex gap-1 items-end h-full relative">
@@ -120,26 +120,26 @@ export default function WhatIfSimulator() {
                 <div className="w-full bg-[#17643E] rounded-t-sm" style={{ height: '75%' }}></div>
                 <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium text-[#292B26]/70">Yield</span>
               </div>
-              
+
               <div className="w-16 flex gap-1 items-end h-full relative">
                 <div className="w-full bg-[#E5DDCF] rounded-t-sm" style={{ height: '40%' }}></div>
                 <div className="w-full bg-[#17643E] rounded-t-sm" style={{ height: '48%' }}></div>
                 <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium text-[#292B26]/70">Cost</span>
               </div>
-              
+
               <div className="w-16 flex gap-1 items-end h-full relative">
                 <div className="w-full bg-[#E5DDCF] rounded-t-sm" style={{ height: '55%' }}></div>
                 <div className="w-full bg-[#17643E] rounded-t-sm" style={{ height: '85%' }}></div>
                 <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium text-[#292B26]/70">Profit</span>
               </div>
-              
+
               <div className="w-16 flex gap-1 items-end h-full relative">
                 <div className="w-full bg-[#E5DDCF] rounded-t-sm" style={{ height: '70%' }}></div>
                 <div className="w-full bg-[#B6532A] rounded-t-sm" style={{ height: '30%' }}></div>
                 <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium text-[#292B26]/70">Risk</span>
               </div>
             </div>
-            
+
             <div className="mt-8 bg-[#FBF7EF] p-4 rounded-xl border border-[#A8C69A]/30">
               <h4 className="font-bold text-[#103D2C] text-sm mb-2">AI Insights</h4>
               <p className="text-sm text-[#292B26]/80 leading-relaxed">

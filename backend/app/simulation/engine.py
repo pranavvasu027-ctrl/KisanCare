@@ -1,4 +1,4 @@
-from app.economics.engine import calculate_economics
+from ..economics.engine import calculate_economics
 
 def run_simulation(farm_id: str, changes: dict) -> dict:
     # Baseline dummy data

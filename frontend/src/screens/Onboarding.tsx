@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { 
-  Leaf, TrendingUp, ShieldCheck, Droplets, Sprout, BarChart2, 
-  Phone, Lock, EyeOff, Eye, User, Users, MapPin, 
+import {
+  Leaf, TrendingUp, ShieldCheck, Droplets, Sprout, BarChart2,
+  Phone, Lock, EyeOff, Eye, User, Users, MapPin,
   ArrowRight, Search, Check, Globe, Navigation, ArrowLeft, CheckCircle2
 } from 'lucide-react';
 
@@ -42,17 +42,17 @@ export default function Onboarding({ onComplete }: { onComplete?: () => void }) 
     // Simulate API call
     setTimeout(() => {
       setIsLoggingIn(false);
-      setLoginMsg({ 
-        type: 'info', 
-        text: 'Authentication is not yet connected to a backend service. This is a frontend demo.' 
+      setLoginMsg({
+        type: 'info',
+        text: 'Authentication is not yet connected to a backend service. This is a frontend demo.'
       });
     }, 1200);
   };
 
   const handleSocialLogin = (provider: string) => {
-    setLoginMsg({ 
-      type: 'info', 
-      text: `${provider} sign-in is not yet configured in this environment.` 
+    setLoginMsg({
+      type: 'info',
+      text: `${provider} sign-in is not yet configured in this environment.`
     });
   };
 
@@ -76,7 +76,7 @@ export default function Onboarding({ onComplete }: { onComplete?: () => void }) 
   };
 
   const togglePreference = (pref: string) => {
-    setPreferences(prev => 
+    setPreferences(prev =>
       prev.includes(pref) ? prev.filter(p => p !== pref) : [...prev, pref]
     );
   };
@@ -92,7 +92,7 @@ export default function Onboarding({ onComplete }: { onComplete?: () => void }) 
     }
     setStep(s => Math.min(4, s + 1));
   };
-  
+
   const prevStep = () => setStep(s => Math.max(1, s - 1));
 
   const handleComplete = () => {
@@ -105,11 +105,11 @@ export default function Onboarding({ onComplete }: { onComplete?: () => void }) 
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen w-full bg-[#FBF7EF] text-[#292B26] font-sans">
-      
+
       {/* REGION A & B: Hero & Login Card */}
       <div className="w-full lg:w-[65%] relative flex flex-col lg:flex-row p-6 lg:p-10 min-h-[600px] bg-[#103D2C]">
         {/* Background Layer */}
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center mix-blend-overlay opacity-80 lg:opacity-100"
           style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1592982537447-6f2a6a0c5989?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80")' }}
         />
@@ -119,7 +119,7 @@ export default function Onboarding({ onComplete }: { onComplete?: () => void }) 
 
         {/* Region A: Branding Content */}
         <div className="relative z-10 w-full lg:w-[55%] flex flex-col justify-between h-full">
-          
+
           {/* Header / Logo */}
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-2">
@@ -172,7 +172,7 @@ export default function Onboarding({ onComplete }: { onComplete?: () => void }) 
               <span className="absolute -top-4 -left-2 text-6xl text-[#A8C69A] opacity-50 font-serif">"</span>
               <p className="text-lg font-medium relative z-10 font-serif">Growing today,<br/><span className="text-[#A8C69A] font-light">for a healthier tomorrow.</span></p>
             </div>
-            
+
             <div className="flex flex-wrap items-center gap-4 lg:gap-6 mt-6 text-xs text-[#292B26] lg:text-white bg-[#FBF7EF]/80 lg:bg-[#103D2C]/90 p-3 rounded-xl max-w-md backdrop-blur-sm border border-[#E5DDCF] lg:border-transparent">
               <div className="flex items-center gap-1"><ShieldCheck className="w-4 h-4 text-[#164B35] lg:text-[#A8C69A]"/> Your data is secure</div>
               <div className="flex items-center gap-1"><Users className="w-4 h-4 text-[#164B35] lg:text-[#A8C69A]"/> Farmer-owned data</div>
@@ -203,11 +203,11 @@ export default function Onboarding({ onComplete }: { onComplete?: () => void }) 
                 <div className="flex items-center border border-[#E5DDCF] rounded-xl px-4 py-3 bg-white focus-within:border-[#164B35] focus-within:ring-1 focus-within:ring-[#164B35] transition-all shadow-sm">
                   <Phone className="w-5 h-5 text-[#164B35] mr-3" />
                   <span className="text-[#292B26] font-medium mr-2 pr-2 border-r border-[#E5DDCF]">+91</span>
-                  <input 
-                    type="tel" 
+                  <input
+                    type="tel"
                     value={mobile}
                     onChange={(e) => setMobile(e.target.value)}
-                    placeholder="Enter your mobile number" 
+                    placeholder="Enter your mobile number"
                     className="w-full outline-none text-[#292B26] bg-transparent text-sm placeholder-[#292B26]/40"
                   />
                 </div>
@@ -218,11 +218,11 @@ export default function Onboarding({ onComplete }: { onComplete?: () => void }) 
                 <label className="sr-only">Password</label>
                 <div className="flex items-center border border-[#E5DDCF] rounded-xl px-4 py-3 bg-white focus-within:border-[#164B35] focus-within:ring-1 focus-within:ring-[#164B35] transition-all shadow-sm">
                   <Lock className="w-5 h-5 text-[#292B26]/40 mr-3" />
-                  <input 
-                    type={showPassword ? "text" : "password"} 
+                  <input
+                    type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password" 
+                    placeholder="Enter your password"
                     className="w-full outline-none text-[#292B26] bg-transparent text-sm placeholder-[#292B26]/40"
                   />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} aria-label="Toggle password visibility">
@@ -234,11 +234,11 @@ export default function Onboarding({ onComplete }: { onComplete?: () => void }) 
               {/* Remember & Forgot */}
               <div className="flex items-center justify-between text-sm">
                 <label className="flex items-center gap-2 text-[#292B26]/80 cursor-pointer">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="rounded border-[#E5DDCF] text-[#164B35] focus:ring-[#164B35] w-4 h-4 accent-[#164B35]" 
+                    className="rounded border-[#E5DDCF] text-[#164B35] focus:ring-[#164B35] w-4 h-4 accent-[#164B35]"
                   />
                   Remember me
                 </label>
@@ -246,7 +246,7 @@ export default function Onboarding({ onComplete }: { onComplete?: () => void }) 
               </div>
 
               {/* Sign In Button */}
-              <button 
+              <button
                 type="submit"
                 disabled={isLoggingIn}
                 className="w-full bg-[#103D2C] text-white rounded-xl py-3 font-medium flex items-center justify-center gap-2 hover:bg-[#164B35] transition-colors shadow-lg shadow-[#103D2C]/20 disabled:opacity-70"
@@ -290,11 +290,11 @@ export default function Onboarding({ onComplete }: { onComplete?: () => void }) 
       {/* REGION C: Onboarding Panel */}
       <div id="onboarding-panel" className="w-full lg:w-[35%] bg-[#FBF7EF] lg:border-l border-t lg:border-t-0 border-[#E5DDCF] flex flex-col relative z-20 shadow-[-10px_0_20px_rgba(0,0,0,0.02)] min-h-[600px]">
         <div className="p-6 lg:p-8 flex-1 flex flex-col">
-          
+
           {/* Progress Steps Indicator */}
           <div className="flex items-center justify-between mb-10 relative px-2">
             <div className="absolute top-4 left-4 right-4 h-0.5 bg-[#E5DDCF] -z-10"></div>
-            
+
             {[
               { num: 1, label: 'Language' },
               { num: 2, label: 'Farm Info' },
@@ -319,7 +319,7 @@ export default function Onboarding({ onComplete }: { onComplete?: () => void }) 
                   <h3 className="text-xl font-bold text-[#292B26] font-serif">Choose Your Language</h3>
                 </div>
                 <p className="text-sm text-[#292B26]/60 mb-6">Select the language you are most comfortable with.</p>
-                
+
                 <div className="space-y-3">
                   {[
                     { id: 'English', symbol: 'A', name: 'English', sub: 'Continue in English' },
@@ -328,7 +328,7 @@ export default function Onboarding({ onComplete }: { onComplete?: () => void }) 
                   ].map((lang) => {
                     const isSelected = language === lang.id;
                     return (
-                      <div 
+                      <div
                         key={lang.id}
                         onClick={() => setLanguage(lang.id)}
                         className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
@@ -360,7 +360,7 @@ export default function Onboarding({ onComplete }: { onComplete?: () => void }) 
                     <h3 className="text-xl font-bold text-[#292B26] font-serif">Tell us about yourself</h3>
                   </div>
                   <p className="text-sm text-[#292B26]/60 mb-4">This helps us personalize your experience.</p>
-                  
+
                   <div className="grid grid-cols-2 gap-3">
                     {[
                       { id: 'Farmer', icon: User, desc: 'I grow crops on my own or family land' },
@@ -369,7 +369,7 @@ export default function Onboarding({ onComplete }: { onComplete?: () => void }) 
                       const isSelected = role === item.id;
                       const Icon = item.icon;
                       return (
-                        <div 
+                        <div
                           key={item.id}
                           onClick={() => setRole(item.id)}
                           className={`flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all relative ${
@@ -393,11 +393,11 @@ export default function Onboarding({ onComplete }: { onComplete?: () => void }) 
 
                 <div>
                   <label className="block text-sm font-bold text-[#292B26] mb-2 font-serif">Farm Name (Optional)</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={farmName}
                     onChange={(e) => setFarmName(e.target.value)}
-                    placeholder="e.g. Green Acres" 
+                    placeholder="e.g. Green Acres"
                     className="w-full border border-[#E5DDCF] rounded-xl px-4 py-3 bg-white focus:border-[#164B35] focus:ring-1 focus:ring-[#164B35] outline-none text-sm text-[#292B26]"
                   />
                 </div>
@@ -411,11 +411,11 @@ export default function Onboarding({ onComplete }: { onComplete?: () => void }) 
                   </div>
                   <div className="flex items-center border border-[#E5DDCF] rounded-xl px-4 py-3 bg-white focus-within:border-[#164B35] focus-within:ring-1 focus-within:ring-[#164B35]">
                     <Search className="w-4 h-4 text-[#292B26]/40 mr-2" />
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
-                      placeholder="Village, City or PIN code" 
+                      placeholder="Village, City or PIN code"
                       className="w-full outline-none text-sm bg-transparent text-[#292B26]"
                     />
                     <MapPin className="w-4 h-4 text-[#B6532A] ml-2" />
@@ -432,12 +432,12 @@ export default function Onboarding({ onComplete }: { onComplete?: () => void }) 
                   <h3 className="text-xl font-bold text-[#292B26] font-serif">Preferences</h3>
                 </div>
                 <p className="text-sm text-[#292B26]/60 mb-6">Select topics you want updates about (Optional).</p>
-                
+
                 <div className="space-y-3">
                   {['Weather Alerts', 'Market Prices', 'Crop Disease Warnings', 'Govt Schemes'].map(pref => (
                     <label key={pref} className={`flex items-center p-4 rounded-xl border cursor-pointer transition-colors ${preferences.includes(pref) ? 'border-[#164B35] bg-[#F2E8D5]' : 'border-[#E5DDCF] bg-white hover:bg-gray-50'}`}>
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         checked={preferences.includes(pref)}
                         onChange={() => togglePreference(pref)}
                         className="w-4 h-4 text-[#164B35] rounded border-[#E5DDCF] focus:ring-[#164B35] accent-[#164B35]"
@@ -483,7 +483,7 @@ export default function Onboarding({ onComplete }: { onComplete?: () => void }) 
         {/* Footer Navigation */}
         <div className="p-6 lg:p-8 pt-4 border-t border-[#E5DDCF] flex gap-3 mt-auto bg-[#FBF7EF]">
           {step > 1 && (
-            <button 
+            <button
               onClick={prevStep}
               className="px-4 py-3 rounded-xl border border-[#E5DDCF] bg-white text-[#292B26] font-medium hover:bg-gray-50 transition-colors flex items-center justify-center"
               aria-label="Previous step"
@@ -491,16 +491,16 @@ export default function Onboarding({ onComplete }: { onComplete?: () => void }) 
               <ArrowLeft className="w-5 h-5" />
             </button>
           )}
-          
+
           {step < 4 ? (
-            <button 
+            <button
               onClick={nextStep}
               className="flex-1 bg-[#103D2C] text-white rounded-xl py-3 font-semibold flex items-center justify-center gap-2 hover:bg-[#164B35] transition-colors shadow-lg shadow-[#103D2C]/20"
             >
               Next <ArrowRight className="w-4 h-4" />
             </button>
           ) : (
-            <button 
+            <button
               onClick={handleComplete}
               className="flex-1 bg-[#B6532A] text-white rounded-xl py-3 font-semibold flex items-center justify-center gap-2 hover:bg-[#9c4521] transition-colors shadow-lg shadow-[#B6532A]/20"
             >

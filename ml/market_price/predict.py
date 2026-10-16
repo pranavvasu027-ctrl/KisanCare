@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import xgboost as xgb
 import numpy as np
 import pandas as pd
@@ -6,9 +7,10 @@ from typing import Dict, Any
 from datetime import datetime, timedelta
 
 class MarketPricePredictor:
-    def __init__(self, models_dir: str = "models", data_path: str = "dataset/mandi_prices.csv"):
-        self.models_dir = models_dir
-        self.data_path = data_path
+    def __init__(self, models_dir: str | None = None, data_path: str | None = None):
+        repository_root = Path(__file__).resolve().parents[2]
+        self.models_dir = str(Path(models_dir) if models_dir else repository_root / "models")
+        self.data_path = str(Path(data_path) if data_path else repository_root / "dataset" / "mandi_prices.csv")
         self.loaded_models = {}
         # Load dataset once
         if os.path.exists(self.data_path):

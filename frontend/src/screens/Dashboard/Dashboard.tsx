@@ -1,5 +1,6 @@
-import React from 'react';
-import { 
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
   Leaf, Activity, Sprout, Bug, Droplets, TrendingUp, ShieldCheck,
   BarChart2, Lightbulb, History, Settings, Sun, CloudRain, Check,
   Wind, MapPin, Plus, ArrowRight, AlertTriangle, ChevronRight, Map, FileText, MessageSquare
@@ -30,8 +31,8 @@ const StatCard = ({ title, value, change, isPositive, icon: Icon, suffix = '' }:
   </div>
 );
 
-const AlertRow = ({ title, desc, severity }: { title: string, desc: string, severity: 'High' | 'Medium' | 'Low' }) => (
-  <div className="flex items-start justify-between p-4 border-b border-[#E5DDCF] last:border-0 hover:bg-[#FBF7EF] transition-colors cursor-pointer group">
+const AlertRow = ({ title, desc, severity, onClick }: { title: string, desc: string, severity: 'High' | 'Medium' | 'Low', onClick?: () => void }) => (
+  <div onClick={onClick} className="flex items-start justify-between p-4 border-b border-[#E5DDCF] last:border-0 hover:bg-[#FBF7EF] transition-colors cursor-pointer group">
     <div className="flex items-start gap-3">
       <div className={`mt-1 p-1.5 rounded-full ${severity === 'High' ? 'bg-red-100 text-red-600' : severity === 'Medium' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}`}>
         {severity === 'High' ? <Droplets className="w-4 h-4" /> : severity === 'Medium' ? <CloudRain className="w-4 h-4" /> : <Bug className="w-4 h-4" />}
@@ -50,8 +51,8 @@ const AlertRow = ({ title, desc, severity }: { title: string, desc: string, seve
   </div>
 );
 
-const QuickActionCard = ({ icon: Icon, title, desc }: any) => (
-  <div className="bg-[#FBF7EF] rounded-xl p-5 border border-[#E5DDCF] hover:shadow-md transition-all cursor-pointer group flex flex-col h-full">
+const QuickActionCard = ({ icon: Icon, title, desc, onClick }: any) => (
+  <div onClick={onClick} className="bg-[#FBF7EF] rounded-xl p-5 border border-[#E5DDCF] hover:shadow-md transition-all cursor-pointer group flex flex-col h-full">
     <div className="w-10 h-10 rounded-lg bg-[#103D2C] text-white flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
       <Icon className="w-5 h-5" />
     </div>
@@ -64,16 +65,18 @@ const QuickActionCard = ({ icon: Icon, title, desc }: any) => (
 );
 
 export default function Dashboard() {
+  const navigate = useNavigate();
+  const [selectedField, setSelectedField] = useState('Field 1');
   return (
     <div className="p-4 lg:p-8">
       <div className="max-w-[1400px] mx-auto space-y-6">
-        
+
         {/* HERO BANNER */}
         <div className="relative bg-[#F2E8D5] rounded-3xl overflow-hidden shadow-sm border border-[#E5DDCF] min-h-[220px] flex items-center px-8 lg:px-12">
           <div className="absolute right-0 top-0 bottom-0 w-1/2 md:w-2/3 lg:w-3/4">
-            <img 
-              src="https://images.unsplash.com/photo-1592982537447-6f2a6a0c5989?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
-              alt="Landscape" 
+            <img
+              src="https://images.unsplash.com/photo-1592982537447-6f2a6a0c5989?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+              alt="Landscape"
               className="w-full h-full object-cover mix-blend-overlay opacity-60"
               style={{ maskImage: 'linear-gradient(to right, transparent, black 40%)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 40%)' }}
             />
@@ -91,7 +94,7 @@ export default function Dashboard() {
 
         {/* ROW 1: SCORE, WEATHER, CROP STATUS */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
+
           {/* Farm Health Score */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E5DDCF]">
             <div className="flex justify-between items-center mb-6">
@@ -104,7 +107,7 @@ export default function Dashboard() {
                 <span className="text-[10px] text-[#292B26]/50">vs last week</span>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-8">
               <div className="relative w-28 h-28 shrink-0">
                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
@@ -116,7 +119,7 @@ export default function Dashboard() {
                   <span className="text-xs font-semibold text-[#17643E]">Good</span>
                 </div>
               </div>
-              
+
               <div className="flex-1 space-y-3">
                 <div className="flex justify-between items-center text-xs">
                   <span className="flex items-center gap-2 text-[#292B26]/70"><span className="w-1.5 h-1.5 rounded-full bg-[#17643E]"></span> Crop condition</span>
@@ -142,7 +145,7 @@ export default function Dashboard() {
                 <h3 className="font-bold text-[#103D2C]">Weather Today</h3>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-4 mb-6">
               <Sun className="w-12 h-12 text-yellow-500 fill-current" />
               <div>
@@ -178,50 +181,93 @@ export default function Dashboard() {
                 <Leaf className="w-5 h-5 text-[#17643E]" />
                 <h3 className="font-bold text-[#103D2C]">Crop Status</h3>
               </div>
-              <select className="text-xs border border-[#E5DDCF] rounded-lg px-2 py-1 bg-[#FBF7EF] text-[#103D2C] font-medium outline-none">
-                <option>Field 1</option>
-                <option>Field 2</option>
+              <select
+                value={selectedField}
+                onChange={(e) => setSelectedField(e.target.value)}
+                className="text-xs border border-[#E5DDCF] rounded-lg px-2 py-1 bg-[#FBF7EF] text-[#103D2C] font-medium outline-none cursor-pointer"
+              >
+                <option value="Field 1">Field 1 (Soybean)</option>
+                <option value="Field 2">Field 2 (Cotton)</option>
               </select>
             </div>
-            
-            <div className="flex gap-4 mb-4">
-              <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 border border-[#E5DDCF]">
-                <img src="https://images.unsplash.com/photo-1599940824399-b87987ceb72a?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Soybean" className="w-full h-full object-cover" />
-              </div>
-              <div className="flex flex-col justify-center">
-                <h4 className="text-lg font-bold text-[#103D2C]">Soybean</h4>
-                <span className="text-[10px] font-semibold text-[#17643E] bg-[#A8C69A]/30 px-2 py-0.5 rounded-full inline-block w-max mt-1 mb-1">Vegetative Stage</span>
-                <span className="text-xs text-[#292B26]/60">Day 28 of 110</span>
-              </div>
-            </div>
 
-            <div className="w-full bg-[#F2E8D5] rounded-full h-1.5 mb-4">
-              <div className="bg-[#17643E] h-1.5 rounded-full" style={{ width: '25%' }}></div>
-            </div>
+            {selectedField === 'Field 1' ? (
+              <>
+                <div className="flex gap-4 mb-4">
+                  <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 border border-[#E5DDCF]">
+                    <img src="https://images.unsplash.com/photo-1599940824399-b87987ceb72a?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Soybean" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex flex-col justify-center">
+                    <h4 className="text-lg font-bold text-[#103D2C]">Soybean (JS 335)</h4>
+                    <span className="text-[10px] font-semibold text-[#17643E] bg-[#A8C69A]/30 px-2 py-0.5 rounded-full inline-block w-max mt-1 mb-1">Vegetative Stage</span>
+                    <span className="text-xs text-[#292B26]/60">Day 28 of 110</span>
+                  </div>
+                </div>
 
-            <div className="grid grid-cols-3 gap-2">
-              <div className="bg-[#FBF7EF] rounded-lg p-2 flex flex-col items-center justify-center text-center">
-                <Activity className="w-4 h-4 text-[#17643E] mb-1" />
-                <span className="text-[9px] text-[#292B26]/60 mb-0.5">Health</span>
-                <span className="text-xs font-bold text-[#103D2C]">Good</span>
-              </div>
-              <div className="bg-[#FBF7EF] rounded-lg p-2 flex flex-col items-center justify-center text-center">
-                <TrendingUp className="w-4 h-4 text-[#17643E] mb-1" />
-                <span className="text-[9px] text-[#292B26]/60 mb-0.5">Growth</span>
-                <span className="text-xs font-bold text-[#103D2C]">On Track</span>
-              </div>
-              <div className="bg-[#FBF7EF] rounded-lg p-2 flex flex-col items-center justify-center text-center">
-                <ShieldCheck className="w-4 h-4 text-[#17643E] mb-1" />
-                <span className="text-[9px] text-[#292B26]/60 mb-0.5">Risk</span>
-                <span className="text-xs font-bold text-[#103D2C]">Low</span>
-              </div>
-            </div>
+                <div className="w-full bg-[#F2E8D5] rounded-full h-1.5 mb-4">
+                  <div className="bg-[#17643E] h-1.5 rounded-full" style={{ width: '25%' }}></div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="bg-[#FBF7EF] rounded-lg p-2 flex flex-col items-center justify-center text-center">
+                    <Activity className="w-4 h-4 text-[#17643E] mb-1" />
+                    <span className="text-[9px] text-[#292B26]/60 mb-0.5">Health</span>
+                    <span className="text-xs font-bold text-[#103D2C]">Good</span>
+                  </div>
+                  <div className="bg-[#FBF7EF] rounded-lg p-2 flex flex-col items-center justify-center text-center">
+                    <TrendingUp className="w-4 h-4 text-[#17643E] mb-1" />
+                    <span className="text-[9px] text-[#292B26]/60 mb-0.5">Growth</span>
+                    <span className="text-xs font-bold text-[#103D2C]">On Track</span>
+                  </div>
+                  <div className="bg-[#FBF7EF] rounded-lg p-2 flex flex-col items-center justify-center text-center">
+                    <ShieldCheck className="w-4 h-4 text-[#17643E] mb-1" />
+                    <span className="text-[9px] text-[#292B26]/60 mb-0.5">Risk</span>
+                    <span className="text-xs font-bold text-[#103D2C]">Low</span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex gap-4 mb-4">
+                  <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 border border-[#E5DDCF]">
+                    <img src="https://images.unsplash.com/photo-1606041008023-472dfb5e530f?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Cotton" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex flex-col justify-center">
+                    <h4 className="text-lg font-bold text-[#103D2C]">Cotton (Bt)</h4>
+                    <span className="text-[10px] font-semibold text-[#B6532A] bg-amber-100 px-2 py-0.5 rounded-full inline-block w-max mt-1 mb-1">Squaring / Pre-Flowering</span>
+                    <span className="text-xs text-[#292B26]/60">Day 42 of 160</span>
+                  </div>
+                </div>
+
+                <div className="w-full bg-[#F2E8D5] rounded-full h-1.5 mb-4">
+                  <div className="bg-[#B6532A] h-1.5 rounded-full" style={{ width: '26%' }}></div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="bg-[#FBF7EF] rounded-lg p-2 flex flex-col items-center justify-center text-center">
+                    <Activity className="w-4 h-4 text-[#B6532A] mb-1" />
+                    <span className="text-[9px] text-[#292B26]/60 mb-0.5">Health</span>
+                    <span className="text-xs font-bold text-[#B6532A]">Water Stress</span>
+                  </div>
+                  <div className="bg-[#FBF7EF] rounded-lg p-2 flex flex-col items-center justify-center text-center">
+                    <TrendingUp className="w-4 h-4 text-[#17643E] mb-1" />
+                    <span className="text-[9px] text-[#292B26]/60 mb-0.5">Growth</span>
+                    <span className="text-xs font-bold text-[#103D2C]">Moderate</span>
+                  </div>
+                  <div className="bg-[#FBF7EF] rounded-lg p-2 flex flex-col items-center justify-center text-center">
+                    <ShieldCheck className="w-4 h-4 text-[#B6532A] mb-1" />
+                    <span className="text-[9px] text-[#292B26]/60 mb-0.5">Risk</span>
+                    <span className="text-xs font-bold text-[#B6532A]">Medium</span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
         {/* ROW 2: ALERTS, MAP, RECOMMENDATION */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
+
           <div className="bg-white rounded-2xl shadow-sm border border-[#E5DDCF] flex flex-col">
             <div className="p-5 border-b border-[#E5DDCF] flex justify-between items-start">
               <div>
@@ -233,9 +279,9 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex-1 overflow-y-auto max-h-[300px]">
-              <AlertRow title="Water Stress Risk" desc="Low soil moisture detected in Field 2" severity="High" />
-              <AlertRow title="Heavy Rainfall Expected" desc="60% chance of heavy rain in next 48 hours" severity="Medium" />
-              <AlertRow title="Pest Risk Increased" desc="Higher pest activity detected in your region" severity="Medium" />
+              <AlertRow onClick={() => navigate('/irrigation')} title="Water Stress Risk" desc="Low soil moisture detected in Field 2" severity="High" />
+              <AlertRow onClick={() => navigate('/irrigation')} title="Heavy Rainfall Expected" desc="60% chance of heavy rain in next 48 hours" severity="Medium" />
+              <AlertRow onClick={() => navigate('/disease')} title="Pest Risk Increased" desc="Higher pest activity detected in your region" severity="Medium" />
             </div>
           </div>
 
@@ -276,7 +322,10 @@ export default function Dashboard() {
                   Soil moisture is below optimal level. Irrigation in the next 2–3 days can improve yield by 8–12%.
                 </p>
               </div>
-              <button className="w-full bg-[#103D2C] text-white rounded-xl py-3 text-sm font-semibold hover:bg-[#17643E] transition-colors flex justify-center items-center gap-2">
+              <button
+                onClick={() => navigate('/recommendations')}
+                className="w-full bg-[#103D2C] text-white rounded-xl py-3 text-sm font-semibold hover:bg-[#17643E] transition-colors flex justify-center items-center gap-2"
+              >
                 View Details <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -322,10 +371,10 @@ export default function Dashboard() {
               <h3 className="font-bold text-[#103D2C]">Quick Actions</h3>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 h-36">
-              <QuickActionCard icon={FileText} title="View Digital Twin" desc="Explore your farm in detail." />
-              <QuickActionCard icon={Sprout} title="Compare Crops" desc="Find the best crop for your field." />
-              <QuickActionCard icon={Settings} title="Run What-If" desc="See how changes affect yield." />
-              <QuickActionCard icon={MessageSquare} title="Ask AI" desc="Get answers to farming questions." />
+              <QuickActionCard onClick={() => navigate('/digital-twin')} icon={FileText} title="View Digital Twin" desc="Explore your farm in detail." />
+              <QuickActionCard onClick={() => navigate('/crop-comparison')} icon={Sprout} title="Compare Crops" desc="Find the best crop for your field." />
+              <QuickActionCard onClick={() => navigate('/simulator')} icon={Settings} title="Run What-If" desc="See how changes affect yield." />
+              <QuickActionCard onClick={() => navigate('/copilot')} icon={MessageSquare} title="Ask AI" desc="Get answers to farming questions." />
             </div>
           </div>
 

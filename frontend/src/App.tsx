@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import AppShell from './components/layout/AppShell';
 import { AuthProvider, useAuth } from './hooks/useAuth';
+import { IS_DEMO_MODE } from './config/demo';
 
 // Pages
 import Login from './screens/Auth/Login';
@@ -22,18 +23,23 @@ import Copilot from './screens/Copilot/Copilot';
 import GovernmentSchemes from './screens/GovernmentSchemes/GovernmentSchemes';
 import Documents from './screens/Documents/Documents';
 import Settings from './screens/Settings/Settings';
+import PostHarvestLoss from './screens/PostHarvestLoss/PostHarvestLoss';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { session, loading } = useAuth();
-  
+  const { session, loading, isDemoMode } = useAuth();
+
+  if (isDemoMode) {
+    return <>{children}</>;
+  }
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-[#FBF7EF]">Loading...</div>;
   }
-  
+
   if (!session) {
     return <Navigate to="/login" replace />;
   }
-  
+
   return <>{children}</>;
 };
 
@@ -43,13 +49,14 @@ function App() {
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
-          
+
           <Route path="/" element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
             <Route index element={<Dashboard />} />
             <Route path="farm-setup" element={<FarmSetup />} />
             <Route path="digital-twin" element={<DigitalTwin />} />
             <Route path="crop-recommendation" element={<CropRecommendation />} />
             <Route path="crop-comparison" element={<CropComparison />} />
+            <Route path="post-harvest" element={<PostHarvestLoss />} />
             <Route path="simulator" element={<WhatIfSimulator />} />
             <Route path="recommendations" element={<AiRecommendation />} />
             <Route path="soil" element={<SoilIntelligence />} />

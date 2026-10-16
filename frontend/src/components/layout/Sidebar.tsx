@@ -1,9 +1,9 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { 
-  LayoutDashboard, Map, Sprout, TestTube, Bug, Droplets, 
-  LineChart, TrendingUp, FlaskConical, Lightbulb, History, 
-  Bot, Landmark, FileText, Settings, Leaf
+import {
+  LayoutDashboard, Map, Sprout, TestTube, Bug, Droplets,
+  LineChart, TrendingUp, FlaskConical, Lightbulb, History,
+  Bot, Landmark, FileText, Settings, Leaf, Package
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -17,6 +17,7 @@ const Sidebar = () => {
     { name: 'Irrigation & Climate', path: '/irrigation', icon: <Droplets size={20} /> },
     { name: 'Farm Economics', path: '/economics', icon: <LineChart size={20} /> },
     { name: 'Market Intelligence', path: '/market', icon: <TrendingUp size={20} /> },
+    { name: 'Post-Harvest Loss', path: '/post-harvest', icon: <Package size={20} /> },
     { name: 'What-If Simulator', path: '/simulator', icon: <FlaskConical size={20} /> },
     { name: 'Recommendations', path: '/recommendations', icon: <Lightbulb size={20} /> },
     { name: 'Farm Memory', path: '/memory', icon: <History size={20} /> },

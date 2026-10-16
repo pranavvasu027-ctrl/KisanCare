@@ -1,4 +1,8 @@
-export const DEMO_MODE = false;
+import { IS_DEMO_MODE } from '../config/demo';
+
+// In demo mode, no application API request is sent. Returned values are local,
+// sample data and each response is marked with isDemo for the UI.
+export const DEMO_MODE = IS_DEMO_MODE;
 
 // Shared API fetcher with error handling
 async function fetchAPI(endpoint: string, options?: RequestInit) {
@@ -72,7 +76,7 @@ export const api = {
   getMarketPrice: async (crop: string, market: string, date: string) => {
     if (!DEMO_MODE) {
       try {
-        const data = await fetchAPI('/api/v1/market-price/', {
+        const data = await fetchAPI('/api/v1/market-price', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -95,6 +99,7 @@ export const api = {
         trend: '+4.2%',
         forecast_min: 4700,
         forecast_max: 4800,
+        forecast_7d: 4750,
         nearby_markets: [
           { name: 'Nagpur APMC', distance: 24, price: 4680, arrivals: 450, trend: '+20' },
           { name: 'Amravati APMC', distance: 145, price: 4710, arrivals: 820, trend: '-10' }
