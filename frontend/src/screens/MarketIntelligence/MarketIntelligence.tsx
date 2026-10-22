@@ -1,37 +1,52 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, TrendingDown, MapPin, Search, Loader2 } from 'lucide-react';
+import { TrendingUp, TrendingDown, MapPin, Search, Loader2, Calendar, AlertCircle } from 'lucide-react';
 import { api } from '../../services/api';
+
+const SUPPORTED_PAIRS: Record<string, string[]> = {
+  onion: ['Pune(Pimpri)', 'Baramati', 'Junnar'],
+  tomato: ['Pune(Pimpri)', 'Baramati'],
+  cabbage: ['Pune(Manjri)', 'Pune(Pimpri)'],
+  potato: ['Pune(Manjri) APMC', 'Pune(Manjri)'],
+  cauliflower: ['Pune(Manjri) APMC', 'Pune(Manjri)']
+};
 
 export default function MarketIntelligence() {
   const [crop, setCrop] = useState('onion');
-  const [market, setMarket] = useState('Pune Pimpri');
+  const [market, setMarket] = useState('Pune(Pimpri)');
+  const [forecastDate, setForecastDate] = useState('2025-11-04');
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isDemo, setIsDemo] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Keep market selection valid for selected crop
+    const available = SUPPORTED_PAIRS[crop] || ['Pune(Pimpri)'];
+    if (!available.includes(market)) {
+      setMarket(available[0]);
+    }
+  }, [crop]);
+
+  useEffect(() => {
     fetchMarketData();
-  }, [crop, market]);
+  }, [crop, market, forecastDate]);
 
   const fetchMarketData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const today = new Date().toISOString().split('T')[0];
-      const res = await api.getMarketPrice(crop, market, today);
+      const res = await api.getMarketPrice(crop, market, forecastDate);
       setData(res.data);
       setIsDemo(res.isDemo);
     } catch (e: any) {
       console.error(e);
-      // Determine error message based on common API failure patterns
       const msg = e.toString().toLowerCase();
       if (msg.includes("422")) {
-        setError("Insufficient historical data for reliable forecasting. Please try a different market or ingest fresh data.");
+        setError("Insufficient trailing historical data for this target date. The XGBoost model requires at least 14 days of prior mandi arrivals.");
       } else if (msg.includes("404")) {
-        setError("Market price model not available for this crop and market combination.");
+        setError("XGBoost market price model not found for this crop and APMC market combination.");
       } else {
-        setError("An error occurred while communicating with the forecast model.");
+        setError(`Failed to retrieve forecast: ${e.message || String(e)}`);
       }
       setData(null);
     } finally {
@@ -39,121 +54,136 @@ export default function MarketIntelligence() {
     }
   };
 
+  const availableMarkets = SUPPORTED_PAIRS[crop] || ['Pune(Pimpri)'];
+
   return (
     <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-serif font-bold text-[#103D2C]">Market Intelligence</h1>
-          <p className="text-[#292B26]/70 mt-1">Live market prices and AI-driven price forecasts.</p>
+          <p className="text-[#292B26]/70 mt-1">APMC mandi price trends and trained XGBoost price forecasts.</p>
         </div>
         <div className="flex items-center gap-4 w-full md:w-auto">
-          {isDemo && <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-1 rounded-full border border-amber-300 uppercase tracking-wider whitespace-nowrap">Sample Market Data</span>}
-          <div className="relative w-full md:w-64">
-            <input type="text" placeholder="Search crops or markets..." className="w-full pl-10 pr-4 py-2 bg-white border border-[#E5DDCF] rounded-lg focus:outline-none focus:border-[#17643E]" />
-            <Search className="absolute left-3 top-2.5 text-[#292B26]/40 w-4 h-4" />
-          </div>
+          {isDemo ? (
+            <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-1 rounded-full border border-amber-300 uppercase tracking-wider whitespace-nowrap">
+              Sample Market Data
+            </span>
+          ) : (
+            <span className="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-full border border-emerald-300 uppercase tracking-wider whitespace-nowrap">
+              Live Mandi Model
+            </span>
+          )}
         </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-[#E5DDCF] overflow-hidden">
-        <div className="grid grid-cols-1 md:grid-cols-4 border-b border-[#E5DDCF]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 border-b border-[#E5DDCF]">
           <div className="p-4 border-r border-[#E5DDCF]">
-            <label className="text-xs text-[#292B26]/60 font-medium">Crop</label>
+            <label className="text-xs text-[#292B26]/60 font-medium">Commodity Crop</label>
             <select
               value={crop}
               onChange={(e) => setCrop(e.target.value)}
-              className="w-full text-lg font-bold text-[#103D2C] outline-none mt-1 bg-transparent cursor-pointer"
+              className="w-full text-base font-bold text-[#103D2C] outline-none mt-1 bg-transparent cursor-pointer"
             >
-              <option value="onion">Onion</option>
+              <option value="onion">Onion (Kanda)</option>
               <option value="tomato">Tomato</option>
-              <option value="potato">Potato</option>
               <option value="cabbage">Cabbage</option>
+              <option value="potato">Potato</option>
+              <option value="cauliflower">Cauliflower</option>
             </select>
           </div>
+
           <div className="p-4 border-r border-[#E5DDCF]">
-            <label className="text-xs text-[#292B26]/60 font-medium">Market Location</label>
+            <label className="text-xs text-[#292B26]/60 font-medium">APMC Market Location</label>
             <select
               value={market}
               onChange={(e) => setMarket(e.target.value)}
-              className="w-full text-lg font-bold text-[#103D2C] outline-none mt-1 bg-transparent cursor-pointer"
+              className="w-full text-base font-bold text-[#103D2C] outline-none mt-1 bg-transparent cursor-pointer"
             >
-              <option value="Pune">Pune</option>
-              <option value="Mumbai">Mumbai</option>
-              <option value="Nagpur">Nagpur</option>
+              {availableMarkets.map(m => (
+                <option key={m} value={m}>{m}</option>
+              ))}
             </select>
           </div>
+
           <div className="p-4 border-r border-[#E5DDCF]">
-            <label className="text-xs text-[#292B26]/60 font-medium">Current Avg Price</label>
-            <div className="text-2xl font-bold text-[#103D2C] mt-1">
-              {loading ? <Loader2 className="w-6 h-6 animate-spin text-[#17643E]" /> : `₹${data?.current_price || '--'} `}
-              {!loading && <span className="text-sm font-normal">/ qtl</span>}
-            </div>
+            <label className="text-xs text-[#292B26]/60 font-medium">Forecast Baseline Date</label>
+            <input
+              type="date"
+              value={forecastDate}
+              onChange={(e) => setForecastDate(e.target.value)}
+              className="w-full text-sm font-bold text-[#103D2C] outline-none mt-1 bg-transparent cursor-pointer"
+            />
           </div>
+
           <div className="p-4 bg-[#FBF7EF]">
-            <label className="text-xs text-[#292B26]/60 font-medium">AI Forecast (Next 7 Days)</label>
+            <label className="text-xs text-[#292B26]/60 font-medium">AI 7-Day Price Forecast</label>
             <div className="text-base font-bold text-[#103D2C] mt-1">
-              {loading ? <Loader2 className="w-5 h-5 animate-spin text-[#17643E]" /> : (
-                <div className="flex flex-col sm:flex-row sm:items-baseline gap-1">
-                  <span className={data?.trend?.startsWith('+') || data?.trend === 'Up' ? 'text-[#17643E]' : data?.trend?.startsWith('-') || data?.trend === 'Down' ? 'text-[#B6532A]' : 'text-[#103D2C]'}>
-                    {data?.trend?.startsWith('+') ? `Upward (${data.trend})` : data?.trend?.startsWith('-') ? `Downward (${data.trend})` : data?.trend || 'Stable'}
+              {loading ? (
+                <Loader2 className="w-5 h-5 animate-spin text-[#17643E]" />
+              ) : data ? (
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl text-[#103D2C]">₹{data.forecast_7d || data.predicted_price_7d || data.current_price}</span>
+                    <span className="text-xs font-normal text-[#292B26]/60">/ qtl</span>
+                  </div>
+                  <span className={`text-xs font-semibold ${
+                    String(data.trend).includes('+') || data.trend === 'Up' ? 'text-[#17643E]' : 'text-[#B6532A]'
+                  }`}>
+                    {data.trend || '7-day projection'}
                   </span>
-                  {(data?.forecast_min || data?.forecast_7d) && (
-                    <span className="text-xs text-[#292B26]/70 font-normal">
-                      ₹{data?.forecast_min ? `${data.forecast_min} - ₹${data.forecast_max}` : data?.forecast_7d}
-                    </span>
-                  )}
                 </div>
+              ) : (
+                <span className="text-sm font-normal text-[#292B26]/50">--</span>
               )}
             </div>
           </div>
         </div>
 
         {error && (
-          <div className="p-6 bg-red-50 border-t border-red-100">
-            <h3 className="text-red-800 font-bold mb-2">Error Generating Forecast</h3>
-            <p className="text-red-700">{error}</p>
+          <div className="p-6 bg-red-50 border-t border-red-100 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+            <div>
+              <h3 className="text-red-900 font-bold text-sm mb-1">Mandi Model Notice</h3>
+              <p className="text-red-700 text-xs leading-relaxed">{error}</p>
+            </div>
           </div>
         )}
 
-        {!error && (
-
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-[#103D2C]">Nearby Markets</h3>
-            <button onClick={fetchMarketData} className="text-sm text-[#17643E] font-medium hover:underline">Refresh Data</button>
+        {!error && data && (
+          <div className="p-6">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h3 className="font-bold text-[#103D2C]">Mandi Price Breakdown & Historical Lags</h3>
+                <p className="text-xs text-[#292B26]/60 mt-0.5">Extracted from Agmarknet modal price series</p>
+              </div>
+              <button onClick={fetchMarketData} className="text-xs text-[#17643E] font-medium hover:underline">
+                Refresh Forecast
+              </button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="p-3 bg-[#FBF7EF] rounded-xl border border-[#E5DDCF]">
+                <span className="text-xs text-[#292B26]/60 block mb-1">Current Base Price</span>
+                <span className="text-lg font-bold text-[#103D2C]">₹{data.current_price || '--'} / qtl</span>
+              </div>
+              <div className="p-3 bg-[#FBF7EF] rounded-xl border border-[#E5DDCF]">
+                <span className="text-xs text-[#292B26]/60 block mb-1">7-Day Projected Range</span>
+                <span className="text-lg font-bold text-[#103D2C]">
+                  ₹{data.forecast_min ? `${data.forecast_min} - ₹${data.forecast_max}` : `${data.forecast_7d || '--'}`}
+                </span>
+              </div>
+              <div className="p-3 bg-[#FBF7EF] rounded-xl border border-[#E5DDCF]">
+                <span className="text-xs text-[#292B26]/60 block mb-1">Model Architecture</span>
+                <span className="text-sm font-bold text-[#103D2C]">{data.model_type || 'XGBoost v1.0'}</span>
+              </div>
+              <div className="p-3 bg-[#FBF7EF] rounded-xl border border-[#E5DDCF]">
+                <span className="text-xs text-[#292B26]/60 block mb-1">Provenience</span>
+                <span className="text-sm font-bold text-emerald-800">
+                  {isDemo ? 'Sample Cache' : 'Agmarknet APMC'}
+                </span>
+              </div>
+            </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="text-xs uppercase text-[#292B26]/60 border-b border-[#E5DDCF]">
-                  <th className="py-3 font-medium">Market Location</th>
-                  <th className="py-3 font-medium">Distance</th>
-                  <th className="py-3 font-medium">Price (per qtl)</th>
-                  <th className="py-3 font-medium">Arrivals (Tons)</th>
-                  <th className="py-3 font-medium">Trend (Today)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                   <tr><td colSpan={5} className="py-8 text-center text-[#292B26]/50"><Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />Loading market data...</td></tr>
-                ) : data?.nearby_markets?.map((m: any, i: number) => (
-                  <tr key={i} className="border-b border-[#E5DDCF]/50 hover:bg-[#FBF7EF]">
-                    <td className="py-4 font-bold text-[#103D2C] flex items-center gap-2">
-                      <MapPin size={14} className={i === 0 ? "text-[#B6532A]" : "text-[#292B26]/40"} /> {m.name}
-                    </td>
-                    <td className="py-4 text-[#292B26]/80">{m.distance} km</td>
-                    <td className="py-4 font-bold">₹{m.price}</td>
-                    <td className="py-4 text-[#292B26]/80">{m.arrivals}</td>
-                    <td className={`py-4 flex items-center gap-1 ${m.trend.startsWith('+') ? 'text-[#17643E]' : m.trend.startsWith('-') ? 'text-[#B6532A]' : 'text-[#292B26]/50'}`}>
-                      {m.trend.startsWith('+') ? <TrendingUp size={14} /> : m.trend.startsWith('-') ? <TrendingDown size={14} /> : null}
-                      {m.trend}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
         )}
       </div>
     </div>

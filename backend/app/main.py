@@ -34,7 +34,7 @@ class SecurityMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, max_upload_size: int = 5_000_000, max_requests: int = 30, window_seconds: int = 60):
         super().__init__(app)
         self.max_upload_size = max_upload_size
-        self.max_requests = max_requests
+        self.max_requests = int(os.environ.get("RATE_LIMIT_MAX_REQUESTS", "500" if os.environ.get("TESTING") else str(max_requests)))
         self.window_seconds = window_seconds
         self.ip_records = defaultdict(list)
 

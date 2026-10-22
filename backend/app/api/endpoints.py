@@ -10,8 +10,10 @@ from pydantic import BaseModel, Field
 
 from ..economics.engine import calculate_economics
 from ..simulation.engine import run_simulation
+from ..copilot.router import router as copilot_router
 
 router = APIRouter()
+router.include_router(copilot_router)
 
 
 class FarmCreate(BaseModel):

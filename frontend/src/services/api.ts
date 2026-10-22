@@ -1,13 +1,32 @@
 import { IS_DEMO_MODE } from '../config/demo';
+import { supabase } from './supabase';
 
 // In demo mode, no application API request is sent. Returned values are local,
 // sample data and each response is marked with isDemo for the UI.
 export const DEMO_MODE = IS_DEMO_MODE;
 
-// Shared API fetcher with robust error handling
+// Shared API fetcher with robust error handling and JWT injection
 async function fetchAPI(endpoint: string, options?: RequestInit) {
   try {
-    const response = await fetch(endpoint, options);
+    const headers = new Headers(options?.headers || {});
+    if (!headers.has('Content-Type') && options?.body && typeof options.body === 'string') {
+      headers.set('Content-Type', 'application/json');
+    }
+
+    // Attach user auth token when available
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token && !headers.has('Authorization')) {
+        headers.set('Authorization', `Bearer ${session.access_token}`);
+      }
+    } catch {
+      // Ignore if supabase offline
+    }
+
+    const response = await fetch(endpoint, {
+      ...options,
+      headers
+    });
     if (!response.ok) {
       let errorDetail = response.statusText;
       try {
@@ -317,5 +336,77 @@ export const api = {
         break_even_price: expected_yield > 0 ? total_cost / expected_yield : 0
       }
     };
+  },
+
+  // 11. What-If Scenario Simulation API
+  runSimulation: async (farmId: string, changes: Record<string, any>) => {
+    if (!DEMO_MODE) {
+      const data = await fetchAPI('/api/v1/simulate', {
+        method: 'POST',
+        body: JSON.stringify({ farm_id: farmId, changes })
+      });
+      return { data, isDemo: false };
+    }
+
+    const rainfallDiff = changes.rainfall_change_percent ?? 0;
+    const baseYield = 24;
+    const simYield = Math.max(5, Math.round((baseYield * (1 + (rainfallDiff * 0.75 / 100))) * 10) / 10);
+    const cost = changes.input_cost ?? 30000;
+    const revenue = simYield * 2500;
+    const profit = revenue - cost;
+
+    return {
+      isDemo: true,
+      data: {
+        baseline: { yield: baseYield, cost: 30000, revenue: 60000, profit: 30000, risk: 0.35 },
+        scenario: { yield: simYield, cost, revenue, profit, risk: rainfallDiff < -15 ? 0.52 : 0.30 },
+        differences: { profit_diff: profit - 30000 },
+        explanation: [
+          `Rainfall adjusted by ${rainfallDiff}% affecting simulated harvest yield.`,
+          'Calculated using agro-climatic sensitivity heuristic.'
+        ]
+      }
+    };
+  },
+
+  // 12. AI Copilot (Hosted Gemini & Grounded Agricultural Intelligence)
+  askCopilot: async (
+    message: string,
+    history?: Array<{ role: string; content: string }>,
+    farmId?: string
+  ) => {
+    if (!DEMO_MODE) {
+      const data = await fetchAPI('/api/v1/copilot/chat', {
+        method: 'POST',
+        body: JSON.stringify({
+          message,
+          history: history || [],
+          farm_id: farmId
+        })
+      });
+      return { ...data, isDemo: false };
+    }
+
+    // In demo mode, clearly return marked sample dialogue without claiming real LLM
+    await new Promise(r => setTimeout(r, 600));
+    return {
+      isDemo: true,
+      grounded: false,
+      reply: `[Demo Copilot Response]: You asked: "${message}". In live mode, this connects to the backend Gemini 3.8 Flash model grounded in your authenticated Supabase farm and soil records. Set VITE_DEMO_MODE=false to test live model inference.`,
+      conversation_id: 'demo-conversation-id'
+    };
+  },
+
+  // 13. Copilot Status API
+  getCopilotStatus: async () => {
+    if (!DEMO_MODE) {
+      try {
+        const data = await fetchAPI('/api/v1/copilot/status');
+        return { ...data, isDemo: false };
+      } catch (err: any) {
+        return { status: 'error', gemini_configured: false, message: err.message, isDemo: false };
+      }
+    }
+    return { status: 'demo', gemini_configured: false, message: 'Running in Demo Mode', isDemo: true };
   }
 };
