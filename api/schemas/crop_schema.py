@@ -23,6 +23,8 @@ class CropScoreBreakdownSchema(BaseModel):
     avg_yield_t_ha: Optional[float] = Field(None, description="Historical average yield in tonnes/hectare")
     historically_grown: Optional[bool] = Field(None, description="Whether historically grown in this district/season")
     water_constrained: Optional[bool] = Field(False, description="Whether water availability limits crop suitability")
+    is_regionally_supported: Optional[bool] = Field(True, description="Whether crop has historical cultivation evidence in Model 2 regional dataset")
+    evidence_tier: Optional[str] = Field(None, description="Regional evidence tier (e.g. Verified in Sangli vs Biophysical Candidate Only)")
     soil_climate_source: Optional[str] = Field(
         default=None,
         description="Source of the SoilClimateScore."
@@ -41,7 +43,7 @@ class CropRecommendationRequest(BaseModel):
     """
     N: float = Field(..., ge=0.0, le=300.0, description="Available Soil Nitrogen (kg/ha or mg/kg)")
     P: float = Field(..., ge=0.0, le=300.0, description="Available Soil Phosphorus (kg/ha or mg/kg)")
-    K: float = Field(..., ge=0.0, le=300.0, description="Available Soil Potassium (kg/ha or mg/kg)")
+    K: float = Field(..., ge=0.0, le=800.0, description="Available Soil Potassium (kg/ha or mg/kg)")
     ph: float = Field(..., ge=3.5, le=9.5, description="Soil pH value (3.5 - 9.5)")
     temperature: float = Field(..., ge=5.0, le=50.0, description="Mean temperature in Celsius (5.0 - 50.0)")
     humidity: float = Field(..., ge=10.0, le=100.0, description="Relative humidity percentage (10.0 - 100.0)")

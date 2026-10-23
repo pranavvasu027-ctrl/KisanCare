@@ -230,7 +230,7 @@ class TestHuggingFacePipeline:
         # All regional scores should default to 0.0 with explicit label
         for rec in result.recommendations:
             assert rec.region_score == 0.0
-            assert rec.region_suitability == "No regional data"
+            assert "Unverified in" in rec.region_suitability or rec.region_suitability == "No regional data"
             assert rec.npk_score >= 0.0
 
     def test_ranking_reproducibility(self):
@@ -269,6 +269,45 @@ class TestHuggingFacePipeline:
                         N=90.0, P=42.0, K=43.0, temperature=26.0, humidity=70.0, ph=6.5, rainfall=720.0
                     )
                 )
+
+    def test_regional_evidence_safeguard_coffee_suppression(self):
+        """Verify that crops lacking regional historical presence (e.g., Coffee in Sangli)
+        are categorized as Biophysical Candidates with 50% discount and do not rank #1."""
+        inp = CropRecommendationInput(
+            N=105.0, P=30.0, K=55.0, temperature=35.0, humidity=68.0, ph=7.0, rainfall=900.0,
+            district="Sangli", season="Kharif", top_k=22
+        )
+        result = self.pipeline.predict(inp)
+
+        # 1. Top prediction must be a regionally proven crop (e.g. Rice), not Coffee
+        assert result.prediction != "Coffee"
+        assert result.prediction == "Rice"
+
+        # 2. Coffee must be marked unverified with 50% discount
+        coffee_rec = next((r for r in result.recommendations if r.crop.lower() == "coffee"), None)
+        assert coffee_rec is not None
+        assert coffee_rec.is_regionally_supported is False
+        assert coffee_rec.evidence_tier == "Biophysical Candidate Only (Unverified in Sangli)"
+        assert "Unverified in Sangli (0 Census Records)" in coffee_rec.region_suitability
+        assert coffee_rec.rank > 5, f"Coffee rank should be suppressed, got {coffee_rec.rank}"
+
+        # 3. Proven Sangli crops (Rice, Jowar, Bajra) must be ranked above Coffee
+        rice_rec = next(r for r in result.recommendations if r.crop.lower() == "rice")
+        assert rice_rec.is_regionally_supported is True
+        assert rice_rec.rank < coffee_rec.rank
+
+        # 4. Regional safeguard warning must be emitted
+        assert any("Regional Evidence Safeguard" in w for w in result.warnings)
+
+    def test_scientific_extrapolation_warnings(self):
+        """Verify that inputs exceeding Model 1 training distribution (K > 205, Rainfall > 300) emit clear warnings."""
+        inp = CropRecommendationInput(
+            N=90.0, P=45.0, K=350.0, temperature=26.0, humidity=70.0, ph=6.5, rainfall=750.0,
+            district="Pune", season="Kharif", top_k=5
+        )
+        result = self.pipeline.predict(inp)
+        assert any("Measured soil Potassium (350.0 kg/ha) exceeds Model 1 training maximum" in w for w in result.warnings)
+        assert any("Rainfall (750.0 mm) exceeds Model 1 training maximum (298.6 mm)" in w for w in result.warnings)
 
 
 class TestCropRecommendationAPIEndpoints:

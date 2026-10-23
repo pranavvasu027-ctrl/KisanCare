@@ -167,6 +167,8 @@ def predict_crop_from_dict(data: Dict[str, Any]) -> Dict[str, Any]:
                 "historically_grown": r.historically_grown,
                 "water_constrained": r.water_constrained,
                 "reason": r.reason,
+                "is_regionally_supported": r.is_regionally_supported,
+                "evidence_tier": r.evidence_tier,
             }
             for r in res.recommendations
         ],

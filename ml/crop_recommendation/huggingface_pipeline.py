@@ -58,7 +58,7 @@ FEATURE_NAMES: List[str] = [
 FEATURE_BOUNDS: Dict[str, Tuple[float, float, str]] = {
     "N": (0.0, 300.0, "mg/kg or kg/ha"),
     "P": (0.0, 300.0, "mg/kg or kg/ha"),
-    "K": (0.0, 300.0, "mg/kg or kg/ha"),
+    "K": (0.0, 800.0, "mg/kg or kg/ha"),
     "temperature": (5.0, 50.0, "°C"),
     "humidity": (10.0, 100.0, "%"),
     "ph": (3.5, 9.5, "pH unit"),
@@ -180,6 +180,8 @@ class CropRecommendationItem:
     historically_grown: bool
     water_constrained: bool
     reason: str
+    is_regionally_supported: bool = True
+    evidence_tier: str = "Verified"
 
 
 @dataclass
@@ -261,6 +263,8 @@ class CropRecommendationPipeline:
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore")
                     self.model1 = joblib.load(model1_path)
+                    if hasattr(self.model1, 'n_jobs'):
+                        self.model1.n_jobs = 1
                     self.label_enc1 = joblib.load(encoder_path)
                     self.model2_df = pd.read_csv(model2_path)
 
@@ -307,6 +311,20 @@ class CropRecommendationPipeline:
                 raise InputValidationError(
                     f"Feature '{name}' ({val} {unit}) is out of supported range [{low}, {high} {unit}]."
                 )
+
+        # Scientific extrapolation warnings for values beyond Model 1 training distribution
+        if params.K > 205.0:
+            warnings_list.append(
+                f"Measured soil Potassium ({params.K:.1f} kg/ha) exceeds Model 1 training maximum (205.0 kg/ha). "
+                "Common in Maharashtra Vertisols (> 280 kg/ha benchmark); Model 1 RF splits saturate above 205 kg/ha."
+            )
+        if params.rainfall > 300.0:
+            warnings_list.append(
+                f"Rainfall ({params.rainfall:.1f} mm) exceeds Model 1 training maximum (298.6 mm). "
+                "Model 1 was trained on raw monthly/critical-stage rainfall (20.2–298.6 mm) rather than cumulative annual precipitation. "
+                "Values > 264 mm saturate Random Forest tree splits, routing to the wet-climate branch favoring Rice/Jute. "
+                "Evaluate recommendations in conjunction with regional historical presence."
+            )
 
         # 2. Validate district
         resolved_district: str = "Nashik"
@@ -517,11 +535,25 @@ class CropRecommendationPipeline:
                 continue
             seen_crop_names.add(norm_disp)
 
-            # Weighted combined multi-criteria score
-            combined = round(w1 * s1 + w2 * s2, 4)
+            # Regional evidence assessment (26-year Maharashtra APY Census)
+            has_regional = bool(m2_entry is not None and s2 > 0.0)
+            is_regionally_supported = has_regional
+            raw_combined = round(w1 * s1 + w2 * s2, 4)
 
-            # Metadata extraction from regional scoring table
-            reg_label = m2_entry["recommendation"] if m2_entry else "No regional data"
+            if has_regional:
+                combined = raw_combined
+                evidence_tier = f"Verified in {district}"
+                reg_label = m2_entry["recommendation"] if m2_entry else "Suitable"
+            else:
+                # 50% uncertainty factor for crops lacking regional historical presence
+                combined = round(raw_combined * 0.50, 4)
+                if region_df.empty:
+                    evidence_tier = f"Biophysical Candidate Only (No Regional Data for {district})"
+                    reg_label = "No regional data"
+                else:
+                    evidence_tier = f"Biophysical Candidate Only (Unverified in {district})"
+                    reg_label = f"Unverified in {district} (0 Census Records)"
+
             grown_pct = m2_entry["crop_freq_pct"] if m2_entry else 0.0
             avg_yield = m2_entry["avg_yield"] if m2_entry else 0.0
             hist_grown = m2_entry["is_historically_grown"] if m2_entry else False
@@ -538,14 +570,16 @@ class CropRecommendationPipeline:
 
             # Explanatory reasoning
             reason_parts: List[str] = []
-            if s1 > 0.10:
+            if s1 > 0.05:
                 reason_parts.append(f"Soil/Climate RF probability: {s1 * 100:.1f}%")
-            if m2_entry:
+            if has_regional:
                 reason_parts.append(
                     f"26-yr Maharashtra suitability: {s2 * 100:.1f}% ({reg_label})"
                 )
             else:
-                reason_parts.append("Pan-India agronomic candidate outside Maharashtra census table")
+                reason_parts.append(
+                    f"0 historical census records in {district} ({season}); unverified regionally (50% uncertainty discount applied)"
+                )
 
             if water_constrained:
                 reason_parts.append(
@@ -567,11 +601,16 @@ class CropRecommendationPipeline:
                 historically_grown=hist_grown,
                 water_constrained=water_constrained,
                 reason=reason_str,
+                is_regionally_supported=is_regionally_supported,
+                evidence_tier=evidence_tier,
             )
             scored_candidates.append(item)
 
-        # Sort descending by combined score, then by NPK probability
-        scored_candidates.sort(key=lambda x: (x.combined_score, x.npk_score), reverse=True)
+        # Sort candidates: prioritize regionally supported crops, then combined score, then NPK probability
+        scored_candidates.sort(
+            key=lambda x: (x.is_regionally_supported, x.combined_score, x.npk_score),
+            reverse=True
+        )
 
         # Assign ranks
         for idx, cand in enumerate(scored_candidates):
@@ -585,6 +624,12 @@ class CropRecommendationPipeline:
         if top_candidates and top_candidates[0].water_constrained:
             warnings_list.append(
                 f"Top candidate '{top_prediction}' has high water requirement ({HIGH_WATER_DEMAND_CROPS.get(normalize_string(top_prediction))}mm); confirm supplemental irrigation."
+            )
+
+        if any(not c.is_regionally_supported for c in top_candidates):
+            warnings_list.append(
+                f"Regional Evidence Safeguard: Candidate crops lacking historical cultivation records in {district} ({season}) "
+                "are designated 'Biophysical Candidate Only' with a 50% regional uncertainty discount."
             )
 
         npk_status = self._evaluate_npk_status(inputs.N, inputs.P, inputs.K)

@@ -131,6 +131,8 @@ class CropRecommendationService:
                 historically_grown=r.historically_grown,
                 water_constrained=r.water_constrained,
                 reason=r.reason,
+                is_regionally_supported=r.is_regionally_supported,
+                evidence_tier=r.evidence_tier,
                 soil_climate_source=f"Hugging Face: {self._pipeline.repo_id} (RandomForestClassifier)",
             )
             for r in result.recommendations
