@@ -17,6 +17,10 @@ from api.services.disease_service import (
     ModelUnavailableError,
     disease_detection_service,
 )
+try:
+    from models.disease_detection.specialists.registry import specialist_registry
+except ImportError:
+    from specialists.registry import specialist_registry
 
 logger = logging.getLogger("kisancare.api.disease")
 
@@ -34,22 +38,71 @@ def get_disease_status():
 
 
 @router.get(
+    "/api/disease/specialists",
+    summary="List Registered Specialist Models",
+    response_model=Dict[str, Any],
+)
+def get_specialists_registry():
+    """Return status and metadata for all crop specialist models."""
+    return specialist_registry.get_registry_status()
+
+
+@router.get(
     "/api/disease/classes",
     summary="List Supported Pathologies and Host Crops",
     response_model=Dict[str, Any],
 )
 def get_supported_classes():
-    """Return all 38 supported PlantVillage classes and host crop taxonomy."""
+    """Return all supported classes and host crop taxonomy from the active engine."""
     status_info = disease_detection_service.get_status()
     return {
-        "num_classes": status_info.get("classes_count", 38),
+        "num_classes": status_info.get("classes_count", 387),
+        "crops_count": status_info.get("crops_count", 59),
         "classes": status_info.get("classes", []),
-        "supported_crops": [
+        "supported_crops": status_info.get("supported_crops", [
             "Apple", "Blueberry", "Cherry", "Corn", "Grape", "Orange",
             "Peach", "Pepper Bell", "Potato", "Raspberry", "Soybean",
-            "Squash", "Strawberry", "Tomato"
-        ],
+            "Squash", "Strawberry", "Tomato", "Cotton", "Rice", "Wheat"
+        ]),
+        "active_engine": status_info.get("active_engine"),
     }
+
+
+@router.get(
+    "/api/disease/engine",
+    summary="Get Active Model Engine and Rollback Status",
+    response_model=Dict[str, Any],
+)
+def get_disease_engine():
+    """Return active engine name and availability of primary and rollback engines."""
+    status_info = disease_detection_service.get_status()
+    return {
+        "active_engine": status_info.get("active_engine"),
+        "primary_engine_available": status_info.get("primary_engine_available"),
+        "rollback_engine_available": status_info.get("rollback_engine_available"),
+    }
+
+
+@router.post(
+    "/api/disease/engine",
+    summary="Switch Active Disease Detection Engine (india_multicrop / efficientnet)",
+    response_model=Dict[str, Any],
+)
+def switch_disease_engine(payload: Dict[str, str]):
+    """Switch between 'india_multicrop' and 'efficientnet' engines for instant rollback."""
+    engine = payload.get("engine", "")
+    try:
+        disease_detection_service.set_engine(engine)
+        return {
+            "success": True,
+            "active_engine": engine,
+            "message": f"Successfully activated '{engine}' engine.",
+        }
+    except Exception as err:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Engine switch failed: {err}"
+        )
 
 
 @router.post(
@@ -72,6 +125,7 @@ async def predict_disease_multipart(
     image_type: Optional[str] = Form(None, description="Image capture modality"),
     sample_id: Optional[str] = Form(None, description="Preset test image identifier"),
     symptoms: Optional[str] = Form(None, description="Optional comma-separated or JSON symptoms list"),
+    abstention_threshold: Optional[float] = Form(None, description="Custom abstention cutoff (0.0-1.0)"),
 ):
     """Multipart or JSON endpoint for foliar disease diagnosis."""
     content_type = request.headers.get("content-type", "")
@@ -92,6 +146,7 @@ async def predict_disease_multipart(
                 growth_stage=body.get("growth_stage", "vegetative"),
                 image_type=body.get("image_type", "leaf"),
                 symptoms=body.get("symptoms", []),
+                abstention_threshold=body.get("abstention_threshold"),
             )
         except InvalidImageError as err:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err))
@@ -126,6 +181,7 @@ async def predict_disease_multipart(
             growth_stage=growth_stage or "vegetative",
             image_type=image_type or "leaf",
             symptoms=symptoms_list,
+            abstention_threshold=abstention_threshold,
         )
     except InvalidImageError as err:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err))
@@ -155,6 +211,7 @@ def predict_disease_json(request: DiseasePredictionRequestJSON):
             growth_stage=request.growth_stage,
             image_type=request.image_type,
             symptoms=request.symptoms,
+            abstention_threshold=request.abstention_threshold,
         )
     except InvalidImageError as err:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err))
@@ -182,6 +239,7 @@ async def predict_disease_v1_compatible(
     image_type: Optional[str] = Form(None),
     sample_id: Optional[str] = Form(None),
     symptoms: Optional[str] = Form(None),
+    abstention_threshold: Optional[float] = Form(None),
 ):
     """Endpoint matching the exact `/api/v1/disease-detection` route used by the frontend."""
     return await predict_disease_multipart(
@@ -193,4 +251,5 @@ async def predict_disease_v1_compatible(
         image_type=image_type,
         sample_id=sample_id,
         symptoms=symptoms,
+        abstention_threshold=abstention_threshold,
     )
