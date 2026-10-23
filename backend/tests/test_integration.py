@@ -39,8 +39,9 @@ def test_crop_proxy_forwards_contract_with_timeout(mock_post):
     assert mock_post.call_args.kwargs["timeout"] > 0
 
 
+@patch("ml.market_price.predict.MarketPricePredictor.predict", side_effect=RuntimeError("Model unavailable"))
 @patch("backend.app.api.endpoints.requests.post", side_effect=requests.ConnectionError())
-def test_ml_connection_failure_is_explicit(mock_post):
+def test_ml_connection_failure_is_explicit(mock_post, mock_predictor):
     response = client.post("/api/v1/market-price", json={"crop": "onion", "market": "Pune(Pimpri)", "date": "2024-07-29"})
     assert response.status_code == 503
     assert response.json()["detail"]["code"] == "ml_service_unavailable"
