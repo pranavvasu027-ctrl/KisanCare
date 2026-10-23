@@ -1,0 +1,386 @@
+{
+  "nitrogen_sweep": [
+    {
+      "N": 10.0,
+      "top_crop": "Arhar/Tur",
+      "top_3": "Arhar/Tur(0.400), Rice(0.303), Bajra(0.297)",
+      "m1_npk_score": 0.2,
+      "combined_score": 0.4001
+    },
+    {
+      "N": 40.0,
+      "top_crop": "Arhar/Tur",
+      "top_3": "Arhar/Tur(0.394), Rice(0.303), Urad(0.301)",
+      "m1_npk_score": 0.19,
+      "combined_score": 0.3941
+    },
+    {
+      "N": 80.0,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.309), Maize(0.298), Bajra(0.297)",
+      "m1_npk_score": 0.01,
+      "combined_score": 0.3094
+    },
+    {
+      "N": 120.0,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.312), Maize(0.298), Bajra(0.297)",
+      "m1_npk_score": 0.015,
+      "combined_score": 0.3124
+    },
+    {
+      "N": 180.0,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.312), Maize(0.298), Bajra(0.297)",
+      "m1_npk_score": 0.015,
+      "combined_score": 0.3124
+    },
+    {
+      "N": 250.0,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.312), Maize(0.298), Bajra(0.297)",
+      "m1_npk_score": 0.015,
+      "combined_score": 0.3124
+    }
+  ],
+  "phosphorus_sweep": [
+    {
+      "P": 10.0,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.306), Bajra(0.297), Maize(0.283)",
+      "combined_score": 0.3064
+    },
+    {
+      "P": 30.0,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.306), Bajra(0.297), Maize(0.283)",
+      "combined_score": 0.3064
+    },
+    {
+      "P": 50.0,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.312), Maize(0.307), Bajra(0.297)",
+      "combined_score": 0.3124
+    },
+    {
+      "P": 80.0,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.306), Maize(0.304), Bajra(0.297)",
+      "combined_score": 0.3064
+    },
+    {
+      "P": 120.0,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.303), Bajra(0.297), Maize(0.295)",
+      "combined_score": 0.3034
+    },
+    {
+      "P": 140.0,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.303), Bajra(0.297), Maize(0.295)",
+      "combined_score": 0.3034
+    }
+  ],
+  "potassium_sweep": [
+    {
+      "K": 15.0,
+      "top_crop": "Maize",
+      "top_3": "Maize(0.578), Arhar/Tur(0.307), Rice(0.303)",
+      "combined_score": 0.5775,
+      "warnings_count": 0
+    },
+    {
+      "K": 40.0,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.303), Maize(0.298), Bajra(0.297)",
+      "combined_score": 0.3034,
+      "warnings_count": 1
+    },
+    {
+      "K": 80.0,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.303), Bajra(0.297), Maize(0.286)",
+      "combined_score": 0.3034,
+      "warnings_count": 1
+    },
+    {
+      "K": 150.0,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.303), Bajra(0.297), Maize(0.283)",
+      "combined_score": 0.3034,
+      "warnings_count": 1
+    },
+    {
+      "K": 200.0,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.303), Bajra(0.297), Maize(0.283)",
+      "combined_score": 0.3034,
+      "warnings_count": 1
+    },
+    {
+      "K": 350.0,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.303), Bajra(0.297), Maize(0.283)",
+      "combined_score": 0.3034,
+      "warnings_count": 2
+    },
+    {
+      "K": 500.0,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.303), Bajra(0.297), Maize(0.283)",
+      "combined_score": 0.3034,
+      "warnings_count": 2
+    }
+  ],
+  "ph_sweep": [
+    {
+      "pH": 4.5,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.426), Maize(0.314), Bajra(0.297)",
+      "combined_score": 0.4264
+    },
+    {
+      "pH": 5.5,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.426), Maize(0.314), Bajra(0.297)",
+      "combined_score": 0.4264
+    },
+    {
+      "pH": 6.5,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.306), Maize(0.298), Bajra(0.297)",
+      "combined_score": 0.3064
+    },
+    {
+      "pH": 7.5,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.318), Maize(0.298), Bajra(0.297)",
+      "combined_score": 0.3184
+    },
+    {
+      "pH": 8.5,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.321), Maize(0.298), Bajra(0.297)",
+      "combined_score": 0.3214
+    },
+    {
+      "pH": 9.2,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.321), Maize(0.298), Bajra(0.297)",
+      "combined_score": 0.3214
+    }
+  ],
+  "rainfall_sweep": [
+    {
+      "rainfall_mm": 30.0,
+      "top_crop": "Maize",
+      "top_3": "Maize(0.349), Rice(0.303), Bajra(0.297)",
+      "rice_combined": 0.3034,
+      "rice_m1_npk": 0.0,
+      "is_extrapolated": false
+    },
+    {
+      "rainfall_mm": 60.0,
+      "top_crop": "Maize",
+      "top_3": "Maize(0.398), Rice(0.303), Bajra(0.297)",
+      "rice_combined": 0.3034,
+      "rice_m1_npk": 0.0,
+      "is_extrapolated": false
+    },
+    {
+      "rainfall_mm": 100.0,
+      "top_crop": "Maize",
+      "top_3": "Maize(0.449), Rice(0.303), Bajra(0.297)",
+      "rice_combined": 0.3034,
+      "rice_m1_npk": 0.0,
+      "is_extrapolated": false
+    },
+    {
+      "rainfall_mm": 150.0,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.306), Maize(0.298), Bajra(0.297)",
+      "rice_combined": 0.3064,
+      "rice_m1_npk": 0.005,
+      "is_extrapolated": false
+    },
+    {
+      "rainfall_mm": 220.0,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.453), Maize(0.298), Bajra(0.297)",
+      "rice_combined": 0.4534,
+      "rice_m1_npk": 0.25,
+      "is_extrapolated": false
+    },
+    {
+      "rainfall_mm": 350.0,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.468), Maize(0.298), Bajra(0.297)",
+      "rice_combined": 0.4684,
+      "rice_m1_npk": 0.275,
+      "is_extrapolated": true
+    },
+    {
+      "rainfall_mm": 750.0,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.468), Maize(0.298), Bajra(0.297)",
+      "rice_combined": 0.4684,
+      "rice_m1_npk": 0.275,
+      "is_extrapolated": true
+    },
+    {
+      "rainfall_mm": 1200.0,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.468), Maize(0.298), Bajra(0.297)",
+      "rice_combined": 0.4684,
+      "rice_m1_npk": 0.275,
+      "is_extrapolated": true
+    }
+  ],
+  "climate_scenarios": [
+    {
+      "scenario": "Winter / Rabi Cool & Dry",
+      "temperature": 15.0,
+      "humidity": 35.0,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.411), Maize(0.326), Bajra(0.297)"
+    },
+    {
+      "scenario": "Moderate Sub-tropical",
+      "temperature": 24.0,
+      "humidity": 65.0,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.312), Maize(0.307), Bajra(0.297)"
+    },
+    {
+      "scenario": "Monsoon Warm & Humid",
+      "temperature": 28.0,
+      "humidity": 85.0,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.348), Bajra(0.297), Moong(Green Gram)(0.286)"
+    },
+    {
+      "scenario": "Hot Semi-Arid Summer",
+      "temperature": 38.0,
+      "humidity": 30.0,
+      "top_crop": "Rice",
+      "top_3": "Rice(0.306), Maize(0.301), Bajra(0.297)"
+    }
+  ],
+  "boundary_cases": [
+    {
+      "case": "Negative Nitrogen (N=-10)",
+      "http_status": 422,
+      "expected_status": 422,
+      "passed": true,
+      "detail_or_warnings": [
+        [
+          {
+            "type": "greater_than_equal",
+            "loc": [
+              "body",
+              "N"
+            ],
+            "msg": "Input should be greater than or equal to 0",
+            "input": -10.0,
+            "ctx": {
+              "ge": 0.0
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "case": "Extreme pH (pH=12.0)",
+      "http_status": 422,
+      "expected_status": 422,
+      "passed": true,
+      "detail_or_warnings": [
+        [
+          {
+            "type": "less_than_equal",
+            "loc": [
+              "body",
+              "ph"
+            ],
+            "msg": "Input should be less than or equal to 9.5",
+            "input": 12.0,
+            "ctx": {
+              "le": 9.5
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "case": "Excessive Temperature (T=55\u00b0C)",
+      "http_status": 422,
+      "expected_status": 422,
+      "passed": true,
+      "detail_or_warnings": [
+        [
+          {
+            "type": "less_than_equal",
+            "loc": [
+              "body",
+              "temperature"
+            ],
+            "msg": "Input should be less than or equal to 50",
+            "input": 55.0,
+            "ctx": {
+              "le": 50.0
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "case": "Missing Rainfall field",
+      "http_status": 422,
+      "expected_status": 422,
+      "passed": true,
+      "detail_or_warnings": [
+        [
+          {
+            "type": "missing",
+            "loc": [
+              "body",
+              "rainfall"
+            ],
+            "msg": "Field required",
+            "input": {
+              "N": 90.0,
+              "P": 45.0,
+              "K": 45.0,
+              "ph": 6.5,
+              "temperature": 26.0,
+              "humidity": 70.0,
+              "district": "Pune",
+              "season": "Kharif",
+              "water_availability": "Medium",
+              "top_k": 3
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "case": "Non-Maharashtra District (Patna)",
+      "http_status": 200,
+      "expected_status": 200,
+      "passed": true,
+      "detail_or_warnings": [
+        "District 'Patna' not found in Maharashtra 35-district dataset; defaulted to 'Nashik' for regional scoring."
+      ]
+    },
+    {
+      "case": "Unsupported Season (Autumn)",
+      "http_status": 200,
+      "expected_status": 200,
+      "passed": true,
+      "detail_or_warnings": [
+        "Season 'Autumn' not in supported seasons (['Kharif', 'Rabi', 'Summer', 'Whole Year']); defaulted to 'Kharif'.",
+        "Top candidate 'Rice' has high water requirement (1200.0mm); confirm supplemental irrigation."
+      ]
+    }
+  ]
+}
