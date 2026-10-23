@@ -1,0 +1,37 @@
+{
+  "model_name": "Crop Disease & Pest Diagnosis System (Model 3)",
+  "model_id": "disease_pest_ai_v1",
+  "version": "1.0.0",
+  "purpose": "Dual foliar pathology classification and pest detection on crops with regulatory-backed CIBRC treatment recommendations (chemical, biological, cultural).",
+  "algorithm": "EfficientNetV2-S (Disease Classification) + YOLO11s (Pest Object Detection)",
+  "input_features": [
+    "image",
+    "crop_name",
+    "location_state",
+    "growth_stage",
+    "image_type"
+  ],
+  "target": "crop_condition_and_treatment",
+  "output_format": "Structured AgricultureDiseaseResult containing diagnosis (pathology/pest, confidence, healthy check), severity, provenance, warnings, and CIBRC-aligned chemical, biological, and cultural treatments",
+  "artifact": "efficientnet_v2_s_best.pth (81.82 MB) + best.pt (38.32 MB)",
+  "preprocessing_artifacts": [
+    "classes.json",
+    "cibrc_database.json",
+    "treatments.json",
+    "pest_taxonomy.json",
+    "normalization.py"
+  ],
+  "dataset_name": "PlantVillage Benchmark (54,306 images) + IP102 Large-scale Pest Benchmark (75,222 images) + CIBRC Regulatory Database",
+  "dataset_size": 129528,
+  "evaluation_metrics": {
+    "disease_top1_accuracy": 0.992,
+    "pest_map50": 0.68
+  },
+  "inference_verified": true,
+  "api_available": false,
+  "known_limitations": [
+    "Disease classifier trained primarily on single-leaf macro photographs; complex field canopies require cropping to diseased foliage.",
+    "Model weights (~81.8 MB and ~38.3 MB) exceed recommended standard Git commit thresholds and require dynamic Hugging Face caching or Git LFS.",
+    "Requires PyTorch (CPU or CUDA) and Ultralytics dependencies."
+  ]
+}

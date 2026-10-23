@@ -10,6 +10,7 @@ node_modules/
 # Large ML model weight binaries (downloaded and cached via huggingface_hub)
 *.pkl
 *.pth
+*.pt
 model.pkl
 **/model.pkl
 *.pkl.part

@@ -134,50 +134,68 @@ export const api = {
     };
   },
 
-  // 4. Disease Detection API (Rule-based Expert System)
-  detectDisease: async (crop: string, symptoms: string[]) => {
-    if (!DEMO_MODE) {
-      const data = await fetchAPI('/api/v1/disease-detection', {
+  // 4. Disease Detection API (Authentic PyTorch EfficientNetV2-S + CIBRC Regulatory Engine)
+  detectDisease: async (
+    crop: string,
+    symptoms: string[] = [],
+    options?: {
+      file?: File;
+      imageBase64?: string;
+      sampleId?: string;
+      locationState?: string;
+      growthStage?: string;
+      imageType?: string;
+    }
+  ) => {
+    if (options?.file) {
+      const formData = new FormData();
+      formData.append('file', options.file);
+      formData.append('crop', crop);
+      formData.append('location_state', options.locationState || 'Maharashtra');
+      formData.append('growth_stage', options.growthStage || 'vegetative');
+      formData.append('image_type', options.imageType || 'leaf');
+      formData.append('symptoms', JSON.stringify(symptoms));
+      if (options.sampleId) formData.append('sample_id', options.sampleId);
+
+      const res = await fetch('/api/v1/disease-detection', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ crop, symptoms })
+        body: formData,
       });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: res.statusText }));
+        throw new Error(err.detail || ('Server returned ' + res.status));
+      }
+      const data = await res.json();
       return { data, isDemo: false };
     }
 
-    await new Promise(r => setTimeout(r, 600));
-    return {
-      isDemo: true,
-      data: {
-        model_type: 'rule_based_sample',
-        prediction: 'Soybean Rust',
-        confidence: 0.94,
-        treatment: 'Apply triazole or strobilurin-based fungicide (e.g., Tebuconazole 25.9% EC @ 1ml/L). Ensure adequate plant spacing.'
-      }
+    const payload: any = {
+      crop,
+      location_state: options?.locationState || 'Maharashtra',
+      growth_stage: options?.growthStage || 'vegetative',
+      image_type: options?.imageType || 'leaf',
+      symptoms,
     };
+    if (options?.sampleId) payload.sample_id = options.sampleId;
+    if (options?.imageBase64) payload.image_base64 = options.imageBase64;
+
+    const data = await fetchAPI('/api/v1/disease-detection', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    return { data, isDemo: false };
   },
 
-  // 5. Pest Detection API (Rule-based Expert System)
-  detectPest: async (crop: string, symptoms: string[]) => {
-    if (!DEMO_MODE) {
-      const data = await fetchAPI('/api/v1/pest-detection', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ crop, symptoms })
-      });
-      return { data, isDemo: false };
-    }
-
-    await new Promise(r => setTimeout(r, 600));
-    return {
-      isDemo: true,
-      data: {
-        model_type: 'rule_based_sample',
-        prediction: 'Aphids',
-        confidence: 0.85,
-        treatment: 'Introduce ladybugs or apply insecticidal soap / neem oil.'
-      }
-    };
+  // 5. Pest Detection API (Authentic YOLO11s Model)
+  detectPest: async (crop: string, symptoms: string[], options?: { file?: File; sampleId?: string }) => {
+    return api.detectDisease(crop, symptoms, {
+      ...options,
+      imageType: 'trap_sticky_sheet',
+      sampleId: options?.sampleId || 'cotton_trap',
+    });
   },
 
   // 6. Soil Assessment API

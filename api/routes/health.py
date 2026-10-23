@@ -10,6 +10,7 @@ from api.schemas.health_schema import HealthResponse, ModelStatus
 from api.services.irrigation_service import irrigation_service
 from api.services.yield_service import yield_service
 from api.services.crop_service import crop_recommendation_service
+from api.services.disease_service import disease_detection_service
 
 router = APIRouter(tags=["Health"])
 
@@ -21,9 +22,20 @@ async def check_health() -> HealthResponse:
     irrigation_meta = irrigation_service.get_status()
     yield_meta = yield_service.get_status()
     crop_meta = crop_recommendation_service.get_status()
+    disease_meta = disease_detection_service.get_status()
 
-    all_ready = irrigation_meta["loaded"] and yield_meta["loaded"] and crop_meta["loaded"]
-    any_ready = irrigation_meta["loaded"] or yield_meta["loaded"] or crop_meta["loaded"]
+    all_ready = (
+        irrigation_meta["loaded"]
+        and yield_meta["loaded"]
+        and crop_meta["loaded"]
+        and disease_meta["loaded"]
+    )
+    any_ready = (
+        irrigation_meta["loaded"]
+        or yield_meta["loaded"]
+        or crop_meta["loaded"]
+        or disease_meta["loaded"]
+    )
 
     if all_ready:
         global_status = "healthy"
@@ -41,5 +53,6 @@ async def check_health() -> HealthResponse:
             "irrigation": ModelStatus(**irrigation_meta),
             "yield": ModelStatus(**yield_meta),
             "crop_recommendation": ModelStatus(**crop_meta),
+            "disease_detection": ModelStatus(**disease_meta),
         },
     )

@@ -1,7 +1,9 @@
-"""KisanCare Dual Inference Service (Irrigation & Crop Yield).
+"""KisanCare Integrated Inference Service (Irrigation, Crop Yield, Crop Recommendation & Disease Detection).
 
-FastAPI backend exposing precision irrigation scheduling (FAO-56 + ETo LSTM)
-and Indian crop yield prediction (Random Forest Regressor) for application frontends.
+FastAPI backend exposing precision irrigation scheduling (FAO-56 + ETo LSTM),
+Indian crop yield prediction (Random Forest Regressor),
+Hugging Face Dual-Model Crop Recommendation,
+and Authentic Plant Pathology Disease Detection (EfficientNetV2-S + CIBRC Engine).
 """
 
 from __future__ import annotations
@@ -23,9 +25,11 @@ from api.routes.health import router as health_router
 from api.routes.irrigation import router as irrigation_router
 from api.routes.yield_route import router as yield_router
 from api.routes.crop_route import router as crop_router
+from api.routes.disease_route import router as disease_router
 from api.services.irrigation_service import irrigation_service
 from api.services.yield_service import yield_service
 from api.services.crop_service import crop_recommendation_service
+from api.services.disease_service import disease_detection_service
 
 # Configure logging
 logging.basicConfig(
@@ -39,7 +43,7 @@ logger = logging.getLogger("kisancare.api")
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Lifespan context manager: preload models into memory at startup."""
     logger.info("==================================================")
-    logger.info("Starting KisanCare Dual Inference Service")
+    logger.info("Starting KisanCare Integrated Inference Service")
     logger.info("Allowed CORS Origins: %s", ALLOWED_ORIGINS)
     logger.info("==================================================")
 
@@ -64,9 +68,16 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     except Exception as exc:
         logger.error("Failed to preload Crop Recommendation Model: %s", str(exc), exc_info=True)
 
+    # 4. Preload Plant Disease Detection Model
+    try:
+        disease_detection_service.initialize()
+        logger.info("Plant Disease Detection Model preloaded successfully.")
+    except Exception as exc:
+        logger.error("Failed to preload Plant Disease Detection Model: %s", str(exc), exc_info=True)
+
     logger.info("All AI services initialized and ready to serve traffic.")
     yield
-    logger.info("Shutting down KisanCare Dual Inference Service.")
+    logger.info("Shutting down KisanCare Inference Service.")
 
 
 app = FastAPI(
@@ -92,6 +103,7 @@ app.include_router(health_router)
 app.include_router(irrigation_router)
 app.include_router(yield_router)
 app.include_router(crop_router)
+app.include_router(disease_router)
 
 # Also mount core backend endpoints (Digital Twin, Simulator, Economics) so that
 # running `uvicorn api.main:app` serves the full unified platform.
@@ -122,6 +134,10 @@ async def root():
             {"method": "POST", "path": "/api/yield/predict", "desc": "Crop yield & total harvest prediction"},
             {"method": "POST", "path": "/api/crop/recommend", "desc": "Crop recommendation with multi-layer agronomic scoring"},
             {"method": "POST", "path": "/api/v1/recommend", "desc": "AD Handoff crop recommendation endpoint"},
+            {"method": "POST", "path": "/api/disease/predict", "desc": "Authentic plant disease foliar prediction (Multipart)"},
+            {"method": "POST", "path": "/api/disease/predict/json", "desc": "Authentic plant disease foliar prediction (JSON Base64)"},
+            {"method": "POST", "path": "/api/v1/disease-detection", "desc": "Frontend integrated disease detection endpoint"},
+            {"method": "GET", "path": "/api/disease/status", "desc": "Disease model readiness & classes"},
         ],
     }
 

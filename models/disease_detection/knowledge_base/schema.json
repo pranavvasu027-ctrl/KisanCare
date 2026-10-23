@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DiseasePestTreatmentDatabaseSchema",
+  "description": "JSON schema for CIB&RC registered pesticide treatments and official non-chemical IPM records.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "id",
+      "crop",
+      "condition",
+      "condition_type",
+      "target",
+      "registered_use",
+      "approved_crop",
+      "approved_target",
+      "source_id",
+      "source_date",
+      "verification_date",
+      "verification_status"
+    ],
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "Unique immutable record identifier (e.g., 'CIBRC-CHM-TOM-EB-001', 'IPM-NC-TOM-EB-001')."
+      },
+      "crop": {
+        "type": "string",
+        "description": "Canonical crop name (e.g., 'Tomato', 'Apple', 'Corn', 'Cotton')."
+      },
+      "condition": {
+        "type": "string",
+        "description": "Canonical disease, pest, or physiological condition."
+      },
+      "condition_type": {
+        "type": "string",
+        "enum": ["disease", "pest", "healthy", "unknown"],
+        "description": "Classification category: disease, pest, healthy tissue, or unknown."
+      },
+      "target": {
+        "type": "string",
+        "description": "Biological target organism or pathology (e.g., 'Alternaria solani', 'Venturia inaequalis', 'Helicoverpa armigera')."
+      },
+      "active_ingredient": {
+        "type": ["string", "null"],
+        "description": "Generic active chemical substance or biological strain name. Null for cultural/mechanical methods."
+      },
+      "formulation": {
+        "type": ["string", "null"],
+        "description": "CIB&RC approved formulation abbreviation (e.g., '75% WP', '25% EC', '55% + 5% WG', '18.5% SC'). Null for cultural methods."
+      },
+      "registered_use": {
+        "type": "string",
+        "description": "Verbatim or structured summary of registered label claim from CIB&RC or IPM package."
+      },
+      "approved_crop": {
+        "type": "string",
+        "description": "Crop explicitly authorized in the statutory registration register."
+      },
+      "approved_target": {
+        "type": "string",
+        "description": "Target pest/disease explicitly authorized in the statutory registration register."
+      },
+      "application_method": {
+        "type": ["string", "null"],
+        "description": "Method of application (e.g., 'Foliar Spray', 'Seed Treatment', 'Soil Drench', 'Trap Placement')."
+      },
+      "dose": {
+        "type": ["string", "number", "null"],
+        "description": "Exact numerical dose if published in authoritative register. Null if unavailable. Never invented."
+      },
+      "dose_unit": {
+        "type": ["string", "null"],
+        "description": "Unit of measurement (e.g., 'kg/ha', 'ml/ha', 'g/100 L water', 'traps/ha'). Null if dose is null."
+      },
+      "pre_harvest_interval": {
+        "type": ["integer", "string", "null"],
+        "description": "Waiting period in days between final application and harvest (PHI). Null if not published."
+      },
+      "number_of_applications": {
+        "type": ["integer", "string", "null"],
+        "description": "Maximum number of sprays permitted per cropping cycle. Null if not published."
+      },
+      "interval": {
+        "type": ["string", "null"],
+        "description": "Minimum spray re-application interval in days (e.g., '10-14 days'). Null if not published."
+      },
+      "region_scope": {
+        "type": "string",
+        "description": "Geographic jurisdiction of registration. Default 'India' for national statutory CIBRC registration."
+      },
+      "source_id": {
+        "type": "string",
+        "description": "Foreign key referencing source_id in sources.json (e.g., 'SRC-CIBRC-2024')."
+      },
+      "source_date": {
+        "type": "string",
+        "format": "date",
+        "description": "Official publication date of source."
+      },
+      "verification_date": {
+        "type": "string",
+        "format": "date",
+        "description": "Date record was verified by agronomic AI team."
+      },
+      "verification_status": {
+        "type": "string",
+        "enum": ["verified", "guidance_only", "unverified"],
+        "description": "Level of statutory or experimental verification."
+      },
+      "notes": {
+        "type": ["string", "null"],
+        "description": "FRAC / IRAC mode-of-action group and resistance management instructions."
+      },
+      "safety_notes": {
+        "type": ["string", "null"],
+        "description": "Toxicity classification (colour triangle), PPE requirements, environmental, and pollinator warnings."
+      }
+    }
+  }
+}
