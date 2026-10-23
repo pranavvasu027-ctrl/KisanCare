@@ -6,7 +6,11 @@ node_modules/
 .pytest_cache/
 
 # Large ML model weight binaries (downloaded and cached via huggingface_hub)
+*.pkl
+*.pth
 model.pkl
 **/model.pkl
 *.pkl.part
 *.download
+hf_model/
+**/hf_model/
