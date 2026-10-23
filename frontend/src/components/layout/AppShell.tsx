@@ -17,7 +17,7 @@ const AppShell = () => {
               <span className="bg-amber-900 text-white text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded">
                 DEMO MODE
               </span>
-              <span>Authentication bypassed &mdash; Viewing with demonstration farm data (Ramesh Patil)</span>
+              <span>Authentication bypassed &mdash; Viewing with demonstration farm data (Pranav Vasu &bull; 10.0 Acres &bull; Takli Bu, Akola)</span>
             </div>
             <span className="text-[11px] text-amber-950 font-normal hidden md:inline">
               Sample Data Only &bull; Changes are not written to Supabase

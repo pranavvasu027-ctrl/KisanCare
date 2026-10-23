@@ -74,10 +74,10 @@ export default function SoilIntelligence() {
   const [uploadMsg, setUploadMsg] = useState<string | null>(null);
   const [userUploadedReports, setUserUploadedReports] = useState<Array<{ name: string; date: string }>>([]);
 
-  const [n, setN] = useState<number>(22);
-  const [p, setP] = useState<number>(28);
-  const [k, setK] = useState<number>(175);
-  const [ph, setPh] = useState<number>(7.1);
+  const [n, setN] = useState<number>(0);
+  const [p, setP] = useState<number>(0);
+  const [k, setK] = useState<number>(0);
+  const [ph, setPh] = useState<number>(8.05);
 
   const [assessment, setAssessment] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -157,6 +157,36 @@ export default function SoilIntelligence() {
           <span>{uploadMsg}</span>
         </div>
       )}
+
+      {/* FARMER OBSERVATION & INTEGRITY DISCLOSURE */}
+      <div className="bg-amber-50 border border-amber-300 rounded-2xl p-5 text-amber-900 shadow-sm space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="bg-amber-200 text-amber-900 text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded">
+            Soil Data Provenance: Farmer Observation
+          </span>
+          <span className="text-xs text-amber-800 font-semibold">Laboratory Verification Pending</span>
+        </div>
+        <p className="text-xs leading-relaxed text-amber-900">
+          <strong>Soil Classification:</strong> Black cotton soil (&ldquo;koralvahu jamin&rdquo;), deep, flat terrain with good drainage.<br/>
+          <strong>Reported pH Range:</strong> 7.6 &ndash; 8.5 (mean 8.05 recorded; laboratory verification pending).<br/>
+          <strong>NPK &amp; Micronutrients:</strong> Intentionally unpopulated (NULL). The farmer reports a soil test report is available and may be uploaded later. Fabricated laboratory values are strictly prohibited.
+        </p>
+      </div>
+
+      {/* FARMER OBSERVATION & INTEGRITY DISCLOSURE */}
+      <div className="bg-amber-50 border border-amber-300 rounded-2xl p-5 text-amber-900 shadow-sm space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="bg-amber-200 text-amber-900 text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded">
+            Soil Data Provenance: Farmer Observation
+          </span>
+          <span className="text-xs text-amber-800 font-semibold">Laboratory Verification Pending</span>
+        </div>
+        <p className="text-xs leading-relaxed text-amber-900">
+          <strong>Soil Classification:</strong> Black cotton soil (&ldquo;koralvahu jamin&rdquo;), deep, flat terrain with good drainage.<br/>
+          <strong>Reported pH Range:</strong> 7.6 &ndash; 8.5 (mean 8.05 recorded; laboratory verification pending).<br/>
+          <strong>NPK &amp; Micronutrients:</strong> Intentionally unpopulated (NULL). The farmer reports a soil test report is available and may be uploaded later. Fabricated laboratory values are strictly prohibited.
+        </p>
+      </div>
 
       {errorMessage && (
         <div className="bg-red-50 border border-red-300 text-red-900 px-4 py-3 rounded-xl text-xs flex items-center gap-2">

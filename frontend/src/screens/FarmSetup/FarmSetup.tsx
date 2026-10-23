@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Map, Plus, Trash2, Save, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { Map, Plus, Trash2, Save, CheckCircle2, AlertCircle, Loader2, Navigation, Crosshair, MapPin, Compass } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../services/supabase';
+import BoundaryEditorModal from '../../components/map/BoundaryEditorModal';
 
 interface FieldItem {
   id: string;
@@ -10,17 +11,36 @@ interface FieldItem {
   crop: string;
   isNew?: boolean;
   seasonId?: string;
+  geojson_geometry?: any;
+  boundaries_mapped?: boolean;
+}
+
+interface FarmSummary {
+  id: string;
+  farm_name: string;
+  location: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  total_area: number;
+  area_unit: string;
 }
 
 export default function FarmSetup() {
   const { user, isAuthenticated, isDemoMode } = useAuth();
 
   const [farmId, setFarmId] = useState<string | null>(null);
-  const [farmName, setFarmName] = useState('Patil Farm');
+  const [allFarms, setAllFarms] = useState<FarmSummary[]>([]);
+  const [farmName, setFarmName] = useState('Pranav Vasu Farm');
   const [totalArea, setTotalArea] = useState('12');
   const [stateName, setStateName] = useState('Maharashtra');
   const [district, setDistrict] = useState('Nagpur');
   const [village, setVillage] = useState('Shirpur');
+  const [latitude, setLatitude] = useState<string>('');
+  const [longitude, setLongitude] = useState<string>('');
+  const [isCapturingGps, setIsCapturingGps] = useState(false);
+  const [gpsSuccessMsg, setGpsSuccessMsg] = useState<string | null>(null);
+  const [isBoundaryModalOpen, setIsBoundaryModalOpen] = useState(false);
+
   const [fields, setFields] = useState<FieldItem[]>([
     { id: 'field-1', name: 'Field 1 (North Parcel)', size: '6.5', crop: 'Soybean', isNew: true },
     { id: 'field-2', name: 'Field 2 (South Parcel)', size: '5.5', crop: 'Cotton', isNew: true },
@@ -39,17 +59,36 @@ export default function FarmSetup() {
     }
   }, [user, isAuthenticated]);
 
-  const loadFarmData = async (userId: string) => {
+  const loadFarmData = async (userId: string, targetFarmId?: string) => {
     setIsLoading(true);
     setErrorMessage(null);
     try {
-      const { data: farm, error } = await supabase
+      // 1. Fetch all user farms for the selector
+      const { data: userFarms } = await supabase
+        .from('farms')
+        .select('id, farm_name, location, latitude, longitude, total_area, area_unit')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (userFarms) {
+        setAllFarms(userFarms);
+      }
+
+      // 2. Fetch specific target farm or the latest/saved active farm
+      const preferredId = targetFarmId || localStorage.getItem('kisancare_active_farm_id') || undefined;
+
+      let query = supabase
         .from('farms')
         .select('*, fields(*, seasons(*))')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .eq('user_id', userId);
+
+      if (preferredId) {
+        query = query.eq('id', preferredId);
+      } else {
+        query = query.order('created_at', { ascending: false }).limit(1);
+      }
+
+      const { data: farmList, error } = await query;
 
       if (error) {
         console.error('Error loading farm data:', error);
@@ -57,10 +96,15 @@ export default function FarmSetup() {
         return;
       }
 
+      const farm = farmList && farmList.length > 0 ? farmList[0] : null;
+
       if (farm) {
         setFarmId(farm.id);
+        localStorage.setItem('kisancare_active_farm_id', farm.id);
         setFarmName(farm.farm_name || '');
         setTotalArea(farm.total_area ? String(farm.total_area) : '');
+        setLatitude(farm.latitude !== null && farm.latitude !== undefined ? String(farm.latitude) : '');
+        setLongitude(farm.longitude !== null && farm.longitude !== undefined ? String(farm.longitude) : '');
 
         if (farm.location) {
           const parts = farm.location.split(',').map((p: string) => p.trim());
@@ -74,14 +118,20 @@ export default function FarmSetup() {
         }
 
         if (Array.isArray(farm.fields) && farm.fields.length > 0) {
-          const loadedFields: FieldItem[] = farm.fields.map((f: any) => ({
-            id: f.id,
-            name: f.field_name,
-            size: String(f.area || ''),
-            crop: f.seasons?.[0]?.crop || '',
-            seasonId: f.seasons?.[0]?.id,
-            isNew: false
-          }));
+          const loadedFields: FieldItem[] = farm.fields.map((f: any) => {
+            const b = f.boundary;
+            const hasGeom = b && (b.type === 'Polygon' || b.type === 'MultiPolygon' || (b.geometry && b.geometry.coordinates));
+            return {
+              id: f.id,
+              name: f.field_name,
+              size: String(f.area || ''),
+              crop: f.seasons?.[0]?.crop || '',
+              seasonId: f.seasons?.[0]?.id,
+              isNew: false,
+              geojson_geometry: hasGeom ? (b.geometry || b) : null,
+              boundaries_mapped: Boolean(hasGeom)
+            };
+          });
           setFields(loadedFields);
           setOriginalFieldIds(loadedFields.map(f => f.id));
         } else {
@@ -95,6 +145,54 @@ export default function FarmSetup() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleCreateNewFarm = () => {
+    setFarmId(null);
+    setFarmName('');
+    setTotalArea('');
+    setLatitude('');
+    setLongitude('');
+    setVillage('');
+    setFields([
+      { id: `temp-${Date.now()}-1`, name: 'Field 1', size: '', crop: '', isNew: true }
+    ]);
+    setOriginalFieldIds([]);
+  };
+
+  const handleSelectFarm = (selectedId: string) => {
+    if (selectedId === 'new') {
+      handleCreateNewFarm();
+    } else if (user) {
+      loadFarmData(user.id, selectedId);
+    }
+  };
+
+  const handleCaptureGps = () => {
+    if (!navigator.geolocation) {
+      setErrorMessage('Geolocation is not supported by your browser.');
+      return;
+    }
+    setIsCapturingGps(true);
+    setGpsSuccessMsg(null);
+    setErrorMessage(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setIsCapturingGps(false);
+        const lat = pos.coords.latitude.toFixed(6);
+        const lon = pos.coords.longitude.toFixed(6);
+        setLatitude(lat);
+        setLongitude(lon);
+        setGpsSuccessMsg(`Captured current GPS coordinates: ${lat}, ${lon}`);
+        setTimeout(() => setGpsSuccessMsg(null), 5000);
+      },
+      (err) => {
+        setIsCapturingGps(false);
+        setErrorMessage(`Failed to retrieve GPS location: ${err.message}`);
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 10000 }
+    );
   };
 
   const addField = () => {
@@ -156,6 +254,8 @@ export default function FarmSetup() {
 
       let activeFarmId = farmId;
       const formattedLocation = `${village.trim()}, ${district.trim()}, ${stateName.trim()}`;
+      const latNum = latitude.trim() ? parseFloat(latitude.trim()) : null;
+      const lonNum = longitude.trim() ? parseFloat(longitude.trim()) : null;
 
       // 2. Farm insert or update
       if (activeFarmId) {
@@ -165,6 +265,8 @@ export default function FarmSetup() {
             farm_name: farmName.trim(),
             total_area: areaNum,
             location: formattedLocation,
+            latitude: latNum,
+            longitude: lonNum,
             updated_at: new Date().toISOString()
           })
           .eq('id', activeFarmId)
@@ -179,6 +281,8 @@ export default function FarmSetup() {
             farm_name: farmName.trim(),
             total_area: areaNum,
             location: formattedLocation,
+            latitude: latNum,
+            longitude: lonNum,
             area_unit: 'acre'
           })
           .select()
@@ -187,6 +291,10 @@ export default function FarmSetup() {
         if (farmInsertErr) throw farmInsertErr;
         activeFarmId = createdFarm.id;
         setFarmId(activeFarmId);
+      }
+
+      if (activeFarmId) {
+        localStorage.setItem('kisancare_active_farm_id', activeFarmId);
       }
 
       // 3. Fields synchronization
@@ -289,7 +397,17 @@ export default function FarmSetup() {
 
       setFields(updatedFieldItems);
       setOriginalFieldIds(updatedFieldItems.map(f => f.id));
-      setSaveStatus('Farm details, field boundaries, and crop allocations successfully verified and saved to Supabase!');
+      if (user) {
+        const { data: updatedFarms } = await supabase
+          .from('farms')
+          .select('id, farm_name, location, latitude, longitude, total_area, area_unit')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+        if (updatedFarms) {
+          setAllFarms(updatedFarms);
+        }
+      }
+      setSaveStatus('Farm details, GPS coordinates, field boundaries, and crop allocations successfully verified and saved to Supabase!');
       setTimeout(() => setSaveStatus(null), 6000);
     } catch (err: any) {
       console.error('Save failed:', err);
@@ -318,14 +436,27 @@ export default function FarmSetup() {
           </div>
           <p className="text-[#292B26]/70 mt-1">Configure your farm profile and field boundaries.</p>
         </div>
-        <button
-          onClick={handleSave}
-          disabled={isLoading || isSaving}
-          className="bg-[#103D2C] text-white px-5 py-2.5 rounded-lg flex items-center gap-2 hover:bg-[#17643E] transition-colors cursor-pointer disabled:opacity-50"
-        >
-          {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-          <span>{isSaving ? 'Saving to Database...' : 'Save Changes'}</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2.5">
+          {farmId && (
+            <button
+              type="button"
+              onClick={() => setIsBoundaryModalOpen(true)}
+              className="bg-[#F2E8D5] hover:bg-[#E5DDCF] text-[#103D2C] border border-[#E5DDCF] px-4 py-2.5 rounded-lg flex items-center gap-2 text-sm font-semibold transition-colors cursor-pointer"
+            >
+              <Compass size={17} className="text-[#103D2C]" />
+              <span>Map Farm Boundary</span>
+            </button>
+          )}
+
+          <button
+            onClick={handleSave}
+            disabled={isLoading || isSaving}
+            className="bg-[#103D2C] text-white px-5 py-2.5 rounded-lg flex items-center gap-2 hover:bg-[#17643E] transition-colors cursor-pointer disabled:opacity-50"
+          >
+            {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+            <span>{isSaving ? 'Saving to Database...' : 'Save Changes'}</span>
+          </button>
+        </div>
       </div>
 
       {isLoading && (
@@ -362,7 +493,27 @@ export default function FarmSetup() {
 
       <div className="bg-white rounded-2xl shadow-sm border border-[#E5DDCF] overflow-hidden">
         <div className="p-6 border-b border-[#E5DDCF]">
-          <h2 className="text-xl font-bold text-[#103D2C] mb-4">Basic Information</h2>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <h2 className="text-xl font-bold text-[#103D2C]">Basic Information</h2>
+            {allFarms.length > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-[#292B26]/70">Selected Farm:</span>
+                <select
+                  value={farmId || 'new'}
+                  onChange={(e) => handleSelectFarm(e.target.value)}
+                  className="border border-[#E5DDCF] rounded-lg px-3 py-1.5 text-xs bg-[#FBF7EF] font-medium text-[#103D2C] outline-none"
+                >
+                  {allFarms.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.farm_name} ({f.total_area} {f.area_unit})
+                    </option>
+                  ))}
+                  <option value="new">+ Register New Farm</option>
+                </select>
+              </div>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-[#292B26] mb-1">Farm Name</label>
@@ -370,7 +521,7 @@ export default function FarmSetup() {
                 type="text"
                 value={farmName}
                 onChange={(e) => setFarmName(e.target.value)}
-                placeholder="e.g. Patil Farm"
+                placeholder="e.g. Pranav Vasu Farm"
                 className="w-full border border-[#E5DDCF] rounded-lg px-4 py-2 bg-[#FBF7EF] focus:outline-none focus:border-[#17643E]"
               />
             </div>
@@ -408,20 +559,83 @@ export default function FarmSetup() {
                   className="w-full border border-[#E5DDCF] rounded-lg px-4 py-2 bg-[#FBF7EF] focus:outline-none focus:border-[#17643E]"
                 >
                   <option value="Nagpur">Nagpur</option>
+                  <option value="Akola">Akola</option>
                   <option value="Pune">Pune</option>
                   <option value="Nashik">Nashik</option>
                   <option value="Amravati">Amravati</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#292B26] mb-1">Village</label>
+                <label className="block text-sm font-medium text-[#292B26] mb-1">Village / Locality</label>
                 <input
                   type="text"
                   value={village}
                   onChange={(e) => setVillage(e.target.value)}
-                  placeholder="e.g. Shirpur"
+                  placeholder="e.g. Takli Bu or Shirpur"
                   className="w-full border border-[#E5DDCF] rounded-lg px-4 py-2 bg-[#FBF7EF] focus:outline-none focus:border-[#17643E]"
                 />
+              </div>
+            </div>
+
+            {/* Geographic Coordinates & GPS Capture */}
+            <div className="md:col-span-2 bg-[#FBF7EF] p-4 rounded-xl border border-[#E5DDCF] space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-[#17643E]" />
+                  <span className="text-sm font-bold text-[#103D2C]">Geographic Coordinates (WGS84)</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCaptureGps}
+                  disabled={isCapturingGps}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#103D2C] hover:bg-[#17643E] text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  {isCapturingGps ? (
+                    <Loader2 size={13} className="animate-spin" />
+                  ) : (
+                    <Navigation size={13} />
+                  )}
+                  <span>{isCapturingGps ? 'Reading GPS Device...' : 'Use Current Device GPS'}</span>
+                </button>
+              </div>
+
+              {gpsSuccessMsg && (
+                <div className="text-xs text-emerald-800 bg-emerald-100/70 border border-emerald-300 px-3 py-1.5 rounded-lg">
+                  {gpsSuccessMsg}
+                </div>
+              )}
+
+              <p className="text-[11px] text-[#292B26]/70 leading-relaxed">
+                Provide accurate GPS coordinates to position your farm pin on the Digital Twin interactive map. If coordinates are not provided, an approximate village centroid reference will be used with an explicit notice.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                <div>
+                  <label className="block text-xs font-medium text-[#292B26] mb-1">Latitude (°N)</label>
+                  <input
+                    type="number"
+                    step="0.000001"
+                    min="-90"
+                    max="90"
+                    value={latitude}
+                    onChange={(e) => setLatitude(e.target.value)}
+                    placeholder="e.g. 20.918912"
+                    className="w-full border border-[#E5DDCF] rounded-lg px-3 py-1.5 bg-white text-sm focus:outline-none focus:border-[#17643E]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#292B26] mb-1">Longitude (°E)</label>
+                  <input
+                    type="number"
+                    step="0.000001"
+                    min="-180"
+                    max="180"
+                    value={longitude}
+                    onChange={(e) => setLongitude(e.target.value)}
+                    placeholder="e.g. 76.982846"
+                    className="w-full border border-[#E5DDCF] rounded-lg px-3 py-1.5 bg-white text-sm focus:outline-none focus:border-[#17643E]"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -489,6 +703,38 @@ export default function FarmSetup() {
           </div>
         </div>
       </div>
+
+      {/* Boundary Editor Modal */}
+      {farmId && (
+        <BoundaryEditorModal
+          isOpen={isBoundaryModalOpen}
+          onClose={() => setIsBoundaryModalOpen(false)}
+          farmId={farmId}
+          farmName={farmName}
+          initialCenter={[
+            latitude ? parseFloat(latitude) : 20.918912,
+            longitude ? parseFloat(longitude) : 76.982846
+          ]}
+          isApproximateCenter={!latitude || !longitude}
+          fields={fields.filter(f => !f.isNew).map(f => ({
+            id: f.id,
+            name: f.name,
+            area: parseFloat(f.size) || 0,
+            area_unit: 'acre',
+            crop: f.crop,
+            geojson_geometry: f.geojson_geometry,
+            boundaries_mapped: f.boundaries_mapped
+          }))}
+          onSaveSuccess={(updatedField) => {
+            setFields(prev => prev.map(f => f.id === updatedField.id ? {
+              ...f,
+              size: String(updatedField.area),
+              geojson_geometry: updatedField.geojson_geometry,
+              boundaries_mapped: true
+            } : f));
+          }}
+        />
+      )}
     </div>
   );
 }

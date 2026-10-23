@@ -29,13 +29,14 @@ const TopNav = () => {
         <div className="flex items-center space-x-2 border-r border-[#E5DDCF] pr-6">
           <span className="text-sm text-gray-500">Current Farm:</span>
           <select className="bg-transparent text-sm font-medium focus:outline-none text-[#103D2C]">
-            <option>Green Acres</option>
-            <option>Sunrise Valley</option>
+            <option>Pranav Vasu Farm (10.0 ac)</option>
           </select>
         </div>
 
         <div className="flex items-center space-x-2 border-r border-[#E5DDCF] pr-6">
-          <select className="bg-transparent text-sm focus:outline-none">
+          <select className="bg-transparent text-sm focus:outline-none font-medium text-[#103D2C]">
+            <option>मराठी (Marathi)</option>
+            <option>हिन्दी (Hindi)</option>
             <option>English</option>
           </select>
         </div>
@@ -48,7 +49,7 @@ const TopNav = () => {
         <div className="flex items-center space-x-3 ml-2 border-l border-[#E5DDCF] pl-4">
           <div className="flex flex-col text-right">
             <span className="text-sm font-medium text-[#103D2C]">
-              {isDemoMode ? 'Demo user' : user?.user_metadata?.name || user?.email?.split('@')[0] || 'User'}
+              {isDemoMode ? 'Pranav Vasu (Demo)' : user?.user_metadata?.name || user?.email?.split('@')[0] || 'Pranav Vasu'}
             </span>
             <span className="text-xs text-gray-500">{role || 'Farmer'}</span>
           </div>

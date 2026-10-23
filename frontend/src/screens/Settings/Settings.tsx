@@ -27,7 +27,7 @@ export default function Settings() {
   const isAuthenticated = Boolean(user);
 
   // Profile data (Supabase 'profiles' table)
-  const [farmerName, setFarmerName] = useState('Patil Farmer');
+  const [farmerName, setFarmerName] = useState('Pranav Vasu');
   const [preferredLanguage, setPreferredLanguage] = useState('en');
   const [phoneNumber, setPhoneNumber] = useState('+91 98765 43210');
 
@@ -241,7 +241,7 @@ export default function Settings() {
                 type="text"
                 value={farmerName}
                 onChange={(e) => setFarmerName(e.target.value)}
-                placeholder="e.g. Ramesh Patil"
+                placeholder="e.g. Pranav Vasu"
                 className="w-full border border-[#E5DDCF] bg-[#FBF7EF] rounded-lg px-3 py-2 text-sm text-[#103D2C] focus:outline-none focus:border-[#17643E]"
               />
             </div>

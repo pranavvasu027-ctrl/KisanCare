@@ -67,104 +67,93 @@ export interface HistoricalSeason {
 
 const DEFAULT_SAMPLE_SEASONS: HistoricalSeason[] = [
   {
-    id: 'demo-season-1',
-    farmId: 'farm-patil-1',
-    farmName: 'Patil Farm',
-    fieldId: 'field-1',
-    fieldName: 'Field 1 (North Parcel)',
-    year: 2025,
-    seasonName: 'Kharif 2025',
+    id: 'demo-season-cotton-2026',
+    farmId: '52120432-c948-4026-87c4-7e2c481a7bf5',
+    farmName: 'Pranav Vasu Farm',
+    fieldId: 'e5d69ac6-bfe4-4015-a3cd-7cab06c476a6',
+    fieldName: 'Field A (3.0 ac)',
+    year: 2026,
+    seasonName: 'Kharif 2026–27',
     seasonType: 'Kharif',
-    crop: 'Soybean',
-    variety: 'JS 335',
-    sowingDate: '2025-06-22',
-    harvestDate: '2025-10-15',
-    areaAcres: 6.5,
-    yieldQuantity: 2.6,
-    yieldUnit: 'tonnes/ac',
+    crop: 'Cotton',
+    variety: 'godavari',
+    sowingDate: '2026-06-18',
+    harvestDate: '2026-11-20',
+    areaAcres: 3.0,
+    yieldQuantity: 10.0,
+    yieldUnit: 'qtl/ac',
     soilTest: {
-      n: 22,
-      p: 28,
-      k: 175,
-      ph: 7.1,
-      organicMatter: 0.65
+      ph: 8.05
     },
     fertilizers: [
-      { product: 'DAP (18-46-0)', quantityKg: 50, cost: 1350, applicationDate: '2025-06-22' },
-      { product: 'Single Super Phosphate (SSP)', quantityKg: 100, cost: 900, applicationDate: '2025-07-10' }
+      { product: 'Fertilizers (bulk unitemized)', cost: 20000, applicationDate: '2026-07-02' }
     ],
     pesticides: [
-      { product: 'Neem Oil 1500 ppm', targetPest: 'Whiteflies & Aphids', quantityMl: 1000, cost: 450, applicationDate: '2025-07-25' }
+      { product: 'Pesticide application', cost: 10, applicationDate: '2026-08-15' }
     ],
     irrigation: {
-      method: 'Rainfed + Supplementary Drip',
-      waterAvailability: 'Medium',
-      hoursTotal: 18,
-      cost: 1800
+      method: 'Primarily Rainfed / Monsoon Dependent',
+      waterAvailability: 'Low',
+      hoursTotal: 0,
+      cost: 0
     },
-    weatherObservations: 'Timely monsoon onset in June; mid-season 14-day dry spell in August managed via supplementary drip.',
+    weatherObservations: 'Rainfall monsoon dependent; severe dry spell in late monsoon causing boll development stress.',
     economics: {
-      inputCost: 14500,
-      laborCost: 12000,
-      irrigationCost: 1800,
-      sellingPrice: 4750,
-      revenue: 70300,
-      profit: 42000
+      inputCost: 31010,
+      laborCost: 50000,
+      irrigationCost: 65000,
+      sellingPrice: 8000,
+      revenue: 240000,
+      profit: 93990
     },
     learnings: [
-      'JS 335 variety performed well despite a mid-season 14-day dry spell.',
-      'Waiting 2 extra weeks before selling increased revenue by 8% due to late-season APMC demand surge.'
+      'Black cotton soil (koralvahu jamin) retains moisture during vegetative growth but requires supplementary irrigation at boll development.',
+      'Cotton price benchmark at Akot APMC recorded at ₹8,000/qtl.'
     ],
-    farmerNotes: 'Field had slight phosphorus deficiency from previous sugarcane cycle; basal SSP helped root establishment.',
+    farmerNotes: 'Field A: 3 acres sown with Cotton variety godavari. Drought stress symptoms visible; bolls are few and small. Water source 100–500m away.',
     isDemo: true
   },
   {
-    id: 'demo-season-2',
-    farmId: 'farm-patil-1',
-    farmName: 'Patil Farm',
-    fieldId: 'field-1',
-    fieldName: 'Field 1 (North Parcel)',
-    year: 2024,
-    seasonName: 'Rabi 2024-25',
-    seasonType: 'Rabi',
-    crop: 'Wheat',
-    variety: 'GW 322',
-    sowingDate: '2024-11-10',
-    harvestDate: '2025-03-25',
-    areaAcres: 6.5,
-    yieldQuantity: 1.8,
-    yieldUnit: 'tonnes/ac',
+    id: 'demo-season-cotton-2025',
+    farmId: '52120432-c948-4026-87c4-7e2c481a7bf5',
+    farmName: 'Pranav Vasu Farm',
+    fieldId: 'e5d69ac6-bfe4-4015-a3cd-7cab06c476a6',
+    fieldName: 'Field A (3.0 ac)',
+    year: 2025,
+    seasonName: 'Kharif 2025–26',
+    seasonType: 'Kharif',
+    crop: 'Cotton',
+    variety: 'godavari',
+    sowingDate: '2025-06-20',
+    harvestDate: '2025-11-25',
+    areaAcres: 3.0,
+    yieldQuantity: 10.0,
+    yieldUnit: 'qtl/ac',
     soilTest: {
-      n: 25,
-      p: 22,
-      k: 160,
-      ph: 7.2
+      ph: 8.0
     },
-    fertilizers: [
-      { product: 'Urea (46% N)', quantityKg: 90, cost: 580, applicationDate: '2024-11-10' },
-      { product: 'MOP (Muriate of Potash)', quantityKg: 35, cost: 1100, applicationDate: '2024-12-15' }
-    ],
+    fertilizers: [],
     pesticides: [],
     irrigation: {
-      method: 'Sprinkler',
-      waterAvailability: 'High',
-      hoursTotal: 36,
-      cost: 3200
+      method: 'Rainfed + Occasional Irrigation',
+      waterAvailability: 'Medium',
+      hoursTotal: 12,
+      cost: 1500
     },
-    weatherObservations: 'Favorable cool winter with no premature terminal heat during grain-filling stage.',
+    weatherObservations: 'Adequate late-monsoon showers supported boll development.',
     economics: {
-      inputCost: 11800,
-      laborCost: 9500,
-      irrigationCost: 3200,
-      sellingPrice: 2275,
-      revenue: 52500,
-      profit: 28000
+      inputCost: 28000,
+      laborCost: 45000,
+      irrigationCost: 1500,
+      sellingPrice: 7600,
+      revenue: 228000,
+      profit: 153500
     },
     learnings: [
-      'Timely second irrigation at CRI (Crown Root Initiation, 21 days after sowing) prevented lodging and boosted tillering.',
-      'Sold 60% of produce at local APMC; retained 40% for farm seed reserve.'
+      'Historical yield of 10 quintals/acre verified when late-season moisture is preserved.',
+      'Akot APMC market provides best price realization for Vidarbha medium-staple cotton.'
     ],
-    farmerNotes: 'GW 322 showed high resistance to yellow rust.',
+    farmerNotes: 'Achieved 10 quintals/acre historical benchmark.',
     isDemo: true
   }
 ];
@@ -188,11 +177,11 @@ export default function FarmMemory() {
   const [isSaving, setIsSaving] = useState(false);
 
   // Form Fields
-  const [formFarmName, setFormFarmName] = useState('Patil Farm');
+  const [formFarmName, setFormFarmName] = useState('Pranav Vasu Farm');
   const [formFieldName, setFormFieldName] = useState('Field 1 (North Parcel)');
   const [formYear, setFormYear] = useState<number>(new Date().getFullYear());
   const [formSeasonType, setFormSeasonType] = useState<'Kharif' | 'Rabi' | 'Summer' | 'Whole Year'>('Kharif');
-  const [formCrop, setFormCrop] = useState('Soybean');
+  const [formCrop, setFormCrop] = useState('Cotton');
   const [formVariety, setFormVariety] = useState('');
   const [formSowingDate, setFormSowingDate] = useState('');
   const [formHarvestDate, setFormHarvestDate] = useState('');
@@ -313,7 +302,7 @@ export default function FarmMemory() {
                     economics: ext.economics,
                     learnings: ext.learnings && ext.learnings.length > 0 ? ext.learnings : (s.previous_crop ? [`Previous crop recorded was ${s.previous_crop}.`] : []),
                     farmerNotes: ext.farmerNotes,
-                    isDemo: false
+                    isDemo: Boolean(ext.isDemo)
                   });
                 });
               }
@@ -323,6 +312,10 @@ export default function FarmMemory() {
       }
 
       if (parsedSeasons.length > 0) {
+        parsedSeasons.sort((a, b) => {
+          if (b.year !== a.year) return b.year - a.year;
+          return (b.sowingDate || '').localeCompare(a.sowingDate || '');
+        });
         setSeasons(parsedSeasons);
         setSelectedSeasonId(parsedSeasons[0].id);
       } else {
@@ -341,7 +334,7 @@ export default function FarmMemory() {
 
   const resetForm = () => {
     setEditingSeasonId(null);
-    setFormFarmName('Patil Farm');
+    setFormFarmName('Pranav Vasu Farm');
     setFormFieldName('Field 1 (North Parcel)');
     setFormYear(new Date().getFullYear());
     setFormSeasonType('Kharif');

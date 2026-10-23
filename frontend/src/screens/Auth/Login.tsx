@@ -117,7 +117,7 @@ export default function Login() {
           </form>
 
           <p className="text-center text-sm text-[#292B26]/60 mt-8">
-            Don't have an account? <a href="#" className="text-[#17643E] font-bold hover:underline">Create Account</a>
+            Don't have an account? <button type="button" onClick={() => navigate('/onboarding')} className="text-[#17643E] font-bold hover:underline">Create Account / Onboard</button>
           </p>
 
           <div className="mt-8 pt-8 border-t border-[#E5DDCF] text-center">

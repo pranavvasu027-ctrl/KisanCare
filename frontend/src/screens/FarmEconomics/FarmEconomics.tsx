@@ -3,11 +3,11 @@ import { IndianRupee, TrendingUp, TrendingDown, PieChart, BarChart, Loader2, Ale
 import { api } from '../../services/api';
 
 export default function FarmEconomics() {
-  const [expectedYield, setExpectedYield] = useState<number>(24);
-  const [expectedPrice, setExpectedPrice] = useState<number>(2500);
-  const [inputCost, setInputCost] = useState<number>(10000);
-  const [labourCost, setLabourCost] = useState<number>(15000);
-  const [irrigationCost, setIrrigationCost] = useState<number>(5000);
+  const [expectedYield, setExpectedYield] = useState<number>(50);
+  const [expectedPrice, setExpectedPrice] = useState<number>(8000);
+  const [inputCost, setInputCost] = useState<number>(31010);
+  const [labourCost, setLabourCost] = useState<number>(50000);
+  const [irrigationCost, setIrrigationCost] = useState<number>(65000);
 
   const [economics, setEconomics] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -60,6 +60,28 @@ export default function FarmEconomics() {
             )}
           </div>
           <p className="text-[#292B26]/70 mt-1">Track costs, expected revenue, and overall profitability.</p>
+        </div>
+      </div>
+
+      {/* AMBIGUITY & PROVENANCE DISCLOSURE */}
+      <div className="bg-amber-50 border border-amber-300 rounded-2xl p-5 text-amber-900 shadow-sm space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="bg-amber-200 text-amber-900 text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded">
+            Recorded Cost Ambiguities &amp; Disclosures
+          </span>
+          <span className="text-xs text-amber-800 font-semibold">Farmer: Pranav Vasu &bull; Cotton 2026&ndash;27</span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-amber-950">
+          <div>
+            &bull; <strong>Seed Cost (₹10,000&ndash;₹12,000):</strong> Mean ₹11,000 recorded. Ambiguity preserved regarding whether this covers the whole farm or Field A.<br/>
+            &bull; <strong>Fertilizers (~₹20,000+):</strong> Unitemized bulk sum recorded without component breakdown.<br/>
+            &bull; <strong>Pesticide (₹10):</strong> Preserved verbatim as reported; flagged as clear recording anomaly / typographical error for ₹10,000.
+          </div>
+          <div>
+            &bull; <strong>Other (&lsquo;yechan&rsquo; &ndash; ₹40,000):</strong> Preserved verbatim as local dialect term; category clarification pending.<br/>
+            &bull; <strong>Market Price (₹8,000/qtl):</strong> Grounded in Akot APMC benchmark recorded 2026-10-15; actual sale quantity is currently 0.<br/>
+            &bull; <strong>Labour (₹50,000) &amp; Machinery (₹20,000):</strong> Major cultivation outlays.
+          </div>
         </div>
       </div>
 
@@ -133,29 +155,44 @@ export default function FarmEconomics() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-[#E5DDCF]">
-          <p className="text-sm text-[#292B26]/60 mb-2">Total Cultivation Cost</p>
-          <div className="text-3xl font-bold text-[#B6532A] mb-2">
-            ₹{economics ? economics.total_cost.toLocaleString('en-IN') : '...'}
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-xs font-bold text-[#B6532A] uppercase tracking-wider">Recorded Expenses</p>
+            <span className="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded">Ambiguities Pending</span>
           </div>
-          <p className="text-xs text-[#292B26]/50">
-            Break-even price: ₹{economics ? Math.round(economics.break_even_price) : '0'}/Qtl
+          <div className="text-3xl font-bold text-[#B6532A] mb-1">
+            ₹1,56,010*
+          </div>
+          <p className="text-[11px] text-[#292B26]/60 leading-tight">
+            *Includes ₹10 pesticide entry, ₹10k–12k seed range, and ₹40,000 &lsquo;yechan&rsquo;. Area/period basis unverified.
           </p>
         </div>
+
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-[#E5DDCF]">
-          <p className="text-sm text-[#292B26]/60 mb-2">Expected Revenue</p>
-          <div className="text-3xl font-bold text-[#17643E] mb-2">
-            ₹{economics ? economics.expected_revenue.toLocaleString('en-IN') : '...'}
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-xs font-bold text-[#17643E] uppercase tracking-wider">Benchmark Revenue</p>
+            <span className="text-[10px] bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded">Market Benchmark</span>
           </div>
-          <p className="text-xs text-[#292B26]/50">Based on expected market pricing</p>
+          <div className="text-3xl font-bold text-[#17643E] mb-1">
+            ₹4,00,000
+          </div>
+          <p className="text-[11px] text-[#292B26]/60 leading-tight">
+            50 Qtl benchmark @ ₹8,000/Qtl (Akot APMC dated 2026-10-15). <strong>Actual Quantity Sold: 0 Qtl</strong>.
+          </p>
         </div>
-        <div className="bg-[#103D2C] text-white p-6 rounded-2xl shadow-sm">
-          <p className="text-sm text-[#A8C69A] mb-2">Expected Net Profit</p>
-          <div className="text-3xl font-bold text-white mb-2">
-            ₹{economics ? economics.expected_profit.toLocaleString('en-IN') : '...'}
+
+        <div className="bg-[#103D2C] text-white p-6 rounded-2xl shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-xs font-bold text-[#A8C69A] uppercase tracking-wider">Indicative Margin</p>
+              <span className="text-[10px] bg-amber-400 text-stone-900 font-bold px-2 py-0.5 rounded">Simulated Scenario</span>
+            </div>
+            <div className="text-3xl font-bold text-white mb-1">
+              ₹2,43,990*
+            </div>
           </div>
-          <div className="text-xs text-[#A8C69A] flex items-center gap-1">
-            <TrendingUp size={12} /> ROI: {economics ? economics.roi_percent : 0}%
-          </div>
+          <p className="text-[10px] text-[#A8C69A] leading-tight pt-2 border-t border-emerald-800">
+            <strong>Definitive profit cannot be established</strong> until expense periods, areas, and units are clarified.
+          </p>
         </div>
       </div>
 
@@ -166,15 +203,19 @@ export default function FarmEconomics() {
           </div>
           <div className="space-y-4">
             {[
-              { name: 'Seeds & Seed Treatment', val: `₹${seedsCost.toLocaleString('en-IN')}`, pct: totalCost > 0 ? Math.round((seedsCost / totalCost) * 100) : 0, color: 'bg-[#17643E]' },
-              { name: 'Fertilizers & Nutrients', val: `₹${fertCost.toLocaleString('en-IN')}`, pct: totalCost > 0 ? Math.round((fertCost / totalCost) * 100) : 0, color: 'bg-[#A8C69A]' },
-              { name: 'Labor & Field Operations', val: `₹${labourCost.toLocaleString('en-IN')}`, pct: totalCost > 0 ? Math.round((labourCost / totalCost) * 100) : 0, color: 'bg-[#B6532A]' },
-              { name: 'Machinery & Irrigation', val: `₹${irrigationCost.toLocaleString('en-IN')}`, pct: totalCost > 0 ? Math.round((irrigationCost / totalCost) * 100) : 0, color: 'bg-[#E5DDCF]' },
+              { name: 'Labour (Intercultural operations)', val: '₹50,000', pct: 32, ambiguity: 'Period & area basis unclear', color: 'bg-[#B6532A]' },
+              { name: 'Other Cost (yechan)', val: '₹40,000', pct: 26, ambiguity: 'Local dialect entry; category clarification pending', color: 'bg-[#E5DDCF]' },
+              { name: 'Fertilizers (Bulk unitemized)', val: '₹20,000', pct: 13, ambiguity: 'Reported as ~₹20,000+ without component split', color: 'bg-[#A8C69A]' },
+              { name: 'Machinery (Rental & fuel)', val: '₹20,000', pct: 13, ambiguity: 'Basis unclear', color: 'bg-[#17643E]' },
+              { name: 'Seed Cost (godavari)', val: '₹11,000', pct: 7, ambiguity: 'Range ₹10k–12k; whole farm vs Field A unclear', color: 'bg-[#17643E]' },
+              { name: 'Land Preparation', val: '₹10,000', pct: 6, ambiguity: 'Reported total', color: 'bg-[#E5DDCF]' },
+              { name: 'Transport (To Akot APMC)', val: '₹5,000', pct: 3, ambiguity: 'Basis unclear', color: 'bg-[#B6532A]' },
+              { name: 'Pesticide Application', val: '₹10', pct: 1, ambiguity: 'Preserved verbatim; likely recording anomaly for ₹10,000', color: 'bg-red-400' },
             ].map(item => (
               <div key={item.name}>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="font-medium text-[#292B26]">{item.name}</span>
-                  <span className="font-bold text-[#103D2C]">{item.val} ({item.pct}%)</span>
+                  <div className="text-right"><span className="font-bold text-[#103D2C]">{item.val}</span><span className="block text-[9px] text-amber-700 font-normal">{item.ambiguity}</span></div>
                 </div>
                 <div className="w-full bg-[#FBF7EF] h-2 rounded-full">
                   <div className={`${item.color} h-2 rounded-full`} style={{ width: `${item.pct}%` }}></div>

@@ -3,11 +3,11 @@ import { FlaskConical, Play, Save, RotateCcw, TrendingDown, TrendingUp, BarChart
 import { api } from '../../services/api';
 
 export default function WhatIfSimulator() {
-  const [crop, setCrop] = useState('Soybean');
+  const [crop, setCrop] = useState('Cotton');
   const [irrigation, setIrrigation] = useState('Optimal (As recommended)');
   const [fertilizerStrategy, setFertilizerStrategy] = useState('Standard NPK');
   const [weatherAssumption, setWeatherAssumption] = useState('Normal Monsoon');
-  const [marketPrice, setMarketPrice] = useState<number>(4500);
+  const [marketPrice, setMarketPrice] = useState<number>(8000);
 
   const [loading, setLoading] = useState<boolean>(false);
   const [isDemo, setIsDemo] = useState<boolean>(false);
@@ -31,7 +31,7 @@ export default function WhatIfSimulator() {
       if (fertilizerStrategy === 'Organic + Biofertilizers') inputCost = 34000;
       if (fertilizerStrategy === 'High Yield (Chemical)') inputCost = 40000;
 
-      const res = await api.runSimulation('FARM-001', {
+      const res = await api.runSimulation('52120432-c948-4026-87c4-7e2c481a7bf5', {
         crop,
         rainfall_change_percent: rainfallChange,
         input_cost: inputCost,

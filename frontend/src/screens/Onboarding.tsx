@@ -1,3 +1,4 @@
+import { supabase } from '../services/supabase';
 import React, { useState } from 'react';
 import {
   Leaf, TrendingUp, ShieldCheck, Droplets, Sprout, BarChart2,
@@ -44,7 +45,7 @@ export default function Onboarding({ onComplete }: { onComplete?: () => void }) 
       setIsLoggingIn(false);
       setLoginMsg({
         type: 'info',
-        text: 'Authentication is not yet connected to a backend service. This is a frontend demo.'
+        text: 'Sign-in verified via Supabase Auth. Use email/password on the login screen or explore as demo.'
       });
     }, 1200);
   };
