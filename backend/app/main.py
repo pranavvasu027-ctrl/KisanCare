@@ -60,7 +60,9 @@ class SecurityMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(SecurityMiddleware)
 
+from .api.soil import soil_router
 app.include_router(api_router, prefix="/api/v1")
+app.include_router(soil_router, prefix="/api/v1")
 
 @app.get("/health")
 def health_check():

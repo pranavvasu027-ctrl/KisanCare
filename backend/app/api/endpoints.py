@@ -110,6 +110,47 @@ def _crop_mock(payload: CropRecommendationRequest) -> Dict[str, Any]:
     }
 
 
+def _market_mock(payload: MarketPriceRequest) -> Dict[str, Any]:
+    crop_lower = payload.crop.lower()
+    mkt_lower = payload.market.lower()
+
+    if "soya" in crop_lower:
+        crop_name = "Soyabean"
+        price = 4670 if "akot" in mkt_lower else 4580 if "amravati" in mkt_lower else 4640
+        f_min, f_max = 4660, 4750
+        trend = "Rising"
+    elif "tur" in crop_lower or "pigeon" in crop_lower:
+        crop_name = "Tur"
+        price = 9940 if "akot" in mkt_lower else 9720 if "amravati" in mkt_lower else 9850
+        f_min, f_max = 9900, 10120
+        trend = "Rising"
+    else:
+        crop_name = "Cotton"
+        price = 7350 if "akot" in mkt_lower else 7190 if "amravati" in mkt_lower else 7280
+        f_min, f_max = 7320, 7460
+        trend = "Rising"
+
+    mkt_name = "Akot" if "akot" in mkt_lower else "Amravati" if "amravati" in mkt_lower else "Akola"
+
+    return {
+        "status": "mock",
+        "is_mock": True,
+        "data_provenance": "Demonstration dataset — not live Agmarknet mandi prices",
+        "crop": crop_name,
+        "market": f"{mkt_name} APMC",
+        "current_price": price,
+        "trend": trend,
+        "forecast_min": f_min,
+        "forecast_max": f_max,
+        "forecast_7d": int((f_min + f_max) / 2),
+        "nearby_markets": [
+            {"name": "Akot APMC", "distance": 45, "price": 7350 if crop_name == "Cotton" else 4670 if crop_name == "Soyabean" else 9940, "trend": "+2.4%"},
+            {"name": "Akola APMC", "distance": 0, "price": 7280 if crop_name == "Cotton" else 4640 if crop_name == "Soyabean" else 9850, "trend": "+1.8%"},
+            {"name": "Amravati APMC", "distance": 95, "price": 7190 if crop_name == "Cotton" else 4580 if crop_name == "Soyabean" else 9720, "trend": "-0.5%"}
+        ]
+    }
+
+
 @router.post("/farms")
 def create_farm(farm: FarmCreate):
     return {"farm_id": "F001", "status": "created", "data": farm.model_dump(), "is_mock": True}
@@ -135,7 +176,12 @@ def predict_crop(data: CropRecommendationRequest):
 
 @router.post("/market-price")
 def get_market_price(data: MarketPriceRequest):
-    return _proxy_to_ml("/api/v1/models/market-price", data.model_dump())
+    try:
+        return _proxy_to_ml("/api/v1/models/market-price", data.model_dump())
+    except HTTPException as exc:
+        if exc.status_code in (502, 503, 504) and os.getenv("ML_MOCK_FALLBACK_ENABLED", "false").lower() == "true":
+            return _market_mock(data)
+        raise
 
 
 @router.post("/disease-detection")
