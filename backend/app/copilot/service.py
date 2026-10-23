@@ -77,8 +77,11 @@ class LLMProvider:
 
 class GeminiLLMProvider(LLMProvider):
     """Production provider using Google GenAI SDK with gemini-3.8-flash."""
-    def __init__(self, api_key: Optional[str] = None):
-        self.api_key = api_key or os.environ.get("GEMINI_API_KEY")
+    def __init__(self, api_key: Any = ...):
+        if api_key is ...:
+            self.api_key = os.environ.get("GEMINI_API_KEY")
+        else:
+            self.api_key = api_key
         self._client = None
         if self.api_key:
             try:
