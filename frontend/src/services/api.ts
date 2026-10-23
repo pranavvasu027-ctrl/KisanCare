@@ -68,50 +68,36 @@ export const api = {
     };
   },
   
-  // 2. Crop Recommendation API (ML Model)
-  predictCrop: async (district: string, season: string, waterAvailability: string, topK: number = 3) => {
-    if (!DEMO_MODE) {
-      const data = await fetchAPI('/api/v1/crop-recommendation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          district,
-          season,
-          water_availability: waterAvailability,
-          top_k: topK
-        })
-      });
-      return { data: data.recommendations, raw: data, isDemo: false };
+  // 2. Crop Recommendation API (Hugging Face Real ML Dual-Model)
+  predictCrop: async (
+    paramsOrDistrict: any,
+    seasonArg?: string,
+    waterAvailabilityArg?: string,
+    topKArg: number = 5
+  ) => {
+    let payload: any = {};
+    if (typeof paramsOrDistrict === 'object' && paramsOrDistrict !== null) {
+      payload = { ...paramsOrDistrict };
+    } else {
+      payload = {
+        district: paramsOrDistrict,
+        season: seasonArg,
+        water_availability: waterAvailabilityArg,
+        top_k: topKArg
+      };
     }
-    
-    // Simulating ML Model Inference delay in demo mode
-    await new Promise(r => setTimeout(r, 600));
+
+    // Always invoke the real Hugging Face Crop Recommendation service endpoint
+    const data = await fetchAPI('/api/v1/crop-recommendation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
     return {
-      isDemo: true,
-      data: [
-        { crop: 'Soybean', predicted_area_frequency: 0.4215, rank: 1, water_requirement: 'Medium' },
-        { crop: 'Cotton', predicted_area_frequency: 0.2840, rank: 2, water_requirement: 'High' },
-        { crop: 'Pigeon Pea', predicted_area_frequency: 0.1532, rank: 3, water_requirement: 'Low' }
-      ],
-      raw: {
-        model_version: 'crop-recommendation-mvp-v2',
-        district,
-        season,
-        water_availability: waterAvailability,
-        status: 'SUCCESS',
-        recommendations: [
-          { crop: 'Soybean', predicted_area_frequency: 0.4215, rank: 1 },
-          { crop: 'Cotton', predicted_area_frequency: 0.2840, rank: 2 },
-          { crop: 'Pigeon Pea', predicted_area_frequency: 0.1532, rank: 3 }
-        ],
-        filtered_candidates: [
-          { crop: 'Sugarcane', model_score: 0.082, eligible: false, filter_reason: `Requires High/Perennial water availability; field has ${waterAvailability}` },
-          { crop: 'Wheat', model_score: 0.312, eligible: false, filter_reason: `Rabi crop; not suitable for ${season} season sowing` }
-        ],
-        data_source: 'APY_2005_2015',
-        score_interpretation: 'Predicted historical area-allocation suitability score',
-        latency_ms: 38.5
-      }
+      data: data.recommendations,
+      raw: data,
+      isDemo: Boolean(data.is_demo)
     };
   },
 
@@ -148,72 +134,90 @@ export const api = {
     };
   },
 
-  // 4. Disease Detection API (Rule-based Expert System)
-  detectDisease: async (crop: string, symptoms: string[]) => {
-    if (!DEMO_MODE) {
-      const data = await fetchAPI('/api/v1/disease-detection', {
+  // 4. Disease Detection API (Authentic PyTorch EfficientNetV2-S + CIBRC Regulatory Engine)
+  detectDisease: async (
+    crop: string,
+    symptoms: string[] = [],
+    options?: {
+      file?: File;
+      imageBase64?: string;
+      sampleId?: string;
+      locationState?: string;
+      growthStage?: string;
+      imageType?: string;
+    }
+  ) => {
+    if (options?.file) {
+      const formData = new FormData();
+      formData.append('file', options.file);
+      formData.append('crop', crop);
+      formData.append('location_state', options.locationState || 'Maharashtra');
+      formData.append('growth_stage', options.growthStage || 'vegetative');
+      formData.append('image_type', options.imageType || 'leaf');
+      formData.append('symptoms', JSON.stringify(symptoms));
+      if (options.sampleId) formData.append('sample_id', options.sampleId);
+
+      const res = await fetch('/api/v1/disease-detection', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ crop, symptoms })
+        body: formData,
       });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: res.statusText }));
+        throw new Error(err.detail || ('Server returned ' + res.status));
+      }
+      const data = await res.json();
       return { data, isDemo: false };
     }
 
-    await new Promise(r => setTimeout(r, 600));
-    return {
-      isDemo: true,
-      data: {
-        model_type: 'rule_based_sample',
-        prediction: 'Soybean Rust',
-        confidence: 0.94,
-        treatment: 'Apply triazole or strobilurin-based fungicide (e.g., Tebuconazole 25.9% EC @ 1ml/L). Ensure adequate plant spacing.'
-      }
+    const payload: any = {
+      crop,
+      location_state: options?.locationState || 'Maharashtra',
+      growth_stage: options?.growthStage || 'vegetative',
+      image_type: options?.imageType || 'leaf',
+      symptoms,
     };
+    if (options?.sampleId) payload.sample_id = options.sampleId;
+    if (options?.imageBase64) payload.image_base64 = options.imageBase64;
+
+    const data = await fetchAPI('/api/v1/disease-detection', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    return { data, isDemo: false };
   },
 
-  // 5. Pest Detection API (Rule-based Expert System)
-  detectPest: async (crop: string, symptoms: string[]) => {
-    if (!DEMO_MODE) {
-      const data = await fetchAPI('/api/v1/pest-detection', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ crop, symptoms })
-      });
-      return { data, isDemo: false };
-    }
-
-    await new Promise(r => setTimeout(r, 600));
-    return {
-      isDemo: true,
-      data: {
-        model_type: 'rule_based_sample',
-        prediction: 'Aphids',
-        confidence: 0.85,
-        treatment: 'Introduce ladybugs or apply insecticidal soap / neem oil.'
-      }
-    };
+  // 5. Pest Detection API (Authentic YOLO11s Model)
+  detectPest: async (crop: string, symptoms: string[], options?: { file?: File; sampleId?: string }) => {
+    return api.detectDisease(crop, symptoms, {
+      ...options,
+      imageType: 'trap_sticky_sheet',
+      sampleId: options?.sampleId || 'cotton_trap',
+    });
   },
 
   // 6. Soil Assessment API
   assessSoil: async (n: number, p: number, k: number, ph: number) => {
-    if (!DEMO_MODE) {
+    try {
       const data = await fetchAPI('/api/v1/soil-assessment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ n, p, k, ph })
       });
       return { data, isDemo: false };
+    } catch {
+      return {
+        isDemo: true,
+        data: {
+          model_type: 'rule_based_sample',
+          overall_status: 'Deficient/Imbalanced',
+          issues: ['Low Nitrogen'],
+          recommendation: 'Add NPK fertilizer balancing the deficiencies.'
+        }
+      };
     }
-
-    return {
-      isDemo: true,
-      data: {
-        model_type: 'rule_based_sample',
-        overall_status: 'Deficient/Imbalanced',
-        issues: ['Low Nitrogen'],
-        recommendation: 'Add NPK fertilizer balancing the deficiencies.'
-      }
-    };
   },
 
   // 7. Yield Prediction API
