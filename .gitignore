@@ -11,6 +11,9 @@ node_modules/
 *.pkl
 *.pth
 *.pt
+*.safetensors
+*.bin
+*.h5
 model.pkl
 **/model.pkl
 *.pkl.part

@@ -1,0 +1,618 @@
+{
+  "timestamp": "2026-10-23T17:23:49Z",
+  "total_test_samples": 18,
+  "classes_evaluated": [
+    "Bacterial Blight",
+    "Cotton Leaf Curl Virus",
+    "Fusarium Wilt",
+    "Healthy Foliage"
+  ],
+  "cross_model_disagreements": 14,
+  "disagreement_rate": 0.7778,
+  "model_profiles": {
+    "DINOv2_Generalist": {
+      "architecture": "Vision Transformer ViT-B/14 (DINOv2)",
+      "parameters": "86.6M",
+      "weights_size_mb": 344.0,
+      "num_classes": 387,
+      "crop_coverage": "59 Indian Crops",
+      "mean_latency_ms": 389.86
+    },
+    "DenseNet121_Specialist": {
+      "architecture": "DenseNet-121 (torchvision)",
+      "parameters": "7.0M",
+      "weights_size_mb": 80.5,
+      "num_classes": 4,
+      "crop_coverage": "Cotton Dedicated",
+      "mean_latency_ms": 142.47
+    },
+    "Fused_Router": {
+      "architecture": "Unified Intelligent Router (Specialist + Generalist Fusion)",
+      "parameters": "93.6M (Ensemble)",
+      "weights_size_mb": 424.5,
+      "num_classes": "Canonical Unified",
+      "crop_coverage": "Cotton (Specialist) + 59 Crops (Generalist)",
+      "mean_latency_ms": 483.3
+    }
+  },
+  "summary_metrics": {
+    "DINOv2_Generalist": {
+      "accuracy": 0.6667,
+      "abstention_rate": 0.1111,
+      "mean_latency_ms": 389.86,
+      "macro_precision": 0.75,
+      "macro_recall": 0.6667,
+      "macro_f1": 0.7,
+      "per_class": {
+        "Bacterial Blight": {
+          "tp": 4,
+          "fp": 0,
+          "fn": 2,
+          "precision": 1.0,
+          "recall": 0.6667,
+          "f1_score": 0.8
+        },
+        "Cotton Leaf Curl Virus": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 4,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0
+        },
+        "Fusarium Wilt": {
+          "tp": 4,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0
+        },
+        "Healthy Foliage": {
+          "tp": 4,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0
+        }
+      }
+    },
+    "DenseNet121_Specialist": {
+      "accuracy": 0.3333,
+      "abstention_rate": 0.0556,
+      "mean_latency_ms": 142.47,
+      "macro_precision": 0.2875,
+      "macro_recall": 0.2917,
+      "macro_f1": 0.2708,
+      "per_class": {
+        "Bacterial Blight": {
+          "tp": 4,
+          "fp": 6,
+          "fn": 2,
+          "precision": 0.4,
+          "recall": 0.6667,
+          "f1_score": 0.5
+        },
+        "Cotton Leaf Curl Virus": {
+          "tp": 0,
+          "fp": 2,
+          "fn": 4,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0
+        },
+        "Fusarium Wilt": {
+          "tp": 1,
+          "fp": 1,
+          "fn": 3,
+          "precision": 0.5,
+          "recall": 0.25,
+          "f1_score": 0.3333
+        },
+        "Healthy Foliage": {
+          "tp": 1,
+          "fp": 3,
+          "fn": 3,
+          "precision": 0.25,
+          "recall": 0.25,
+          "f1_score": 0.25
+        }
+      }
+    },
+    "Fused_Router": {
+      "accuracy": 0.3333,
+      "abstention_rate": 0.0556,
+      "mean_latency_ms": 483.3,
+      "macro_precision": 0.2875,
+      "macro_recall": 0.2917,
+      "macro_f1": 0.2708,
+      "per_class": {
+        "Bacterial Blight": {
+          "tp": 4,
+          "fp": 6,
+          "fn": 2,
+          "precision": 0.4,
+          "recall": 0.6667,
+          "f1_score": 0.5
+        },
+        "Cotton Leaf Curl Virus": {
+          "tp": 0,
+          "fp": 1,
+          "fn": 4,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0
+        },
+        "Fusarium Wilt": {
+          "tp": 1,
+          "fp": 1,
+          "fn": 3,
+          "precision": 0.5,
+          "recall": 0.25,
+          "f1_score": 0.3333
+        },
+        "Healthy Foliage": {
+          "tp": 1,
+          "fp": 3,
+          "fn": 3,
+          "precision": 0.25,
+          "recall": 0.25,
+          "f1_score": 0.25
+        }
+      }
+    }
+  },
+  "detailed_sample_results": [
+    {
+      "sample_index": 1,
+      "filename": "bacterial_blight_1.jpg",
+      "ground_truth": "Bacterial Blight",
+      "generalist": {
+        "top_label": "cotton::Bacterial blight",
+        "confidence": 0.9104,
+        "predicted_condition": "Bacterial blight",
+        "abstained": false,
+        "latency_ms": 562.44
+      },
+      "specialist": {
+        "raw_condition": "bacterial blight",
+        "predicted_condition": "Bacterial Blight",
+        "raw_score": 0.5157,
+        "calibrated_confidence": 0.4837,
+        "latency_ms": 228.52
+      },
+      "fused_router": {
+        "predicted_condition": "Bacterial Blight",
+        "routing_path": "specialist_fused",
+        "specialist_agreement": true,
+        "latency_ms": 455.48
+      }
+    },
+    {
+      "sample_index": 2,
+      "filename": "bacterial_blight_2.jpg",
+      "ground_truth": "Bacterial Blight",
+      "generalist": {
+        "top_label": "cotton::Bacterial blight",
+        "confidence": 0.9146,
+        "predicted_condition": "Bacterial blight",
+        "abstained": false,
+        "latency_ms": 327.86
+      },
+      "specialist": {
+        "raw_condition": "bacterial blight",
+        "predicted_condition": "Bacterial Blight",
+        "raw_score": 0.6962,
+        "calibrated_confidence": 0.635,
+        "latency_ms": 98.47
+      },
+      "fused_router": {
+        "predicted_condition": "Bacterial Blight",
+        "routing_path": "specialist_fused",
+        "specialist_agreement": true,
+        "latency_ms": 488.22
+      }
+    },
+    {
+      "sample_index": 3,
+      "filename": "bacterial_blight_3.jpg",
+      "ground_truth": "Bacterial Blight",
+      "generalist": {
+        "top_label": "cotton::Bacterial blight",
+        "confidence": 0.9502,
+        "predicted_condition": "Bacterial blight",
+        "abstained": false,
+        "latency_ms": 456.53
+      },
+      "specialist": {
+        "raw_condition": "fussarium wilt",
+        "predicted_condition": "Fusarium Wilt",
+        "raw_score": 0.5981,
+        "calibrated_confidence": 0.5535,
+        "latency_ms": 371.27
+      },
+      "fused_router": {
+        "predicted_condition": "Fusarium Wilt",
+        "routing_path": "specialist_fused",
+        "specialist_agreement": false,
+        "latency_ms": 491.93
+      }
+    },
+    {
+      "sample_index": 4,
+      "filename": "bacterial_blight_4.jpg",
+      "ground_truth": "Bacterial Blight",
+      "generalist": {
+        "top_label": "cotton::Bacterial blight",
+        "confidence": 0.9506,
+        "predicted_condition": "Bacterial blight",
+        "abstained": false,
+        "latency_ms": 353.62
+      },
+      "specialist": {
+        "raw_condition": "curl virus",
+        "predicted_condition": "Cotton Leaf Curl Virus",
+        "raw_score": 0.4604,
+        "calibrated_confidence": 0.4311,
+        "latency_ms": 114.7
+      },
+      "fused_router": {
+        "predicted_condition": "Cotton Leaf Curl Virus",
+        "routing_path": "specialist_fused",
+        "specialist_agreement": false,
+        "latency_ms": 563.38
+      }
+    },
+    {
+      "sample_index": 5,
+      "filename": "fusarium_wilt_1.jpg",
+      "ground_truth": "Fusarium Wilt",
+      "generalist": {
+        "top_label": "cotton::Fusarium wilt",
+        "confidence": 0.9092,
+        "predicted_condition": "Fusarium wilt",
+        "abstained": false,
+        "latency_ms": 401.52
+      },
+      "specialist": {
+        "raw_condition": "fussarium wilt",
+        "predicted_condition": "Fusarium Wilt",
+        "raw_score": 0.5156,
+        "calibrated_confidence": 0.4905,
+        "latency_ms": 150.36
+      },
+      "fused_router": {
+        "predicted_condition": "Fusarium Wilt",
+        "routing_path": "specialist_fused",
+        "specialist_agreement": true,
+        "latency_ms": 450.24
+      }
+    },
+    {
+      "sample_index": 6,
+      "filename": "fusarium_wilt_2.jpg",
+      "ground_truth": "Fusarium Wilt",
+      "generalist": {
+        "top_label": "cotton::Fusarium wilt",
+        "confidence": 0.9603,
+        "predicted_condition": "Fusarium wilt",
+        "abstained": false,
+        "latency_ms": 300.85
+      },
+      "specialist": {
+        "raw_condition": "bacterial blight",
+        "predicted_condition": "Bacterial Blight",
+        "raw_score": 0.8683,
+        "calibrated_confidence": 0.8023,
+        "latency_ms": 86.54
+      },
+      "fused_router": {
+        "predicted_condition": "Bacterial Blight",
+        "routing_path": "specialist_fused",
+        "specialist_agreement": false,
+        "latency_ms": 371.34
+      }
+    },
+    {
+      "sample_index": 7,
+      "filename": "fusarium_wilt_3.jpg",
+      "ground_truth": "Fusarium Wilt",
+      "generalist": {
+        "top_label": "cotton::Fusarium wilt",
+        "confidence": 0.8707,
+        "predicted_condition": "Fusarium wilt",
+        "abstained": false,
+        "latency_ms": 321.77
+      },
+      "specialist": {
+        "raw_condition": "bacterial blight",
+        "predicted_condition": "Bacterial Blight",
+        "raw_score": 0.7717,
+        "calibrated_confidence": 0.7062,
+        "latency_ms": 86.32
+      },
+      "fused_router": {
+        "predicted_condition": "Bacterial Blight",
+        "routing_path": "specialist_fused",
+        "specialist_agreement": false,
+        "latency_ms": 376.8
+      }
+    },
+    {
+      "sample_index": 8,
+      "filename": "fusarium_wilt_4.jpg",
+      "ground_truth": "Fusarium Wilt",
+      "generalist": {
+        "top_label": "cotton::Fusarium wilt",
+        "confidence": 0.9298,
+        "predicted_condition": "Fusarium wilt",
+        "abstained": false,
+        "latency_ms": 306.04
+      },
+      "specialist": {
+        "raw_condition": "curl virus",
+        "predicted_condition": "Cotton Leaf Curl Virus",
+        "raw_score": 0.3694,
+        "calibrated_confidence": 0.3552,
+        "latency_ms": 91.17
+      },
+      "fused_router": {
+        "predicted_condition": "Inconclusive foliar diagnosis",
+        "routing_path": "specialist_fused",
+        "specialist_agreement": false,
+        "latency_ms": 485.46
+      }
+    },
+    {
+      "sample_index": 9,
+      "filename": "healthy_foliage_1.jpg",
+      "ground_truth": "Healthy Foliage",
+      "generalist": {
+        "top_label": "cotton::Healthy",
+        "confidence": 0.8922,
+        "predicted_condition": "Healthy Foliage",
+        "abstained": false,
+        "latency_ms": 740.71
+      },
+      "specialist": {
+        "raw_condition": "bacterial blight",
+        "predicted_condition": "Bacterial Blight",
+        "raw_score": 0.6288,
+        "calibrated_confidence": 0.5991,
+        "latency_ms": 137.01
+      },
+      "fused_router": {
+        "predicted_condition": "Bacterial Blight",
+        "routing_path": "specialist_fused",
+        "specialist_agreement": false,
+        "latency_ms": 421.21
+      }
+    },
+    {
+      "sample_index": 10,
+      "filename": "healthy_foliage_2.jpg",
+      "ground_truth": "Healthy Foliage",
+      "generalist": {
+        "top_label": "cotton::Healthy",
+        "confidence": 0.85,
+        "predicted_condition": "Healthy Foliage",
+        "abstained": false,
+        "latency_ms": 329.81
+      },
+      "specialist": {
+        "raw_condition": "bacterial blight",
+        "predicted_condition": "Bacterial Blight",
+        "raw_score": 0.7609,
+        "calibrated_confidence": 0.6982,
+        "latency_ms": 107.95
+      },
+      "fused_router": {
+        "predicted_condition": "Bacterial Blight",
+        "routing_path": "specialist_fused",
+        "specialist_agreement": false,
+        "latency_ms": 558.1
+      }
+    },
+    {
+      "sample_index": 11,
+      "filename": "healthy_foliage_3.jpg",
+      "ground_truth": "Healthy Foliage",
+      "generalist": {
+        "top_label": "cotton::Healthy",
+        "confidence": 0.9114,
+        "predicted_condition": "Healthy Foliage",
+        "abstained": false,
+        "latency_ms": 424.72
+      },
+      "specialist": {
+        "raw_condition": "healthy",
+        "predicted_condition": "Healthy Foliage",
+        "raw_score": 0.9762,
+        "calibrated_confidence": 0.9497,
+        "latency_ms": 161.62
+      },
+      "fused_router": {
+        "predicted_condition": "Healthy Foliage",
+        "routing_path": "specialist_fused",
+        "specialist_agreement": true,
+        "latency_ms": 567.64
+      }
+    },
+    {
+      "sample_index": 12,
+      "filename": "healthy_foliage_4.jpg",
+      "ground_truth": "Healthy Foliage",
+      "generalist": {
+        "top_label": "cotton::Healthy",
+        "confidence": 0.8536,
+        "predicted_condition": "Healthy Foliage",
+        "abstained": false,
+        "latency_ms": 452.23
+      },
+      "specialist": {
+        "raw_condition": "bacterial blight",
+        "predicted_condition": "Bacterial Blight",
+        "raw_score": 0.9028,
+        "calibrated_confidence": 0.8526,
+        "latency_ms": 204.12
+      },
+      "fused_router": {
+        "predicted_condition": "Bacterial Blight",
+        "routing_path": "specialist_fused",
+        "specialist_agreement": false,
+        "latency_ms": 496.11
+      }
+    },
+    {
+      "sample_index": 13,
+      "filename": "curl_virus_1.jpg",
+      "ground_truth": "Cotton Leaf Curl Virus",
+      "generalist": {
+        "top_label": "cotton::Leaf curl virus",
+        "confidence": 0.8787,
+        "predicted_condition": "Leaf curl virus",
+        "abstained": false,
+        "latency_ms": 355.06
+      },
+      "specialist": {
+        "raw_condition": "healthy",
+        "predicted_condition": "Healthy Foliage",
+        "raw_score": 0.6887,
+        "calibrated_confidence": 0.6478,
+        "latency_ms": 143.87
+      },
+      "fused_router": {
+        "predicted_condition": "Healthy Foliage",
+        "routing_path": "specialist_fused",
+        "specialist_agreement": false,
+        "latency_ms": 541.48
+      }
+    },
+    {
+      "sample_index": 14,
+      "filename": "curl_virus_2.jpg",
+      "ground_truth": "Cotton Leaf Curl Virus",
+      "generalist": {
+        "top_label": "cotton::Leaf curl virus",
+        "confidence": 0.7731,
+        "predicted_condition": "Leaf curl virus",
+        "abstained": false,
+        "latency_ms": 326.65
+      },
+      "specialist": {
+        "raw_condition": "healthy",
+        "predicted_condition": "Healthy Foliage",
+        "raw_score": 0.9732,
+        "calibrated_confidence": 0.9456,
+        "latency_ms": 92.84
+      },
+      "fused_router": {
+        "predicted_condition": "Healthy Foliage",
+        "routing_path": "specialist_fused",
+        "specialist_agreement": false,
+        "latency_ms": 457.76
+      }
+    },
+    {
+      "sample_index": 15,
+      "filename": "curl_virus_3.jpg",
+      "ground_truth": "Cotton Leaf Curl Virus",
+      "generalist": {
+        "top_label": "cotton::Leaf curl virus",
+        "confidence": 0.898,
+        "predicted_condition": "Leaf curl virus",
+        "abstained": false,
+        "latency_ms": 342.61
+      },
+      "specialist": {
+        "raw_condition": "bacterial blight",
+        "predicted_condition": "Bacterial Blight",
+        "raw_score": 0.5624,
+        "calibrated_confidence": 0.5145,
+        "latency_ms": 145.5
+      },
+      "fused_router": {
+        "predicted_condition": "Bacterial Blight",
+        "routing_path": "specialist_fused",
+        "specialist_agreement": false,
+        "latency_ms": 521.14
+      }
+    },
+    {
+      "sample_index": 16,
+      "filename": "curl_virus_4.jpg",
+      "ground_truth": "Cotton Leaf Curl Virus",
+      "generalist": {
+        "top_label": "cotton::Leaf curl virus",
+        "confidence": 0.9243,
+        "predicted_condition": "Leaf curl virus",
+        "abstained": false,
+        "latency_ms": 319.54
+      },
+      "specialist": {
+        "raw_condition": "healthy",
+        "predicted_condition": "Healthy Foliage",
+        "raw_score": 0.9425,
+        "calibrated_confidence": 0.901,
+        "latency_ms": 98.75
+      },
+      "fused_router": {
+        "predicted_condition": "Healthy Foliage",
+        "routing_path": "specialist_fused",
+        "specialist_agreement": false,
+        "latency_ms": 491.94
+      }
+    },
+    {
+      "sample_index": 17,
+      "filename": "cotton_leaf_spot.jpg",
+      "ground_truth": "Bacterial Blight",
+      "generalist": {
+        "top_label": "citrus_orange::Citrus canker",
+        "confidence": 0.0724,
+        "predicted_condition": "Abstained (< 40%)",
+        "abstained": true,
+        "latency_ms": 399.25
+      },
+      "specialist": {
+        "raw_condition": "bacterial blight",
+        "predicted_condition": "Bacterial Blight",
+        "raw_score": 0.8059,
+        "calibrated_confidence": 0.7346,
+        "latency_ms": 161.76
+      },
+      "fused_router": {
+        "predicted_condition": "Bacterial Blight",
+        "routing_path": "specialist_fused",
+        "specialist_agreement": null,
+        "latency_ms": 527.07
+      }
+    },
+    {
+      "sample_index": 18,
+      "filename": "cotton_field_leaf.jpg",
+      "ground_truth": "Bacterial Blight",
+      "generalist": {
+        "top_label": "banana::Cigar end rot",
+        "confidence": 0.1114,
+        "predicted_condition": "Abstained (< 40%)",
+        "abstained": true,
+        "latency_ms": 296.23
+      },
+      "specialist": {
+        "raw_condition": "bacterial blight",
+        "predicted_condition": "Bacterial Blight",
+        "raw_score": 0.5717,
+        "calibrated_confidence": 0.5293,
+        "latency_ms": 83.77
+      },
+      "fused_router": {
+        "predicted_condition": "Bacterial Blight",
+        "routing_path": "specialist_fused",
+        "specialist_agreement": null,
+        "latency_ms": 434.08
+      }
+    }
+  ]
+}
