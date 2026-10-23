@@ -22,8 +22,10 @@ from api.config import (
 from api.routes.health import router as health_router
 from api.routes.irrigation import router as irrigation_router
 from api.routes.yield_route import router as yield_router
+from api.routes.crop_route import router as crop_router
 from api.services.irrigation_service import irrigation_service
 from api.services.yield_service import yield_service
+from api.services.crop_service import crop_recommendation_service
 
 # Configure logging
 logging.basicConfig(
@@ -55,6 +57,13 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     except Exception as exc:
         logger.error("Failed to preload Crop Yield Model: %s", str(exc), exc_info=True)
 
+    # 3. Preload Crop Recommendation Model
+    try:
+        crop_recommendation_service.initialize()
+        logger.info("Crop Recommendation Model preloaded successfully.")
+    except Exception as exc:
+        logger.error("Failed to preload Crop Recommendation Model: %s", str(exc), exc_info=True)
+
     logger.info("All AI services initialized and ready to serve traffic.")
     yield
     logger.info("Shutting down KisanCare Dual Inference Service.")
@@ -82,6 +91,22 @@ app.add_middleware(
 app.include_router(health_router)
 app.include_router(irrigation_router)
 app.include_router(yield_router)
+app.include_router(crop_router)
+
+# Also mount core backend endpoints (Digital Twin, Simulator, Economics) so that
+# running `uvicorn api.main:app` serves the full unified platform.
+try:
+    import sys
+    from pathlib import Path
+    backend_dir = Path(__file__).resolve().parent.parent / "backend"
+    if str(backend_dir) not in sys.path:
+        sys.path.insert(0, str(backend_dir))
+    from app.api.endpoints import router as backend_endpoints_router
+    app.include_router(backend_endpoints_router, prefix="/api/v1")
+    app.include_router(backend_endpoints_router, prefix="/api")
+    logger.info("Mounted backend endpoints (Digital Twin, Simulator, Economics) into unified API.")
+except Exception as exc:
+    logger.warning("Backend endpoints not mounted into api/main.py: %s", exc)
 
 
 @app.get("/", tags=["Root"])
@@ -95,6 +120,8 @@ async def root():
             {"method": "GET", "path": "/health", "desc": "Service and models health status"},
             {"method": "POST", "path": "/api/irrigation/predict", "desc": "Irrigation scheduling & water balance"},
             {"method": "POST", "path": "/api/yield/predict", "desc": "Crop yield & total harvest prediction"},
+            {"method": "POST", "path": "/api/crop/recommend", "desc": "Crop recommendation with multi-layer agronomic scoring"},
+            {"method": "POST", "path": "/api/v1/recommend", "desc": "AD Handoff crop recommendation endpoint"},
         ],
     }
 

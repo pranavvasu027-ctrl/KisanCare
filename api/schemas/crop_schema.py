@@ -34,14 +34,18 @@ class CropScoreBreakdownSchema(BaseModel):
 
 
 class CropRecommendationRequest(BaseModel):
-    """Inference API request payload for crop recommendation."""
+    """Inference API request payload for crop recommendation.
+
+    All seven soil and climate inputs are required to prevent silent assumption
+    or invention of unmeasured physical observations.
+    """
     N: float = Field(..., ge=0.0, le=300.0, description="Available Soil Nitrogen (kg/ha or mg/kg)")
     P: float = Field(..., ge=0.0, le=300.0, description="Available Soil Phosphorus (kg/ha or mg/kg)")
     K: float = Field(..., ge=0.0, le=300.0, description="Available Soil Potassium (kg/ha or mg/kg)")
-    ph: Optional[float] = Field(6.5, ge=3.5, le=9.5, description="Soil pH value (3.5 - 9.5)")
-    temperature: Optional[float] = Field(25.0, ge=5.0, le=50.0, description="Mean temperature in Celsius (5 - 50)")
-    humidity: Optional[float] = Field(70.0, ge=10.0, le=100.0, description="Relative humidity percentage (10 - 100)")
-    rainfall: Optional[float] = Field(750.0, ge=20.0, le=3000.0, description="Precipitation in mm (20 - 3000)")
+    ph: float = Field(..., ge=3.5, le=9.5, description="Soil pH value (3.5 - 9.5)")
+    temperature: float = Field(..., ge=5.0, le=50.0, description="Mean temperature in Celsius (5.0 - 50.0)")
+    humidity: float = Field(..., ge=10.0, le=100.0, description="Relative humidity percentage (10.0 - 100.0)")
+    rainfall: float = Field(..., ge=20.0, le=3000.0, description="Precipitation in mm (20.0 - 3000.0)")
     state: Optional[str] = Field("Maharashtra", description="Indian state for regional suitability mapping")
     district: Optional[str] = Field("Nashik", description="District name (e.g., Nashik, Pune)")
     season: Optional[str] = Field("Kharif", description="Agricultural season (Kharif, Rabi, Summer, Whole Year)")

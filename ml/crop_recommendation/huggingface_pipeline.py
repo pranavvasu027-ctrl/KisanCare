@@ -437,6 +437,12 @@ class CropRecommendationPipeline:
             (self.model2_df["Season"] == season)
         ]
 
+        if region_df.empty:
+            warnings_list.append(
+                f"No historical agricultural records found in Model 2 regional table for district '{district}' in '{season}' season. "
+                "Regional suitability scores default to 0.0 with recommendations driven by Soil/Climate Random Forest probabilities."
+            )
+
         m2_scores: Dict[str, Dict[str, Any]] = {}
         for _, row in region_df.iterrows():
             crop_name = str(row["Crop"]).strip()
@@ -555,7 +561,7 @@ class CropRecommendationPipeline:
                 confidence_pct=round(combined * 100.0, 1),
                 npk_score=round(s1, 4),
                 region_score=round(s2, 4),
-                region_suitability=reg_label if reg_label != "No regional data" else self._get_suitability_label(combined),
+                region_suitability=reg_label,
                 grown_pct_of_years=round(grown_pct, 1),
                 avg_yield_t_ha=round(avg_yield, 2),
                 historically_grown=hist_grown,

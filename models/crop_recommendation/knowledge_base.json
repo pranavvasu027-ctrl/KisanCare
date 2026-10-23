@@ -1,0 +1,645 @@
+{
+  "$schema": "./knowledge_base_schema.json",
+  "crops": {
+    "rice": {
+      "name": "rice",
+      "aliases": ["paddy", "dhan", "oryza sativa"],
+      "crop_family": "Poaceae",
+      "n_demand": "High",
+      "p_demand": "Medium",
+      "k_demand": "High",
+      "n_demand_kg_ha": [80, 150],
+      "p_demand_kg_ha": [30, 60],
+      "k_demand_kg_ha": [40, 80],
+      "is_legume": false,
+      "feeder_type": "Heavy Feeder",
+      "root_depth": "Shallow",
+      "rotation_compatibility": {
+        "recommended_successors": ["wheat", "chickpea", "mustard", "lentil", "blackgram", "mungbean", "potato"],
+        "avoid_successors": ["rice"],
+        "min_rotation_interval_seasons": 1,
+        "notes": "Flooded paddy creates hard plow pans and anaerobic conditions. Legume or deep-rooted follow-up crop restores soil structure and aerobic microbial life."
+      }
+    },
+    "wheat": {
+      "name": "wheat",
+      "aliases": ["gehun", "triticum aestivum"],
+      "crop_family": "Poaceae",
+      "n_demand": "High",
+      "p_demand": "Medium",
+      "k_demand": "Medium",
+      "n_demand_kg_ha": [80, 120],
+      "p_demand_kg_ha": [40, 60],
+      "k_demand_kg_ha": [30, 50],
+      "is_legume": false,
+      "feeder_type": "Heavy Feeder",
+      "root_depth": "Medium",
+      "rotation_compatibility": {
+        "recommended_successors": ["mungbean", "soybean", "pigeonpeas", "cotton", "maize", "groundnut"],
+        "avoid_successors": ["wheat", "barley"],
+        "min_rotation_interval_seasons": 1,
+        "notes": "Standard rabi cereal. Benefits immensely when preceded by legumes (green gram, soybean) or followed by summer pulse."
+      }
+    },
+    "maize": {
+      "name": "maize",
+      "aliases": ["corn", "makka", "zea mays"],
+      "crop_family": "Poaceae",
+      "n_demand": "Very High",
+      "p_demand": "High",
+      "k_demand": "High",
+      "n_demand_kg_ha": [120, 180],
+      "p_demand_kg_ha": [50, 80],
+      "k_demand_kg_ha": [50, 100],
+      "is_legume": false,
+      "feeder_type": "Heavy Feeder",
+      "root_depth": "Medium",
+      "rotation_compatibility": {
+        "recommended_successors": ["chickpea", "mustard", "lentil", "wheat", "potato", "soybean"],
+        "avoid_successors": ["maize", "sugarcane"],
+        "min_rotation_interval_seasons": 1,
+        "notes": "Exhaustive C4 cereal crop with high nitrogen demand. Repeating maize consecutively leads to severe stalk rot and armyworm buildup."
+      }
+    },
+    "chickpea": {
+      "name": "chickpea",
+      "aliases": ["gram", "chana", "bengal gram", "cicer arietinum"],
+      "crop_family": "Fabaceae",
+      "n_demand": "Low",
+      "p_demand": "Medium",
+      "k_demand": "Medium",
+      "n_demand_kg_ha": [15, 30],
+      "p_demand_kg_ha": [40, 60],
+      "k_demand_kg_ha": [20, 40],
+      "is_legume": true,
+      "feeder_type": "Soil Builder (Legume)",
+      "root_depth": "Deep",
+      "rotation_compatibility": {
+        "recommended_successors": ["maize", "rice", "cotton", "bajra", "jowar"],
+        "avoid_successors": ["chickpea", "lentil", "pigeonpeas"],
+        "min_rotation_interval_seasons": 2,
+        "notes": "Excellent N-fixing rabi pulse (adds 30-50 kg N/ha). Scavenges deep soil moisture with taproots. Avoid planting after other legumes to prevent Fusarium wilt."
+      }
+    },
+    "kidneybeans": {
+      "name": "kidneybeans",
+      "aliases": ["rajma", "french bean", "phaseolus vulgaris"],
+      "crop_family": "Fabaceae",
+      "n_demand": "Medium",
+      "p_demand": "High",
+      "k_demand": "Medium",
+      "n_demand_kg_ha": [40, 70],
+      "p_demand_kg_ha": [50, 80],
+      "k_demand_kg_ha": [30, 50],
+      "is_legume": true,
+      "feeder_type": "Moderate Feeder",
+      "root_depth": "Medium",
+      "rotation_compatibility": {
+        "recommended_successors": ["maize", "wheat", "mustard", "potato"],
+        "avoid_successors": ["kidneybeans", "soybean"],
+        "min_rotation_interval_seasons": 2,
+        "notes": "Weak natural nodulator compared to other legumes, requiring moderate initial N and high phosphorus."
+      }
+    },
+    "pigeonpeas": {
+      "name": "pigeonpeas",
+      "aliases": ["arhar", "tur", "red gram", "cajanus cajan"],
+      "crop_family": "Fabaceae",
+      "n_demand": "Low",
+      "p_demand": "Medium",
+      "k_demand": "Medium",
+      "n_demand_kg_ha": [20, 35],
+      "p_demand_kg_ha": [40, 60],
+      "k_demand_kg_ha": [20, 40],
+      "is_legume": true,
+      "feeder_type": "Soil Builder (Legume)",
+      "root_depth": "Deep",
+      "rotation_compatibility": {
+        "recommended_successors": ["wheat", "mustard", "maize", "barley", "rice"],
+        "avoid_successors": ["pigeonpeas", "cotton"],
+        "min_rotation_interval_seasons": 2,
+        "notes": "Deep extensive taproot system breaks plow pans, mines subsoil phosphorus, and adds massive leaf fall biomass and nitrogen."
+      }
+    },
+    "mothbeans": {
+      "name": "mothbeans",
+      "aliases": ["moth", "matki", "vigna aconitifolia"],
+      "crop_family": "Fabaceae",
+      "n_demand": "Low",
+      "p_demand": "Low",
+      "k_demand": "Low",
+      "n_demand_kg_ha": [10, 20],
+      "p_demand_kg_ha": [20, 40],
+      "k_demand_kg_ha": [10, 25],
+      "is_legume": true,
+      "feeder_type": "Soil Builder (Legume)",
+      "root_depth": "Deep",
+      "rotation_compatibility": {
+        "recommended_successors": ["bajra", "wheat", "mustard", "jowar"],
+        "avoid_successors": ["mothbeans"],
+        "min_rotation_interval_seasons": 2,
+        "notes": "Extremely drought-hardy legume suitable for arid/semi-arid regions. Protects soil against wind erosion."
+      }
+    },
+    "mungbean": {
+      "name": "mungbean",
+      "aliases": ["moong", "green gram", "vigna radiata"],
+      "crop_family": "Fabaceae",
+      "n_demand": "Low",
+      "p_demand": "Medium",
+      "k_demand": "Low",
+      "n_demand_kg_ha": [15, 25],
+      "p_demand_kg_ha": [30, 50],
+      "k_demand_kg_ha": [15, 30],
+      "is_legume": true,
+      "feeder_type": "Soil Builder (Legume)",
+      "root_depth": "Shallow",
+      "rotation_compatibility": {
+        "recommended_successors": ["wheat", "rice", "potato", "maize", "mustard"],
+        "avoid_successors": ["mungbean", "blackgram"],
+        "min_rotation_interval_seasons": 1,
+        "notes": "Short duration (60-70 days) catch crop. Ideal summer or inter-season green manure crop."
+      }
+    },
+    "blackgram": {
+      "name": "blackgram",
+      "aliases": ["urad", "mash", "vigna mungo"],
+      "crop_family": "Fabaceae",
+      "n_demand": "Low",
+      "p_demand": "Medium",
+      "k_demand": "Low",
+      "n_demand_kg_ha": [15, 25],
+      "p_demand_kg_ha": [30, 50],
+      "k_demand_kg_ha": [15, 30],
+      "is_legume": true,
+      "feeder_type": "Soil Builder (Legume)",
+      "root_depth": "Medium",
+      "rotation_compatibility": {
+        "recommended_successors": ["wheat", "rice", "mustard", "maize"],
+        "avoid_successors": ["blackgram", "mungbean"],
+        "min_rotation_interval_seasons": 1,
+        "notes": "High nodulation efficiency; leaves residual organic nitrogen for subsequent rabi cereals."
+      }
+    },
+    "lentil": {
+      "name": "lentil",
+      "aliases": ["masoor", "lens culinaris"],
+      "crop_family": "Fabaceae",
+      "n_demand": "Low",
+      "p_demand": "Medium",
+      "k_demand": "Low",
+      "n_demand_kg_ha": [15, 25],
+      "p_demand_kg_ha": [30, 50],
+      "k_demand_kg_ha": [15, 25],
+      "is_legume": true,
+      "feeder_type": "Soil Builder (Legume)",
+      "root_depth": "Medium",
+      "rotation_compatibility": {
+        "recommended_successors": ["rice", "maize", "bajra", "cotton"],
+        "avoid_successors": ["lentil", "chickpea"],
+        "min_rotation_interval_seasons": 2,
+        "notes": "Cool season pulse with low input requirement. Thrives following rice in utera/relay cropping."
+      }
+    },
+    "pomegranate": {
+      "name": "pomegranate",
+      "aliases": ["anar", "punica granatum"],
+      "crop_family": "Lythraceae",
+      "n_demand": "Medium",
+      "p_demand": "Medium",
+      "k_demand": "High",
+      "n_demand_kg_ha": [50, 90],
+      "p_demand_kg_ha": [30, 50],
+      "k_demand_kg_ha": [60, 100],
+      "is_legume": false,
+      "feeder_type": "Moderate Feeder",
+      "root_depth": "Deep",
+      "rotation_compatibility": {
+        "recommended_successors": ["groundnut", "mungbean", "cowpea"],
+        "avoid_successors": ["solanaceae"],
+        "min_rotation_interval_seasons": 3,
+        "notes": "Perennial orchard crop. Intercropping with short-stature legumes improves soil nitrogen balance."
+      }
+    },
+    "banana": {
+      "name": "banana",
+      "aliases": ["kela", "musa"],
+      "crop_family": "Musaceae",
+      "n_demand": "Very High",
+      "p_demand": "Medium",
+      "k_demand": "Very High",
+      "n_demand_kg_ha": [150, 250],
+      "p_demand_kg_ha": [40, 70],
+      "k_demand_kg_ha": [200, 350],
+      "is_legume": false,
+      "feeder_type": "Heavy Feeder",
+      "root_depth": "Shallow",
+      "rotation_compatibility": {
+        "recommended_successors": ["mungbean", "cowpea", "rice", "sunnhemp"],
+        "avoid_successors": ["banana", "sugarcane"],
+        "min_rotation_interval_seasons": 2,
+        "notes": "Tremendous potassium and nitrogen consumer. Consecutive ratooning depletes soil reserves and promotes nematode/Panama wilt problems."
+      }
+    },
+    "mango": {
+      "name": "mango",
+      "aliases": ["aam", "mangifera indica"],
+      "crop_family": "Anacardiaceae",
+      "n_demand": "Medium",
+      "p_demand": "Low",
+      "k_demand": "Medium",
+      "n_demand_kg_ha": [40, 80],
+      "p_demand_kg_ha": [20, 40],
+      "k_demand_kg_ha": [40, 80],
+      "is_legume": false,
+      "feeder_type": "Moderate Feeder",
+      "root_depth": "Deep",
+      "rotation_compatibility": {
+        "recommended_successors": ["legumes", "cover crops"],
+        "avoid_successors": [],
+        "min_rotation_interval_seasons": 4,
+        "notes": "Perennial fruit orchard. Benefits from legume cover cropping (sunnhemp, cowpea) in alley ways."
+      }
+    },
+    "grapes": {
+      "name": "grapes",
+      "aliases": ["angur", "vitis vinifera"],
+      "crop_family": "Vitaceae",
+      "n_demand": "Medium",
+      "p_demand": "Medium",
+      "k_demand": "High",
+      "n_demand_kg_ha": [50, 90],
+      "p_demand_kg_ha": [30, 60],
+      "k_demand_kg_ha": [80, 140],
+      "is_legume": false,
+      "feeder_type": "Moderate Feeder",
+      "root_depth": "Deep",
+      "rotation_compatibility": {
+        "recommended_successors": ["clover", "mustard", "peas"],
+        "avoid_successors": [],
+        "min_rotation_interval_seasons": 3,
+        "notes": "Perennial vineyard crop. Requires high potassium for berry quality and winter pruning reserve."
+      }
+    },
+    "watermelon": {
+      "name": "watermelon",
+      "aliases": ["tarbooz", "citrullus lanatus"],
+      "crop_family": "Cucurbitaceae",
+      "n_demand": "Medium",
+      "p_demand": "Medium",
+      "k_demand": "High",
+      "n_demand_kg_ha": [60, 100],
+      "p_demand_kg_ha": [30, 50],
+      "k_demand_kg_ha": [60, 100],
+      "is_legume": false,
+      "feeder_type": "Moderate Feeder",
+      "root_depth": "Medium",
+      "rotation_compatibility": {
+        "recommended_successors": ["wheat", "rice", "legumes"],
+        "avoid_successors": ["muskmelon", "cucumber", "watermelon"],
+        "min_rotation_interval_seasons": 2,
+        "notes": "Susceptible to Fusarium wilt and root knot nematodes. Must not follow other cucurbits consecutively."
+      }
+    },
+    "muskmelon": {
+      "name": "muskmelon",
+      "aliases": ["kharbooja", "cucumis melo"],
+      "crop_family": "Cucurbitaceae",
+      "n_demand": "Medium",
+      "p_demand": "Medium",
+      "k_demand": "High",
+      "n_demand_kg_ha": [50, 90],
+      "p_demand_kg_ha": [30, 50],
+      "k_demand_kg_ha": [50, 90],
+      "is_legume": false,
+      "feeder_type": "Moderate Feeder",
+      "root_depth": "Medium",
+      "rotation_compatibility": {
+        "recommended_successors": ["cereal", "legumes"],
+        "avoid_successors": ["watermelon", "cucumber", "muskmelon"],
+        "min_rotation_interval_seasons": 2,
+        "notes": "Avoid back-to-back cucurbit planting due to soil-borne downy mildew, powdery mildew and wilt."
+      }
+    },
+    "apple": {
+      "name": "apple",
+      "aliases": ["seb", "malus domestica"],
+      "crop_family": "Rosaceae",
+      "n_demand": "Medium",
+      "p_demand": "Medium",
+      "k_demand": "High",
+      "n_demand_kg_ha": [50, 80],
+      "p_demand_kg_ha": [25, 45],
+      "k_demand_kg_ha": [60, 110],
+      "is_legume": false,
+      "feeder_type": "Moderate Feeder",
+      "root_depth": "Deep",
+      "rotation_compatibility": {
+        "recommended_successors": ["clover", "rye"],
+        "avoid_successors": [],
+        "min_rotation_interval_seasons": 4,
+        "notes": "Temperate tree fruit. Long-term perennial management requires active organic matter management."
+      }
+    },
+    "orange": {
+      "name": "orange",
+      "aliases": ["santara", "mosambi", "citrus sinensis"],
+      "crop_family": "Rutaceae",
+      "n_demand": "Medium",
+      "p_demand": "Low",
+      "k_demand": "High",
+      "n_demand_kg_ha": [60, 100],
+      "p_demand_kg_ha": [20, 40],
+      "k_demand_kg_ha": [60, 120],
+      "is_legume": false,
+      "feeder_type": "Moderate Feeder",
+      "root_depth": "Deep",
+      "rotation_compatibility": {
+        "recommended_successors": ["legumes", "cover crops"],
+        "avoid_successors": [],
+        "min_rotation_interval_seasons": 3,
+        "notes": "Citrus perennial fruit. High sensitivity to salinity and waterlogging; responds well to legume intercrops."
+      }
+    },
+    "papaya": {
+      "name": "papaya",
+      "aliases": ["papita", "carica papaya"],
+      "crop_family": "Caricaceae",
+      "n_demand": "High",
+      "p_demand": "Medium",
+      "k_demand": "High",
+      "n_demand_kg_ha": [90, 140],
+      "p_demand_kg_ha": [40, 70],
+      "k_demand_kg_ha": [90, 160],
+      "is_legume": false,
+      "feeder_type": "Heavy Feeder",
+      "root_depth": "Shallow",
+      "rotation_compatibility": {
+        "recommended_successors": ["mungbean", "cowpea", "groundnut"],
+        "avoid_successors": ["papaya", "tomato"],
+        "min_rotation_interval_seasons": 2,
+        "notes": "Quick fruiting, heavy feeding crop. Avoid replanting papaya directly to prevent damping-off and nematode wilt."
+      }
+    },
+    "coconut": {
+      "name": "coconut",
+      "aliases": ["nariyal", "cocos nucifera"],
+      "crop_family": "Arecaceae",
+      "n_demand": "Medium",
+      "p_demand": "Low",
+      "k_demand": "Very High",
+      "n_demand_kg_ha": [50, 90],
+      "p_demand_kg_ha": [20, 40],
+      "k_demand_kg_ha": [120, 200],
+      "is_legume": false,
+      "feeder_type": "Moderate Feeder",
+      "root_depth": "Deep",
+      "rotation_compatibility": {
+        "recommended_successors": ["banana", "cocoa", "pepper", "pineapple"],
+        "avoid_successors": [],
+        "min_rotation_interval_seasons": 4,
+        "notes": "Multi-tier cropping system. Coconut canopy allows intercropping with spices, tubers, and legumes."
+      }
+    },
+    "cotton": {
+      "name": "cotton",
+      "aliases": ["kapas", "gossypium hirsutum"],
+      "crop_family": "Malvaceae",
+      "n_demand": "High",
+      "p_demand": "Medium",
+      "k_demand": "High",
+      "n_demand_kg_ha": [90, 150],
+      "p_demand_kg_ha": [40, 60],
+      "k_demand_kg_ha": [60, 100],
+      "is_legume": false,
+      "feeder_type": "Heavy Feeder",
+      "root_depth": "Deep",
+      "rotation_compatibility": {
+        "recommended_successors": ["chickpea", "wheat", "soybean", "groundnut", "mungbean"],
+        "avoid_successors": ["cotton", "okra", "pigeonpeas"],
+        "min_rotation_interval_seasons": 2,
+        "notes": "Deep taproot heavy feeder with high bollworm/verticillium risk if monocultured. Rotate with rabi pulses or groundnut."
+      }
+    },
+    "jute": {
+      "name": "jute",
+      "aliases": ["pat", "corchorus olitorius"],
+      "crop_family": "Malvaceae",
+      "n_demand": "High",
+      "p_demand": "Medium",
+      "k_demand": "High",
+      "n_demand_kg_ha": [60, 90],
+      "p_demand_kg_ha": [25, 40],
+      "k_demand_kg_ha": [40, 70],
+      "is_legume": false,
+      "feeder_type": "Moderate Feeder",
+      "root_depth": "Medium",
+      "rotation_compatibility": {
+        "recommended_successors": ["rice", "mustard", "wheat", "potato"],
+        "avoid_successors": ["jute", "cotton"],
+        "min_rotation_interval_seasons": 1,
+        "notes": "Key kharif fiber crop in eastern India. Ideal in jute-rice-wheat or jute-rice-potato rotations."
+      }
+    },
+    "coffee": {
+      "name": "coffee",
+      "aliases": ["coffea arabica", "coffea canephora"],
+      "crop_family": "Rubiaceae",
+      "n_demand": "High",
+      "p_demand": "Low",
+      "k_demand": "High",
+      "n_demand_kg_ha": [80, 140],
+      "p_demand_kg_ha": [25, 45],
+      "k_demand_kg_ha": [80, 150],
+      "is_legume": false,
+      "feeder_type": "Moderate Feeder",
+      "root_depth": "Deep",
+      "rotation_compatibility": {
+        "recommended_successors": ["pepper", "cardamom"],
+        "avoid_successors": [],
+        "min_rotation_interval_seasons": 4,
+        "notes": "Agro-forestry shade crop. Synergistic with black pepper vines and shade-providing legume trees."
+      }
+    },
+    "sugarcane": {
+      "name": "sugarcane",
+      "aliases": ["ganna", "saccharum officinarum"],
+      "crop_family": "Poaceae",
+      "n_demand": "Very High",
+      "p_demand": "High",
+      "k_demand": "Very High",
+      "n_demand_kg_ha": [150, 300],
+      "p_demand_kg_ha": [60, 100],
+      "k_demand_kg_ha": [120, 200],
+      "is_legume": false,
+      "feeder_type": "Heavy Feeder",
+      "root_depth": "Deep",
+      "rotation_compatibility": {
+        "recommended_successors": ["soybean", "chickpea", "wheat", "mungbean", "groundnut"],
+        "avoid_successors": ["sugarcane", "maize"],
+        "min_rotation_interval_seasons": 2,
+        "notes": "Massive long-duration soil depleter. Repeating ratoon cycles without legume break severely degrades soil fertility."
+      }
+    },
+    "mustard": {
+      "name": "mustard",
+      "aliases": ["sarson", "rai", "brassica juncea"],
+      "crop_family": "Brassicaceae",
+      "n_demand": "Medium",
+      "p_demand": "High",
+      "k_demand": "Medium",
+      "n_demand_kg_ha": [50, 90],
+      "p_demand_kg_ha": [35, 60],
+      "k_demand_kg_ha": [30, 50],
+      "is_legume": false,
+      "feeder_type": "Moderate Feeder",
+      "root_depth": "Deep",
+      "rotation_compatibility": {
+        "recommended_successors": ["mungbean", "bajra", "maize", "rice", "cotton"],
+        "avoid_successors": ["mustard", "cabbage", "cauliflower"],
+        "min_rotation_interval_seasons": 1,
+        "notes": "Deep taproots extract subsoil phosphorus and sulfur. Biofumigant root exudates suppress soil nematodes."
+      }
+    },
+    "soybean": {
+      "name": "soybean",
+      "aliases": ["soya", "glycine max"],
+      "crop_family": "Fabaceae",
+      "n_demand": "Low",
+      "p_demand": "High",
+      "k_demand": "Medium",
+      "n_demand_kg_ha": [20, 40],
+      "p_demand_kg_ha": [50, 80],
+      "k_demand_kg_ha": [30, 60],
+      "is_legume": true,
+      "feeder_type": "Soil Builder (Legume)",
+      "root_depth": "Medium",
+      "rotation_compatibility": {
+        "recommended_successors": ["wheat", "mustard", "chickpea", "maize"],
+        "avoid_successors": ["soybean"],
+        "min_rotation_interval_seasons": 2,
+        "notes": "High oil and protein legume. Fixes substantial atmospheric nitrogen and is prime kharif precursor for rabi wheat."
+      }
+    },
+    "groundnut": {
+      "name": "groundnut",
+      "aliases": ["peanut", "mungphali", "arachis hypogaea"],
+      "crop_family": "Fabaceae",
+      "n_demand": "Low",
+      "p_demand": "Medium",
+      "k_demand": "Medium",
+      "n_demand_kg_ha": [15, 30],
+      "p_demand_kg_ha": [40, 60],
+      "k_demand_kg_ha": [30, 50],
+      "is_legume": true,
+      "feeder_type": "Soil Builder (Legume)",
+      "root_depth": "Medium",
+      "rotation_compatibility": {
+        "recommended_successors": ["wheat", "sorghum", "bajra", "maize", "cotton"],
+        "avoid_successors": ["groundnut"],
+        "min_rotation_interval_seasons": 2,
+        "notes": "Nitrogen-fixing oilseed pulse. Leaves soil friable with rich root nodule residues; avoid replanting to prevent Tikka leaf spot."
+      }
+    },
+    "potato": {
+      "name": "potato",
+      "aliases": ["aloo", "solanum tuberosum"],
+      "crop_family": "Solanaceae",
+      "n_demand": "High",
+      "p_demand": "High",
+      "k_demand": "Very High",
+      "n_demand_kg_ha": [100, 160],
+      "p_demand_kg_ha": [60, 100],
+      "k_demand_kg_ha": [100, 180],
+      "is_legume": false,
+      "feeder_type": "Heavy Feeder",
+      "root_depth": "Shallow",
+      "rotation_compatibility": {
+        "recommended_successors": ["maize", "wheat", "mungbean", "rice"],
+        "avoid_successors": ["potato", "tomato", "brinjal", "chilli"],
+        "min_rotation_interval_seasons": 2,
+        "notes": "Exhaustive shallow root tuber with huge potassium requirement. High susceptibility to bacterial wilt and late blight if rotated with other Solanaceae."
+      }
+    },
+    "tomato": {
+      "name": "tomato",
+      "aliases": ["tamatar", "solanum lycopersicum"],
+      "crop_family": "Solanaceae",
+      "n_demand": "High",
+      "p_demand": "High",
+      "k_demand": "High",
+      "n_demand_kg_ha": [90, 150],
+      "p_demand_kg_ha": [50, 90],
+      "k_demand_kg_ha": [80, 140],
+      "is_legume": false,
+      "feeder_type": "Heavy Feeder",
+      "root_depth": "Medium",
+      "rotation_compatibility": {
+        "recommended_successors": ["beans", "peas", "maize", "wheat", "mustard"],
+        "avoid_successors": ["tomato", "potato", "brinjal", "capsicum"],
+        "min_rotation_interval_seasons": 2,
+        "notes": "Never rotate back-to-back with other Solanaceous crops (potato, brinjal) to avoid severe bacterial wilt, nematodes, and early blight."
+      }
+    },
+    "bajra": {
+      "name": "bajra",
+      "aliases": ["pearl millet", "pennisetum glaucum"],
+      "crop_family": "Poaceae",
+      "n_demand": "Medium",
+      "p_demand": "Low",
+      "k_demand": "Low",
+      "n_demand_kg_ha": [40, 80],
+      "p_demand_kg_ha": [20, 40],
+      "k_demand_kg_ha": [20, 40],
+      "is_legume": false,
+      "feeder_type": "Moderate Feeder",
+      "root_depth": "Medium",
+      "rotation_compatibility": {
+        "recommended_successors": ["chickpea", "mustard", "wheat", "mothbeans", "mungbean"],
+        "avoid_successors": ["bajra"],
+        "min_rotation_interval_seasons": 1,
+        "notes": "Drought and heat tolerant cereal. Rotating with chickpea or mustard in rabi creates resilient semi-arid cropping systems."
+      }
+    },
+    "jowar": {
+      "name": "jowar",
+      "aliases": ["sorghum", "sorghum bicolor"],
+      "crop_family": "Poaceae",
+      "n_demand": "Medium",
+      "p_demand": "Medium",
+      "k_demand": "Medium",
+      "n_demand_kg_ha": [60, 100],
+      "p_demand_kg_ha": [30, 50],
+      "k_demand_kg_ha": [30, 50],
+      "is_legume": false,
+      "feeder_type": "Moderate Feeder",
+      "root_depth": "Deep",
+      "rotation_compatibility": {
+        "recommended_successors": ["chickpea", "safflower", "wheat", "soybean", "mungbean"],
+        "avoid_successors": ["jowar"],
+        "min_rotation_interval_seasons": 1,
+        "notes": "Deep fibrous root system efficiently scavenges residual moisture; leaves dense stubble."
+      }
+    },
+    "onion": {
+      "name": "onion",
+      "aliases": ["pyaz", "allium cepa"],
+      "crop_family": "Alliaceae",
+      "n_demand": "Medium",
+      "p_demand": "Medium",
+      "k_demand": "High",
+      "n_demand_kg_ha": [60, 100],
+      "p_demand_kg_ha": [35, 60],
+      "k_demand_kg_ha": [60, 100],
+      "is_legume": false,
+      "feeder_type": "Moderate Feeder",
+      "root_depth": "Shallow",
+      "rotation_compatibility": {
+        "recommended_successors": ["maize", "wheat", "mungbean", "chickpea"],
+        "avoid_successors": ["onion", "garlic"],
+        "min_rotation_interval_seasons": 2,
+        "notes": "Shallow bulb rooter. Sulfur and potassium sensitive. Avoid successive allium plantings to prevent basal rot and purple blotch."
+      }
+    }
+  }
+}

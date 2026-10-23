@@ -75,23 +75,49 @@ def predict_crop_recommendation(
 
 
 def predict_crop_from_dict(data: Dict[str, Any]) -> Dict[str, Any]:
-    """Accepts arbitrary payload dictionary, maps keys, runs inference, and returns serializable dict.
+    """Accepts arbitrary payload dictionary, validates inputs, runs inference, and returns serializable dict.
 
-    Handles flexible key names such as 'nitrogen', 'phosphorus', 'potassium',
-    'soil_ph', nested 'weather', etc.
+    Strictly enforces that soil and climate measurements must not be silently invented.
     """
     inner = data.get("data", data) if isinstance(data, dict) else {}
     weather = inner.get("weather", {}) if isinstance(inner.get("weather"), dict) else {}
 
+    # Strict check: Do not invent soil values when data is missing
+    raw_n = inner.get("N") if inner.get("N") is not None else inner.get("nitrogen")
+    raw_p = inner.get("P") if inner.get("P") is not None else inner.get("phosphorus")
+    raw_k = inner.get("K") if inner.get("K") is not None else inner.get("potassium")
+    raw_ph = inner.get("ph") if inner.get("ph") is not None else inner.get("soil_ph")
+
+    if raw_n is None:
+        raise InputValidationError("Missing required soil test measurement: 'N' (Nitrogen). Soil values must not be silently invented.")
+    if raw_p is None:
+        raise InputValidationError("Missing required soil test measurement: 'P' (Phosphorus). Soil values must not be silently invented.")
+    if raw_k is None:
+        raise InputValidationError("Missing required soil test measurement: 'K' (Potassium). Soil values must not be silently invented.")
+    if raw_ph is None:
+        raise InputValidationError("Missing required soil test measurement: 'ph' (Soil pH). Soil values must not be silently invented.")
+
+    # Strict check: Do not silently assume weather measurements when missing
+    raw_rain = inner.get("rainfall") if inner.get("rainfall") is not None else weather.get("rainfall")
+    raw_temp = inner.get("temperature") if inner.get("temperature") is not None else weather.get("temperature")
+    raw_hum = inner.get("humidity") if inner.get("humidity") is not None else weather.get("humidity")
+
+    if raw_rain is None:
+        raise InputValidationError("Missing required climate measurement: 'rainfall'. Climate values must not be silently assumed.")
+    if raw_temp is None:
+        raise InputValidationError("Missing required climate measurement: 'temperature'. Climate values must not be silently assumed.")
+    if raw_hum is None:
+        raise InputValidationError("Missing required climate measurement: 'humidity'. Climate values must not be silently assumed.")
+
     # Extract all 7 numerical features with strict type conversion
     try:
-        n_val = float(inner.get("N", inner.get("nitrogen", 90.0)))
-        p_val = float(inner.get("P", inner.get("phosphorus", 42.0)))
-        k_val = float(inner.get("K", inner.get("potassium", 43.0)))
-        ph_val = float(inner.get("ph", inner.get("soil_ph", 6.5)))
-        temp_val = float(inner.get("temperature", weather.get("temperature", 26.0)))
-        hum_val = float(inner.get("humidity", weather.get("humidity", 70.0)))
-        rain_val = float(inner.get("rainfall", weather.get("rainfall", 720.0)))
+        n_val = float(raw_n)
+        p_val = float(raw_p)
+        k_val = float(raw_k)
+        ph_val = float(raw_ph)
+        temp_val = float(raw_temp)
+        hum_val = float(raw_hum)
+        rain_val = float(raw_rain)
     except (TypeError, ValueError) as exc:
         raise InputValidationError(f"Invalid numerical soil/climate input: {exc}") from exc
 

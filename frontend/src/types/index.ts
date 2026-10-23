@@ -287,6 +287,7 @@ export interface CropRecommendationScoreBreakdown {
   crop: string;
   soil_climate_score: number;
   regional_score: number;
+  region_score?: number;
   history_rotation_score: number;
   final_score: number;
   reason: string;

@@ -215,6 +215,61 @@ class TestHuggingFacePipeline:
         with pytest.raises(InputValidationError):
             predict_crop_from_dict({"N": -999, "P": 40, "K": 40})
 
+    def test_empty_regional_results_handling(self):
+        """Verify that district/season combinations missing from Model 2 regional table
+        (e.g., Mumbai suburban in Kharif) handle gracefully with explicit warnings and no crash."""
+        result = self.pipeline.predict(
+            CropRecommendationInput(
+                N=85.0, P=45.0, K=40.0, temperature=28.0, humidity=75.0, ph=6.2, rainfall=800.0,
+                district="Mumbai suburban", season="Kharif", top_k=5
+            )
+        )
+        assert result.prediction is not None
+        assert len(result.recommendations) == 5
+        assert any("No historical agricultural records found in Model 2 regional table" in w for w in result.warnings)
+        # All regional scores should default to 0.0 with explicit label
+        for rec in result.recommendations:
+            assert rec.region_score == 0.0
+            assert rec.region_suitability == "No regional data"
+            assert rec.npk_score >= 0.0
+
+    def test_ranking_reproducibility(self):
+        """Verify that identical inputs produce perfectly reproducible ranks, scores, and recommendations."""
+        inp = CropRecommendationInput(
+            N=92.0, P=44.0, K=41.0, temperature=27.5, humidity=68.0, ph=6.6, rainfall=690.0,
+            district="Nashik", season="Kharif", top_k=5
+        )
+        run1 = self.pipeline.predict(inp)
+        run2 = self.pipeline.predict(inp)
+
+        assert run1.prediction == run2.prediction
+        assert [r.crop for r in run1.recommendations] == [r.crop for r in run2.recommendations]
+        assert [r.combined_score for r in run1.recommendations] == [r.combined_score for r in run2.recommendations]
+        assert [r.npk_score for r in run1.recommendations] == [r.npk_score for r in run2.recommendations]
+        assert [r.region_score for r in run1.recommendations] == [r.region_score for r in run2.recommendations]
+
+    def test_score_decomposition_and_formula(self):
+        """Verify that combined score is the exact weighted blend of Model 1 RF and Model 2 Regional."""
+        w1 = 0.70
+        inp = CropRecommendationInput(
+            N=90.0, P=40.0, K=40.0, temperature=26.0, humidity=70.0, ph=6.5, rainfall=700.0,
+            district="Pune", season="Kharif", w_model1=w1, top_k=5
+        )
+        result = self.pipeline.predict(inp)
+        for rec in result.recommendations:
+            expected = round(w1 * rec.npk_score + (1.0 - w1) * rec.region_score, 4)
+            assert abs(rec.combined_score - expected) <= 1e-4
+
+    def test_unexpected_model_failure_never_returns_fake_predictions(self):
+        """Verify that if model inference raises an unexpected exception, the pipeline fails and never returns fake data."""
+        with patch.object(self.pipeline.model1, "predict_proba", side_effect=RuntimeError("Corrupted model memory")):
+            with pytest.raises(Exception):
+                self.pipeline.predict(
+                    CropRecommendationInput(
+                        N=90.0, P=42.0, K=43.0, temperature=26.0, humidity=70.0, ph=6.5, rainfall=720.0
+                    )
+                )
+
 
 class TestCropRecommendationAPIEndpoints:
     """API contract and integration tests."""
@@ -310,3 +365,38 @@ class TestCropRecommendationAPIEndpoints:
         health_data = health_resp.json()
         assert health_data["models"]["crop_recommendation"]["loaded"] is True
         assert "Sheshank2609" in health_data["models"]["crop_recommendation"]["repo_id"]
+
+    def test_missing_and_invalid_inputs_rejected_by_api(self):
+        """Verify that missing soil or climate measurements are rejected with 422 and never invented."""
+        # Missing N
+        resp = main_client.post("/api/v1/crop-recommendation", json={
+            "P": 42.0, "K": 43.0, "ph": 6.5, "rainfall": 720.0, "temperature": 26.0, "humidity": 70.0
+        })
+        assert resp.status_code == 422
+
+        # Missing rainfall
+        resp = main_client.post("/api/v1/crop-recommendation", json={
+            "N": 90.0, "P": 42.0, "K": 43.0, "ph": 6.5, "temperature": 26.0, "humidity": 70.0
+        })
+        assert resp.status_code == 422
+
+        # Missing temperature
+        resp = main_client.post("/api/v1/crop-recommendation", json={
+            "N": 90.0, "P": 42.0, "K": 43.0, "ph": 6.5, "rainfall": 720.0, "humidity": 70.0
+        })
+        assert resp.status_code == 422
+
+        # Missing humidity
+        resp = main_client.post("/api/v1/crop-recommendation", json={
+            "N": 90.0, "P": 42.0, "K": 43.0, "ph": 6.5, "rainfall": 720.0, "temperature": 26.0
+        })
+        assert resp.status_code == 422
+
+    def test_service_unavailability_returns_503(self):
+        """Verify that when ModelUnavailableError is raised, the API returns a 503 Service Unavailable."""
+        with patch("api.services.crop_service.crop_recommendation_service.predict", side_effect=ModelUnavailableError("Model weights corrupted")):
+            resp = main_client.post("/api/v1/crop-recommendation", json={
+                "N": 90.0, "P": 42.0, "K": 43.0, "ph": 6.5, "rainfall": 720.0, "temperature": 26.0, "humidity": 70.0
+            })
+            assert resp.status_code == 503
+            assert "Model weights corrupted" in resp.json()["detail"]

@@ -114,28 +114,16 @@ def predict_crop(data: Dict[str, Any]):
 @router.post("/crop-recommendation")
 def recommend_crops(data: Dict[str, Any]):
     """AD Handoff and Hugging Face compatible crop recommendation endpoint using authentic ML model."""
-    from api.services.crop_service import crop_recommendation_service
-    from api.schemas.crop_schema import CropRecommendationRequest
-
-    inner_data = data.get("data", data)
-    req = CropRecommendationRequest(
-        N=float(inner_data.get("N", inner_data.get("nitrogen", 90.0))),
-        P=float(inner_data.get("P", inner_data.get("phosphorus", 42.0))),
-        K=float(inner_data.get("K", inner_data.get("potassium", 43.0))),
-        ph=float(inner_data.get("ph", inner_data.get("soil_ph", 6.5))),
-        temperature=float(inner_data.get("temperature", 25.0)),
-        humidity=float(inner_data.get("humidity", 70.0)),
-        rainfall=float(inner_data.get("rainfall", 750.0)),
-        state=str(inner_data.get("state", "Maharashtra")),
-        district=inner_data.get("district", "Nashik"),
-        season=inner_data.get("season", "Kharif"),
-        water_access=inner_data.get("water_access"),
-        w_model1=float(inner_data.get("w_model1", 0.60)),
-        current_crop=inner_data.get("current_crop"),
-        prev_crop_1=inner_data.get("prev_crop_1"),
-        top_k=int(inner_data.get("top_k", 5)),
-    )
-    return crop_recommendation_service.predict(req)
+    from ml.crop_recommendation.predict import predict_crop_from_dict, InputValidationError, ModelUnavailableError
+    try:
+        return predict_crop_from_dict(data)
+    except InputValidationError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc))
+    except ModelUnavailableError as exc:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc))
+    except Exception as exc:
+        logger.error("Crop recommendation error: %s", exc, exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Crop recommendation failed: {str(exc)}")
 
 
 @router.post("/predict/yield")
