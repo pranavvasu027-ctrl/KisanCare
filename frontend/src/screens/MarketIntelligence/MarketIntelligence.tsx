@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, MapPin, Search, Loader2, Calendar, AlertCircle } from 'lucide-react';
 import { api } from '../../services/api';
+import { WorkflowStepper } from '../../components/workflow/WorkflowStepper';
+import { WorkflowFooter } from '../../components/workflow/WorkflowFooter';
 
 const SUPPORTED_PAIRS: Record<string, string[]> = {
   onion: ['Pune(Pimpri)', 'Baramati', 'Junnar'],
@@ -58,6 +60,8 @@ export default function MarketIntelligence() {
 
   return (
     <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-6">
+      <WorkflowStepper currentStageId={5} />
+
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-serif font-bold text-[#103D2C]">Market Intelligence</h1>
@@ -186,6 +190,23 @@ export default function MarketIntelligence() {
           </div>
         )}
       </div>
+
+      <WorkflowFooter
+        currentStageNumber={5}
+        currentStageName="Market & Post-Harvest Storage"
+        completedActionMessage={data ? `Mandi forecast loaded for ${crop} at ${market}! Next step: Calculate storage losses to plan your best selling window.` : null}
+        prevStep={{ label: "Farm Economics", path: "/economics" }}
+        nextStep={{
+          label: "Post-Harvest Storage Loss",
+          labelMr: "साठवणूक नुकसान",
+          path: "/post-harvest",
+          description: "Optimize holding period vs storage loss"
+        }}
+        alternativeNextStep={{
+          label: "Government Schemes",
+          path: "/schemes"
+        }}
+      />
     </div>
   );
 }

@@ -4,6 +4,8 @@ import {
   CheckCircle2, Loader2, AlertCircle, FileText, Download, Eye, ExternalLink
 } from 'lucide-react';
 import { api } from '../../services/api';
+import { WorkflowStepper } from '../../components/workflow/WorkflowStepper';
+import { WorkflowFooter } from '../../components/workflow/WorkflowFooter';
 
 export interface SoilReportItem {
   id: string;
@@ -127,6 +129,8 @@ export default function SoilIntelligence() {
         className="hidden"
       />
 
+      <WorkflowStepper currentStageId={1} />
+
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center gap-2">
@@ -151,6 +155,27 @@ export default function SoilIntelligence() {
         </button>
       </div>
 
+      {/* VISUAL BANNER WITH SOIL ROOTS PHOTOGRAPHY */}
+      <div className="relative rounded-2xl overflow-hidden shadow-sm border border-[#E6ECE3] min-h-[140px] flex items-center p-6 bg-[#072F22]">
+        <img
+          src="/images/soil-roots.jpg"
+          alt="Soil organic structure and root profile"
+          className="absolute inset-0 w-full h-full object-cover opacity-70"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#05261B]/95 via-[#083827]/75 to-transparent"></div>
+        <div className="relative z-10 text-white max-w-xl">
+          <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-300 block mb-1">
+            Maha AgriStack &bull; Soil Health &amp; Laboratory Analysis
+          </span>
+          <h2 className="text-xl font-heading font-extrabold text-white">
+            Takli Bu Parcel &bull; Regur Deep Black Soil
+          </h2>
+          <p className="text-xs text-emerald-100/90 mt-1 leading-relaxed">
+            High moisture-retention clay loam matrix with organic matter analysis. Lab tested and verified against ICAR soil fertility indices.
+          </p>
+        </div>
+      </div>
+
       {uploadMsg && (
         <div className="bg-emerald-50 border border-emerald-300 text-emerald-900 px-4 py-3 rounded-xl text-xs flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -167,8 +192,8 @@ export default function SoilIntelligence() {
           <span className="text-xs text-amber-800 font-semibold">Laboratory Verification Pending</span>
         </div>
         <p className="text-xs leading-relaxed text-amber-900">
-          <strong>Soil Classification:</strong> Black cotton soil (&ldquo;koralvahu jamin&rdquo;), deep, flat terrain with good drainage.<br/>
-          <strong>Reported pH Range:</strong> 7.6 &ndash; 8.5 (mean 8.05 recorded; laboratory verification pending).<br/>
+          <strong>Soil Classification:</strong> Black cotton soil (&ldquo;koralvahu jamin&rdquo;), deep, flat terrain with good drainage.<br />
+          <strong>Reported pH Range:</strong> 7.6 &ndash; 8.5 (mean 8.05 recorded; laboratory verification pending).<br />
           <strong>NPK &amp; Micronutrients:</strong> Intentionally unpopulated (NULL). The farmer reports a soil test report is available and may be uploaded later. Fabricated laboratory values are strictly prohibited.
         </p>
       </div>
@@ -182,8 +207,8 @@ export default function SoilIntelligence() {
           <span className="text-xs text-amber-800 font-semibold">Laboratory Verification Pending</span>
         </div>
         <p className="text-xs leading-relaxed text-amber-900">
-          <strong>Soil Classification:</strong> Black cotton soil (&ldquo;koralvahu jamin&rdquo;), deep, flat terrain with good drainage.<br/>
-          <strong>Reported pH Range:</strong> 7.6 &ndash; 8.5 (mean 8.05 recorded; laboratory verification pending).<br/>
+          <strong>Soil Classification:</strong> Black cotton soil (&ldquo;koralvahu jamin&rdquo;), deep, flat terrain with good drainage.<br />
+          <strong>Reported pH Range:</strong> 7.6 &ndash; 8.5 (mean 8.05 recorded; laboratory verification pending).<br />
           <strong>NPK &amp; Micronutrients:</strong> Intentionally unpopulated (NULL). The farmer reports a soil test report is available and may be uploaded later. Fabricated laboratory values are strictly prohibited.
         </p>
       </div>
@@ -263,12 +288,11 @@ export default function SoilIntelligence() {
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E5DDCF]">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="font-bold text-[#103D2C] flex items-center gap-2"><TestTube className="text-[#17643E]"/> Nutrient Profile Analysis</h3>
-              <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
-                assessment?.overall_status === 'Healthy'
+              <h3 className="font-bold text-[#103D2C] flex items-center gap-2"><TestTube className="text-[#17643E]" /> Nutrient Profile Analysis</h3>
+              <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${assessment?.overall_status === 'Healthy'
                   ? 'bg-emerald-100 text-emerald-800'
                   : 'bg-amber-100 text-amber-800'
-              }`}>
+                }`}>
                 {assessment ? assessment.overall_status : 'Analyzing...'}
               </span>
             </div>
@@ -459,6 +483,23 @@ export default function SoilIntelligence() {
           </div>
         </div>
       </div>
+
+      <WorkflowFooter
+        currentStageNumber={1}
+        currentStageName="Farm & Soil Setup"
+        completedActionMessage={assessment ? "Soil nutrient profile evaluated! Proceed to discover recommended crops suited to this soil." : null}
+        prevStep={{ label: "Farm Setup", path: "/farm-setup" }}
+        nextStep={{
+          label: "Crop Intelligence & Recommendations",
+          labelMr: "पीक नियोजन",
+          path: "/crop-recommendation",
+          description: "Match soil and water conditions to high-yielding crop varieties"
+        }}
+        alternativeNextStep={{
+          label: "Digital Twin",
+          path: "/digital-twin"
+        }}
+      />
     </div>
   );
 }

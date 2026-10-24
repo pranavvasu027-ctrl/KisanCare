@@ -3,6 +3,8 @@ import {
   Package, AlertTriangle, TrendingDown, Clock, ShieldCheck,
   HelpCircle, ArrowRight, Loader2, Sparkles, CheckCircle2, Warehouse
 } from 'lucide-react';
+import { WorkflowStepper } from '../../components/workflow/WorkflowStepper';
+import { WorkflowFooter } from '../../components/workflow/WorkflowFooter';
 
 interface LossEstimate {
   lossPercentage: number;
@@ -84,6 +86,8 @@ export default function PostHarvestLoss() {
 
   return (
     <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-6">
+      <WorkflowStepper currentStageId={5} />
+
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -231,20 +235,18 @@ export default function PostHarvestLoss() {
 
                 <div className="bg-white rounded-2xl p-5 border border-[#E5DDCF] shadow-sm">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      estimate.spoilageRisk === 'High' ? 'bg-red-50 text-red-600' :
-                      estimate.spoilageRisk === 'Moderate' ? 'bg-amber-50 text-amber-600' :
-                      'bg-emerald-50 text-emerald-600'
-                    }`}>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${estimate.spoilageRisk === 'High' ? 'bg-red-50 text-red-600' :
+                        estimate.spoilageRisk === 'Moderate' ? 'bg-amber-50 text-amber-600' :
+                          'bg-emerald-50 text-emerald-600'
+                      }`}>
                       <ShieldCheck className="w-5 h-5" />
                     </div>
                     <div>
                       <span className="text-xs text-[#292B26]/60">Spoilage Risk</span>
-                      <div className={`text-xl font-bold ${
-                        estimate.spoilageRisk === 'High' ? 'text-red-700' :
-                        estimate.spoilageRisk === 'Moderate' ? 'text-amber-700' :
-                        'text-emerald-700'
-                      }`}>
+                      <div className={`text-xl font-bold ${estimate.spoilageRisk === 'High' ? 'text-red-700' :
+                          estimate.spoilageRisk === 'Moderate' ? 'text-amber-700' :
+                            'text-emerald-700'
+                        }`}>
                         {estimate.spoilageRisk}
                       </div>
                     </div>
@@ -285,6 +287,23 @@ export default function PostHarvestLoss() {
           ) : null}
         </div>
       </div>
+
+      <WorkflowFooter
+        currentStageNumber={5}
+        currentStageName="Market & Post-Harvest Storage"
+        completedActionMessage={estimate ? `Storage assessment complete (${estimate.lossPercentage}% loss over ${storageDays} days). Check government storage schemes or return to Dashboard.` : null}
+        prevStep={{ label: "Market Intelligence", path: "/market" }}
+        nextStep={{
+          label: "Government Schemes",
+          labelMr: "शासकीय योजना",
+          path: "/schemes",
+          description: "Explore cold chain, PM-KISAN, and agricultural warehouse subsidies"
+        }}
+        alternativeNextStep={{
+          label: "Ask KisanCare AI",
+          path: "/copilot"
+        }}
+      />
     </div>
   );
 }

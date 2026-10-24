@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FlaskConical, Play, Save, RotateCcw, TrendingDown, TrendingUp, BarChart2, Loader2, CheckCircle2 } from 'lucide-react';
 import { api } from '../../services/api';
+import { WorkflowStepper } from '../../components/workflow/WorkflowStepper';
+import { WorkflowFooter } from '../../components/workflow/WorkflowFooter';
 
 export default function WhatIfSimulator() {
   const [crop, setCrop] = useState('Cotton');
@@ -56,6 +58,8 @@ export default function WhatIfSimulator() {
 
   return (
     <div className="p-4 lg:p-8 max-w-7xl mx-auto h-full flex flex-col space-y-6">
+      <WorkflowStepper currentStageId={4} />
+
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center gap-2">
@@ -188,9 +192,8 @@ export default function WhatIfSimulator() {
               </div>
               <div className="flex justify-between items-end">
                 <div className="text-sm text-[#292B26]/70">Est. Yield: {scenario.yield} qtl/ac</div>
-                <div className={`text-sm font-bold px-2 py-1 rounded flex items-center gap-1 ${
-                  profitDiff >= 0 ? 'text-[#17643E] bg-[#17643E]/10' : 'text-[#B6532A] bg-red-50'
-                }`}>
+                <div className={`text-sm font-bold px-2 py-1 rounded flex items-center gap-1 ${profitDiff >= 0 ? 'text-[#17643E] bg-[#17643E]/10' : 'text-[#B6532A] bg-red-50'
+                  }`}>
                   {profitDiff >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
                   {profitDiff >= 0 ? `+${profitDiffPercent}%` : `${profitDiffPercent}%`}
                 </div>
@@ -245,13 +248,30 @@ export default function WhatIfSimulator() {
                     <span>{item}</span>
                   </li>
                 )) || (
-                  <li>Adjusting weather or fertilizer inputs recalculates harvest yield and net margins through the backend simulation model.</li>
-                )}
+                    <li>Adjusting weather or fertilizer inputs recalculates harvest yield and net margins through the backend simulation model.</li>
+                  )}
               </ul>
             </div>
           </div>
         </div>
       </div>
+
+      <WorkflowFooter
+        currentStageNumber={4}
+        currentStageName="Simulation & ROI"
+        completedActionMessage={result ? `Simulation evaluated! Yield: ${scenario.yield} qtl/ac (${profitDiff >= 0 ? '+' : ''}${profitDiffPercent}% profit impact). Next: View detailed farm cost breakdown.` : null}
+        prevStep={{ label: "Disease & Pest Care", path: "/disease" }}
+        nextStep={{
+          label: "Farm Economics & Budgeting",
+          labelMr: "शेती नफा गणित",
+          path: "/economics",
+          description: "Analyze production costs, break-even prices, and return on investment"
+        }}
+        alternativeNextStep={{
+          label: "Mandi Market Prices",
+          path: "/market"
+        }}
+      />
     </div>
   );
 }

@@ -154,13 +154,37 @@ class GeminiLLMProvider(LLMProvider):
         if self._explicit_api_key is not _UNSET:
             raw_key = self._explicit_api_key
         else:
+            if _env_file.exists():
+                load_dotenv(dotenv_path=_env_file, override=True)
             raw_key = os.environ.get("GEMINI_API_KEY")
+
         key = raw_key.strip() if raw_key else None
-        self.api_key = key
-        self.model_name = self._explicit_model or os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
+
+        # Filter out placeholder or template keys
+        placeholder_keys = {
+            "your-gemini-api-key",
+            "your_gemini_api_key",
+            "placeholder",
+            "your-api-key",
+            "none",
+            "null",
+            "test"
+        }
+        if key and (key.lower() in placeholder_keys or key.lower().startswith("your-")):
+            key = None
+
+        current_model = self._explicit_model or os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
+
+        # If key or model changed, reset client
+        if key != self.api_key or current_model != self.model_name:
+            self.api_key = key
+            self.model_name = current_model
+            self._client = None
+
         if not key:
             self._client = None
             return
+
         if self._client is None:
             try:
                 from google import genai
@@ -178,7 +202,7 @@ class GeminiLLMProvider(LLMProvider):
         err_msg = str(exc)
         # Never leak API key or connection credentials
         if "API_KEY" in err_msg or "key" in err_msg.lower() or "credential" in err_msg.lower():
-            return HTTPException(status_code=502, detail="Gemini provider authentication failed.")
+            return HTTPException(status_code=502, detail="Gemini provider authentication failed. Please verify that your GEMINI_API_KEY in .env is valid.")
         if "503" in err_msg or "UNAVAILABLE" in err_msg or "high demand" in err_msg.lower() or "overloaded" in err_msg.lower():
             return HTTPException(status_code=503, detail="Gemini model is currently experiencing temporary high demand. Please try again in a moment.")
         if "429" in err_msg or "RESOURCE_EXHAUSTED" in err_msg or "quota" in err_msg.lower() or "rate" in err_msg.lower():
@@ -217,7 +241,7 @@ class GeminiLLMProvider(LLMProvider):
 
             # Try configured model with graceful fallback if quota or high demand occurs
             models_to_try = [self.model_name]
-            for m in ["gemini-3.5-flash", "gemini-3.5-flash-lite"]:
+            for m in ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite"]:
                 if m not in models_to_try:
                     models_to_try.append(m)
 
@@ -234,8 +258,9 @@ class GeminiLLMProvider(LLMProvider):
                 except Exception as model_err:
                     last_err = model_err
                     err_str = str(model_err)
-                    if not ("429" in err_str or "503" in err_str or "quota" in err_str.lower() or "demand" in err_str.lower()):
-                        raise model_err
+                    if any(code in err_str for code in ["404", "429", "503", "NOT_FOUND"]) or any(k in err_str.lower() for k in ["quota", "demand", "not found"]):
+                        continue
+                    raise model_err
 
             if response is None and last_err:
                 raise last_err

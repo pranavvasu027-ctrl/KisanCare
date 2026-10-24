@@ -5,6 +5,8 @@ import {
   ExternalLink, BarChart3, AlertTriangle, Cpu
 } from 'lucide-react';
 import { api } from '../../services/api';
+import { WorkflowStepper } from '../../components/workflow/WorkflowStepper';
+import { WorkflowFooter } from '../../components/workflow/WorkflowFooter';
 
 const AVAILABLE_SYMPTOMS = [
   'Yellow leaves',
@@ -221,6 +223,8 @@ export default function DiseaseDetection() {
 
   return (
     <div className="p-4 lg:p-8 max-w-5xl mx-auto space-y-6">
+      <WorkflowStepper currentStageId={3} />
+
       {/* Header */}
       <div className="text-center max-w-2xl mx-auto mb-6">
         <div className="w-16 h-16 bg-[#17643E]/10 text-[#17643E] rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -260,22 +264,20 @@ export default function DiseaseDetection() {
               <button
                 type="button"
                 onClick={() => setDiagnosisMode('disease')}
-                className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
-                  diagnosisMode === 'disease'
+                className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${diagnosisMode === 'disease'
                     ? 'bg-[#103D2C] text-white shadow-xs'
                     : 'text-[#292B26]/70 hover:text-[#103D2C]'
-                }`}
+                  }`}
               >
                 Foliar Disease (EfficientNetV2-S)
               </button>
               <button
                 type="button"
                 onClick={() => setDiagnosisMode('pest')}
-                className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
-                  diagnosisMode === 'pest'
+                className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${diagnosisMode === 'pest'
                     ? 'bg-[#103D2C] text-white shadow-xs'
                     : 'text-[#292B26]/70 hover:text-[#103D2C]'
-                }`}
+                  }`}
               >
                 Insect Pest (YOLO11s)
               </button>
@@ -323,11 +325,10 @@ export default function DiseaseDetection() {
                   key={sym}
                   type="button"
                   onClick={() => toggleSymptom(sym)}
-                  className={`text-xs px-3 py-1.5 rounded-full border transition-all cursor-pointer ${
-                    active
+                  className={`text-xs px-3 py-1.5 rounded-full border transition-all cursor-pointer ${active
                       ? 'bg-[#103D2C] text-white border-[#103D2C] font-semibold shadow-xs'
                       : 'bg-[#FBF7EF] text-[#292B26]/80 border-[#E5DDCF] hover:border-[#17643E]'
-                  }`}
+                    }`}
                 >
                   {active ? `✓ ${sym}` : `+ ${sym}`}
                 </button>
@@ -498,11 +499,10 @@ export default function DiseaseDetection() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
-                    result.severity === 'High' ? 'bg-red-100 text-red-800' :
-                    result.severity === 'Medium' ? 'bg-orange-100 text-orange-800' :
-                    'bg-emerald-100 text-emerald-800'
-                  }`}>
+                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${result.severity === 'High' ? 'bg-red-100 text-red-800' :
+                      result.severity === 'Medium' ? 'bg-orange-100 text-orange-800' :
+                        'bg-emerald-100 text-emerald-800'
+                    }`}>
                     Severity: {result.severity}
                   </span>
                   {result.modelType && (
@@ -640,6 +640,23 @@ export default function DiseaseDetection() {
           )}
         </div>
       </div>
+
+      <WorkflowFooter
+        currentStageNumber={3}
+        currentStageName="In-Season Crop Care"
+        completedActionMessage={result ? `Diagnosis complete for ${result.condition}! Next: Simulate harvest yield and cost adjustments.` : null}
+        prevStep={{ label: "Irrigation & Climate", path: "/irrigation" }}
+        nextStep={{
+          label: "What-If Simulator",
+          labelMr: "नफा व जोखीम सिम्युलेटर",
+          path: "/simulator",
+          description: "Simulate management adjustments, drought tolerance, and yield impact"
+        }}
+        alternativeNextStep={{
+          label: "Farm Economics",
+          path: "/economics"
+        }}
+      />
     </div>
   );
 }
