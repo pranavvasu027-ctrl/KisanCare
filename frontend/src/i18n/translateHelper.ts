@@ -145,7 +145,82 @@ const DICTIONARY: Record<string, { mr: string; hi: string }> = {
   'Soil pH is slightly alkaline; avoid liming and monitor micronutrient availability (Zinc/Iron).': {
     mr: 'मातीचा सामू किंचित अल्कधर्मी आहे; चुना देणे टाळा आणि सूक्ष्मद्रव्ये (जस्त/लोह) कमतरतेवर लक्ष ठेवा.',
     hi: 'मृदा पीएच थोड़ा क्षारीय है; चूना न डालें और सूक्ष्म पोषक तत्वों (जिंक/आयरन) की उपलब्धता पर नजर रखें।'
-  }
+  },
+  // Mandi & Market Price Trends
+  'Rising': { mr: 'वाढता कल (तेजी)', hi: 'बढ़ती प्रवृत्ति (तेजी)' },
+  'Falling': { mr: 'घटता कल (मंदी)', hi: 'घटती प्रवृत्ति (मंदी)' },
+  'Stable': { mr: 'स्थिर भाव', hi: 'स्थिर मूल्य' },
+  'Volatile': { mr: 'अस्थिर', hi: 'उतार-चढ़ाव' },
+  'Bullish': { mr: 'तेजीचा कल', hi: 'तेजी' },
+  'Bearish': { mr: 'मंदीचा कल', hi: 'मंदी' },
+  'High Demand': { mr: 'उच्च मागणी', hi: 'अधिक मांग' },
+  'Moderate Demand': { mr: 'मध्यम मागणी', hi: 'मध्यम मांग' },
+  'Low Demand': { mr: 'कमी मागणी', hi: 'कम मांग' },
+
+  // Additional Weather Conditions
+  'Drizzle': { mr: 'रिमझिम पाऊस', hi: 'बूंदाबांदी' },
+  'Haze': { mr: 'धुरकट हवामान', hi: 'धुंध' },
+  'Scattered Clouds': { mr: 'विखुरलेले ढग', hi: 'छिटपुट बादल' },
+  'Heavy Rain': { mr: 'मुसळधार पाऊस', hi: 'भारी बारिश' },
+
+  // Crop Diseases & Pathological Conditions
+  'Early Blight': { mr: 'लवकर येणारा करपा', hi: 'अगेती झुलसा' },
+  'Late Blight': { mr: 'उशिरा येणारा करपा', hi: 'पछेती झुलसा' },
+  'Leaf Spot': { mr: 'पानावरील ठिपके (टिक्का)', hi: 'पत्ती धब्बा' },
+  'Powdery Mildew': { mr: 'भुरी रोग', hi: 'चूर्णिल आसिता (पाउडरी मिल्ड्यू)' },
+  'Downy Mildew': { mr: 'केवडा रोग', hi: 'मृदुरोमिल आसिता' },
+  'Rust': { mr: 'तांबेरा रोग', hi: 'गेरुआ / रतुआ' },
+  'Bacterial Blight': { mr: 'जिवाणूजन्य करपा', hi: 'जीवाणु झुलसा' },
+  'Yellow Mosaic Virus': { mr: 'पिवळा मोझॅक विषाणू', hi: 'पीला मोज़ेक वायरस' },
+  'Anthracnose': { mr: 'अँथ्रॅकनोज / काळा ठिपका', hi: 'एंथ्रेक्नोज' },
+  'Healthy': { mr: 'निरोगी / रोगमुक्त', hi: 'स्वस्थ / रोगमुक्त' },
+  'Stem Rot': { mr: 'खोड कुज', hi: 'तना सड़न' },
+  'Root Rot': { mr: 'मूळ कुज', hi: 'जड़ सड़न' },
+  'Cercospora Leaf Spot': { mr: 'सार्कोस्पोरा पानांवरील ठिपके', hi: 'सर्कोस्पोरा पत्ती धब्बा' },
+  'Target Spot': { mr: 'टार्गेट स्पॉट', hi: 'टारगेट स्पॉट' },
+  'Septoria Brown Spot': { mr: 'सेप्टोरिया तांबूस ठिपका', hi: 'सेप्टोरिया भूरा धब्बा' },
+  'Frogeye Leaf Spot': { mr: 'फ्रॉग-आय पानांवरील ठिपके', hi: 'फ्रॉग-आई पत्ती धब्बा' },
+  'Charcoal Rot': { mr: 'चारकोल रॉट / कोरडी खोडकुज', hi: 'चारकोल सड़न' },
+  'Sudden Death Syndrome': { mr: 'सडन डेथ सिंड्रोम (अचानक वाळणे)', hi: 'आकस्मिक मृत्यु सिंड्रोम' },
+  'Soybean Rust': { mr: 'सोयाबीन तांबेरा', hi: 'सोयाबीन रतुआ' },
+
+  // Commercial Fertilizers & Application Stages
+  'Urea': { mr: 'युरिया', hi: 'यूरिया' },
+  'DAP': { mr: 'डीएपी (DAP)', hi: 'डीएपी (DAP)' },
+  'MOP': { mr: 'एमओपी / म्युरिएट ऑफ पोटॅश', hi: 'एमओपी / म्यूरेट ऑफ पोटाश' },
+  'NPK': { mr: 'एनपीके (NPK)', hi: 'एनपीके (NPK)' },
+  'Single Super Phosphate (SSP)': { mr: 'सिंगल सुपर फॉस्फेट (SSP)', hi: 'सिंगल सुपर फॉस्फेट (SSP)' },
+  'Zinc Sulphate': { mr: 'झिंक सल्फेट (जस्त)', hi: 'जिंक सल्फेट' },
+  'Ferrous Sulphate': { mr: 'फेरस सल्फेट (हिरकास)', hi: 'फेरस सल्फेट' },
+  'Basal Application': { mr: 'पेरणीच्या वेळेची खतमात्रा (बेसल डोस)', hi: 'बुवाई के समय की खुराक (बेसल डोज़)' },
+  'Top Dressing': { mr: 'उभ्या पिकात वरून खत देणे (टॉप ड्रेसिंग)', hi: 'खड़ी फसल में ऊपर से देना (टॉप ड्रेसिंग)' },
+  'Foliar Spray': { mr: 'पानांवर फवारणी', hi: 'पर्ण छिड़काव' },
+  'Split Dose': { mr: 'विभागून खत देणे', hi: 'विभाजित खुराक' },
+
+  // Agricultural Equipment & Rental Categories
+  'Tractor': { mr: 'ट्रॅक्टर', hi: 'ट्रैक्टर' },
+  'Harvester': { mr: 'हार्वेस्टर / कापणी यंत्र', hi: 'हार्वेस्टर / कटाई मशीन' },
+  'Rotavator': { mr: 'रोटाव्हेटर', hi: 'रोटावेटर' },
+  'Cultivator': { mr: 'कल्टिव्हेटर / नांगर', hi: 'कल्टीवेटर' },
+  'Boom Sprayer': { mr: 'बूम स्प्रेअर / फवारणी यंत्र', hi: 'बूम स्प्रेयर' },
+  'Seed Drill': { mr: 'पेरणी यंत्र (सीड ड्रिल)', hi: 'सीड ड्रिल (बुवाई मशीन)' },
+  'Drone': { mr: 'कृषी ड्रोन', hi: 'कृषि ड्रोन' },
+  'Combine Harvester': { mr: 'कम्बाइन हार्वेस्टर', hi: 'कंबाइन हार्वेस्टर' },
+  'Transport Truck': { mr: 'वाहतूक ट्रक', hi: 'परिवहन ट्रक' },
+  'Pick-up Van': { mr: 'पिकअप व्हॅन', hi: 'पिकअप वैन' },
+  'Farm Labour Crew': { mr: 'शेतमजूर टोळी', hi: 'श्रमिक दल' },
+  'Agricultural Specialist': { mr: 'कृषी तज्ञ', hi: 'कृषि विशेषज्ञ' },
+  'Per Hour': { mr: 'प्रति तास', hi: 'प्रति घंटा' },
+  'Per Day': { mr: 'प्रति दिवस', hi: 'प्रति दिन' },
+  'Per Acre': { mr: 'प्रति एकर', hi: 'प्रति एकड़' },
+  'Available': { mr: 'उपलब्ध', hi: 'उपलब्ध' },
+  'Booked': { mr: 'आरक्षित', hi: 'आरक्षित' },
+  'Pending': { mr: 'प्रलंबित', hi: 'लंबित' },
+  'Confirmed': { mr: 'निश्चित', hi: 'पुष्टि हो चुकी' },
+  'Active': { mr: 'सक्रिय', hi: 'सक्रिय' },
+  'Completed': { mr: 'पूर्ण झाले', hi: 'पूर्ण' },
+  'Cancelled': { mr: 'रद्द केले', hi: 'रद्द' },
+
 };
 
 /**

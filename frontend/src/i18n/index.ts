@@ -10,9 +10,12 @@ export type SupportedLanguage = 'en' | 'mr' | 'hi';
 // Determine initial language from localStorage or default to 'en'
 const getInitialLanguage = (): SupportedLanguage => {
   try {
-    const saved = localStorage.getItem('kisanCareLanguage');
-    if (saved && (saved === 'en' || saved === 'mr' || saved === 'hi')) {
-      return saved;
+    const saved = localStorage.getItem('i18nextLng') || localStorage.getItem('kisanCareLanguage');
+    if (saved) {
+      const norm = saved.slice(0, 2).toLowerCase();
+      if (norm === 'en' || norm === 'mr' || norm === 'hi') {
+        return norm as SupportedLanguage;
+      }
     }
     // Check kisancare_user_preferences as secondary source
     const userPrefs = localStorage.getItem('kisancare_user_preferences');
@@ -53,6 +56,7 @@ i18n
 export const changeLanguage = (lang: SupportedLanguage) => {
   i18n.changeLanguage(lang);
   try {
+    localStorage.setItem('i18nextLng', lang);
     localStorage.setItem('kisanCareLanguage', lang);
     // Also keep preferences sync
     const userPrefs = localStorage.getItem('kisancare_user_preferences');

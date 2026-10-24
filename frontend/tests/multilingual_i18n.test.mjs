@@ -39,6 +39,8 @@ test('I18N-01: English base locale loads valid structure', () => {
   assert.ok(en.crop, 'en.crop exists');
   assert.ok(en.copilot, 'en.copilot exists');
   assert.ok(en.settings, 'en.settings exists');
+  assert.ok(en.fertilizer, 'en.fertilizer exists');
+  assert.ok(en.rentals, 'en.rentals exists');
 });
 
 test('I18N-02: 100% Key Parity between English and Marathi (mr.json)', () => {
@@ -70,14 +72,17 @@ test('I18N-03: 100% Key Parity between English and Hindi (hi.json)', () => {
 });
 
 test('I18N-04: Marathi text contains genuine Devanagari characters', () => {
-  // Check Marathi translations for key navigation and titles
   const marathiRegex = /[\u0900-\u097F]/;
   assert.ok(marathiRegex.test(mr.nav.overview), 'Overview translated to Devanagari in Marathi');
   assert.ok(marathiRegex.test(mr.nav.soilIntelligence), 'Soil Intelligence translated to Devanagari in Marathi');
   assert.ok(marathiRegex.test(mr.nav.marketIntelligence), 'Market Intelligence translated to Devanagari in Marathi');
   assert.ok(marathiRegex.test(mr.nav.postHarvest), 'Post Harvest translated to Devanagari in Marathi');
+  assert.ok(marathiRegex.test(mr.nav.fertilizerAdvisory), 'Fertilizer Advisory in Marathi');
+  assert.ok(marathiRegex.test(mr.nav.rentals), 'Rentals in Marathi');
   assert.ok(marathiRegex.test(mr.dashboard.farmHealthScore), 'Dashboard Health Score in Marathi');
   assert.ok(marathiRegex.test(mr.soil.uploadAndAnalyze), 'Soil upload button in Marathi');
+  assert.ok(marathiRegex.test(mr.fertilizer.title), 'Fertilizer title in Marathi');
+  assert.ok(marathiRegex.test(mr.rentals.title), 'Rentals title in Marathi');
 });
 
 test('I18N-05: Hindi text contains genuine Devanagari characters', () => {
@@ -86,21 +91,26 @@ test('I18N-05: Hindi text contains genuine Devanagari characters', () => {
   assert.ok(devanagariRegex.test(hi.nav.soilIntelligence), 'Soil Intelligence translated to Devanagari in Hindi');
   assert.ok(devanagariRegex.test(hi.nav.marketIntelligence), 'Market Intelligence translated to Devanagari in Hindi');
   assert.ok(devanagariRegex.test(hi.nav.postHarvest), 'Post Harvest translated to Devanagari in Hindi');
+  assert.ok(devanagariRegex.test(hi.nav.fertilizerAdvisory), 'Fertilizer Advisory in Hindi');
+  assert.ok(devanagariRegex.test(hi.nav.rentals), 'Rentals in Hindi');
   assert.ok(devanagariRegex.test(hi.dashboard.goodMorning), 'Good morning in Hindi');
   assert.ok(devanagariRegex.test(hi.soil.extractedParameters), 'Soil extracted params in Hindi');
+  assert.ok(devanagariRegex.test(hi.fertilizer.title), 'Fertilizer title in Hindi');
+  assert.ok(devanagariRegex.test(hi.rentals.title), 'Rentals title in Hindi');
 });
 
 test('I18N-06: Dynamic translateHelper maps known agronomic and OCR text without altering numbers', async () => {
-  // Read translateHelper to test its dictionary logic
   const helperSource = fs.readFileSync(path.resolve(__dirname, '../src/i18n/translateHelper.ts'), 'utf-8');
   assert.ok(helperSource.includes('Water Stress in Field A'), 'Contains alert translations');
   assert.ok(helperSource.includes('Partly Cloudy'), 'Contains weather translations');
   assert.ok(helperSource.includes('Traditional Gunny Bags'), 'Contains storage type translations');
   assert.ok(helperSource.includes('Critical drought stress'), 'Contains agronomic advisories');
+  assert.ok(helperSource.includes('Rising'), 'Contains Mandi trend translations');
+  assert.ok(helperSource.includes('Early Blight'), 'Contains disease pathology translations');
+  assert.ok(helperSource.includes('Boom Sprayer'), 'Contains rental machinery translations');
 });
 
 test('I18N-07: Soil extracted numerical data integrity check', () => {
-  // Soil test data values from sample SHC
   const rawOcrSample = {
     ph: 7.40,
     ec_ds_m: 0.65,
@@ -111,7 +121,6 @@ test('I18N-07: Soil extracted numerical data integrity check', () => {
     sample_id: 'MH6092432/2024-25/441209'
   };
 
-  // Numerical values must never be modified by language transformations
   assert.equal(rawOcrSample.ph, 7.40);
   assert.equal(rawOcrSample.available_n_kg_ha, 240.0);
   assert.equal(rawOcrSample.available_p_kg_ha, 18.5);
@@ -120,13 +129,11 @@ test('I18N-07: Soil extracted numerical data integrity check', () => {
 });
 
 test('I18N-08: Market Mandi numerical prices and supported crops check', () => {
-  // Verify supported crops
   const crops = ['Cotton', 'Soyabean'];
   assert.equal(crops.length, 2);
   assert.ok(crops.includes('Cotton'));
   assert.ok(crops.includes('Soyabean'));
 
-  // Verify market price values remain numeric
   const mandiPrices = {
     Akot: 8000,
     Akola: 7280,
@@ -151,4 +158,25 @@ test('I18N-09: Fallback safety - No undefined or raw dot keys displayed', () => 
     assert.notEqual(mrVal, key, `Raw key returned as value in MR: ${key}`);
     assert.notEqual(hiVal, key, `Raw key returned as value in HI: ${key}`);
   }
+});
+
+test('I18N-10: Nav & Dashboard action items localized in all 3 languages', () => {
+  assert.equal(en.nav.fertilizerAdvisory, 'Fertilizer Advisory');
+  assert.equal(mr.nav.fertilizerAdvisory, 'खत सल्लागार');
+  assert.equal(hi.nav.fertilizerAdvisory, 'उर्वरक सलाहकार');
+
+  assert.equal(en.nav.rentals, 'Farm Equipment Rentals');
+  assert.equal(mr.nav.rentals, 'कृषी अवजारे भाडेतत्वावर');
+  assert.equal(hi.nav.rentals, 'कृषि उपकरण किराये पर');
+
+  assert.equal(en.dashboard.fertilizerAi, 'Fertilizer AI');
+  assert.equal(mr.dashboard.fertilizerAi, 'खत सल्लागार AI');
+  assert.equal(hi.dashboard.fertilizerAi, 'उर्वरक AI');
+});
+
+test('I18N-11: Language persistence handles both i18nextLng and kisanCareLanguage', () => {
+  const indexSource = fs.readFileSync(path.resolve(__dirname, '../src/i18n/index.ts'), 'utf-8');
+  assert.ok(indexSource.includes("localStorage.getItem('i18nextLng')"), 'Reads i18nextLng from localStorage');
+  assert.ok(indexSource.includes("localStorage.setItem('i18nextLng'"), 'Writes i18nextLng to localStorage');
+  assert.ok(indexSource.includes("localStorage.setItem('kisanCareLanguage'"), 'Writes kisanCareLanguage to localStorage');
 });

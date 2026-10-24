@@ -473,7 +473,6 @@ export default function Dashboard() {
                 desc={t('dashboard.getAiAnswersDesc')}
               />
             </div>
-            </div>
           </div>
 
           <div className="flex flex-col gap-6">

@@ -212,15 +212,8 @@ def list_farms(authorization: Optional[str] = Header(None)):
     url = os.environ.get("SUPABASE_URL")
     key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
 
-    token_user_id = None
-    if authorization and authorization.startswith("Bearer "):
-        token = authorization.split("Bearer ", 1)[1].strip()
-        try:
-            import jwt
-            decoded = jwt.decode(token, options={"verify_signature": False})
-            token_user_id = decoded.get("sub") or decoded.get("user_id")
-        except Exception:
-            pass
+    from backend.app.core.auth import extract_verified_user_id
+    token_user_id = extract_verified_user_id(authorization, required=False)
 
     if url and key and token_user_id:
         try:
@@ -282,14 +275,10 @@ def create_farm(farm: FarmCreate, authorization: Optional[str] = Header(None)):
             from supabase import create_client
             sb = create_client(url, key)
             user_id = farm.farmer_id
-            if authorization and authorization.startswith("Bearer "):
-                token = authorization.split("Bearer ", 1)[1].strip()
-                try:
-                    import jwt
-                    decoded = jwt.decode(token, options={"verify_signature": False})
-                    user_id = decoded.get("sub") or decoded.get("user_id") or user_id
-                except Exception:
-                    pass
+            from backend.app.core.auth import extract_verified_user_id
+            v_uid = extract_verified_user_id(authorization, required=False)
+            if v_uid:
+                user_id = v_uid
 
             insert_data = {
                 "user_id": user_id,
@@ -353,15 +342,8 @@ def update_farm_field_boundaries(
     url = os.environ.get("SUPABASE_URL")
     key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
 
-    token_user_id = None
-    if authorization and authorization.startswith("Bearer "):
-        token = authorization.split("Bearer ", 1)[1].strip()
-        try:
-            import jwt
-            decoded = jwt.decode(token, options={"verify_signature": False})
-            token_user_id = decoded.get("sub") or decoded.get("user_id")
-        except Exception:
-            pass
+    from backend.app.core.auth import extract_verified_user_id
+    token_user_id = extract_verified_user_id(authorization, required=False)
 
     if not url or not key:
         # Mock mode fallback response
@@ -544,15 +526,8 @@ def get_digital_twin(farm_id: str, authorization: Optional[str] = Header(None)):
             sb = create_client(url, key)
 
             # Check authorization if provided to enforce authorization rules
-            token_user_id = None
-            if authorization and authorization.startswith("Bearer "):
-                token = authorization.split("Bearer ", 1)[1].strip()
-                try:
-                    import jwt
-                    decoded = jwt.decode(token, options={"verify_signature": False})
-                    token_user_id = decoded.get("sub") or decoded.get("user_id")
-                except Exception:
-                    pass
+            from backend.app.core.auth import extract_verified_user_id
+            token_user_id = extract_verified_user_id(authorization, required=False)
 
             # 1. Look up by farm_id
             query = sb.table("farms").select(

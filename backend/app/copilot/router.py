@@ -36,13 +36,9 @@ def _extract_user_id(authorization: Optional[str] = Header(None)) -> Optional[st
         except Exception:
             pass
 
-    # Fallback: decode unverified sub from JWT payload for test suites or offline mock tokens
-    try:
-        import jwt
-        decoded = jwt.decode(token, options={"verify_signature": False})
-        return decoded.get("sub") or decoded.get("user_id")
-    except Exception:
-        return None
+    # Cryptographic JWT signature verification fallback
+    from backend.app.core.auth import extract_verified_user_id
+    return extract_verified_user_id(authorization, required=False)
 
 
 @router.get("/status")
