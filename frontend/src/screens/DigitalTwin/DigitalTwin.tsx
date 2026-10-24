@@ -8,6 +8,8 @@ import { MapContainer, TileLayer, Marker, Popup, Polygon, useMap } from 'react-l
 import L from 'leaflet';
 import { api } from '../../services/api';
 import BoundaryEditorModal from '../../components/map/BoundaryEditorModal';
+import GpsBoundaryModal from '../../components/map/GpsBoundaryModal';
+import { Footprints } from 'lucide-react';
 
 // Create SVG-based custom Leaflet icons to eliminate broken default asset paths in Vite
 const createFarmMarkerIcon = (isApprox: boolean = false) => {
@@ -62,6 +64,7 @@ export default function DigitalTwin() {
   const [selectedFieldId, setSelectedFieldId] = useState<string>('all');
   const [activeBaseLayer, setActiveBaseLayer] = useState<'osm' | 'satellite'>('osm');
   const [isBoundaryModalOpen, setIsBoundaryModalOpen] = useState(false);
+  const [isGpsModalOpen, setIsGpsModalOpen] = useState(false);
 
   // Initial load: Fetch farms list
   useEffect(() => {
@@ -206,15 +209,27 @@ export default function DigitalTwin() {
             </div>
           )}
 
-          {/* Map Farm Boundary Action Button */}
+          {/* Boundary Action Buttons */}
           {farmData && (
-            <button
-              onClick={() => setIsBoundaryModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-2 bg-[#103D2C] hover:bg-[#17643E] text-white rounded-lg text-xs font-semibold shadow-xs cursor-pointer transition-colors"
-            >
-              <Compass size={14} />
-              <span>Map Farm Boundary</span>
-            </button>
+            <>
+              <button
+                onClick={() => setIsBoundaryModalOpen(true)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#F2E8D5] hover:bg-[#E5DDCF] text-[#103D2C] border border-[#E5DDCF] rounded-lg text-xs font-semibold shadow-xs cursor-pointer transition-colors"
+                title="Draw parcel boundaries manually on the interactive map"
+              >
+                <Compass size={14} />
+                <span>Map Boundary</span>
+              </button>
+
+              <button
+                onClick={() => setIsGpsModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#17643E] hover:bg-[#103D2C] text-white rounded-lg text-xs font-semibold shadow-xs cursor-pointer transition-colors"
+                title="Walk the field perimeter with your mobile GPS"
+              >
+                <Footprints size={14} />
+                <span>Walk Farm Boundary</span>
+              </button>
+            </>
           )}
 
           <select
@@ -496,6 +511,30 @@ export default function DigitalTwin() {
           </div>
         </div>
       </div>
+
+      {/* GPS Boundary Walking Modal */}
+      {farmData && (
+        <GpsBoundaryModal
+          isOpen={isGpsModalOpen}
+          onClose={() => setIsGpsModalOpen(false)}
+          farmId={farmData.farm_id}
+          farmName={farmData.name}
+          initialCenter={[mapCenterLat, mapCenterLon]}
+          isApproximateCenter={isApproximate}
+          fields={fields.map((f: any) => ({
+            id: f.id,
+            name: f.name,
+            area: f.area,
+            area_unit: f.area_unit,
+            crop: f.crop,
+            geojson_geometry: f.geojson_geometry,
+            boundaries_mapped: f.boundaries_mapped
+          }))}
+          onSaveSuccess={(updatedField: any) => {
+            fetchFarmDetails(farmData.farm_id);
+          }}
+        />
+      )}
 
       {/* Boundary Mapping Modal */}
       {farmData && (
