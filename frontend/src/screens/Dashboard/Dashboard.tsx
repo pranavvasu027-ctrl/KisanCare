@@ -5,7 +5,7 @@ import { api } from '../../services/api';
 import {
   Leaf, Activity, Sprout, Bug, Droplets, TrendingUp, ShieldCheck,
   BarChart2, Lightbulb, History, Settings, Sun, CloudRain, Check,
-  Wind, MapPin, Plus, ArrowRight, AlertTriangle, ChevronRight, Map, FileText, MessageSquare
+  Wind, MapPin, Plus, ArrowRight, AlertTriangle, ChevronRight, Map, FileText, MessageSquare, FlaskConical
 } from 'lucide-react';
 
 const StatCard = ({ title, value, change, isPositive, icon: Icon, suffix = '' }: any) => (
@@ -404,11 +404,12 @@ export default function Dashboard() {
               <Activity className="w-5 h-5 text-[#B6532A]" />
               <h3 className="font-bold text-[#103D2C]">Quick Actions</h3>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 h-36">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 h-36">
               <QuickActionCard onClick={() => navigate('/digital-twin')} icon={FileText} title="View Digital Twin" desc="Explore your farm in detail." />
-              <QuickActionCard onClick={() => navigate('/crop-comparison')} icon={Sprout} title="Compare Crops" desc="Find the best crop for your field." />
+              <QuickActionCard onClick={() => navigate('/crop-comparison')} icon={Sprout} title="Compare Crops" desc="Find best crop for field." />
+              <QuickActionCard onClick={() => navigate('/fertilizer')} icon={FlaskConical} title="Fertilizer AI" desc="Real ML soil nutrition & stores." />
               <QuickActionCard onClick={() => navigate('/simulator')} icon={Settings} title="Run What-If" desc="See how changes affect yield." />
-              <QuickActionCard onClick={() => navigate('/copilot')} icon={MessageSquare} title="Ask AI" desc="Get answers to farming questions." />
+              <QuickActionCard onClick={() => navigate('/copilot')} icon={MessageSquare} title="Ask AI" desc="Get farming answers." />
             </div>
           </div>
 
