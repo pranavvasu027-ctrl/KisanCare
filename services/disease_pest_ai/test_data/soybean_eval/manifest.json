@@ -1,0 +1,122 @@
+[
+  {
+    "image_path": "models/disease_detection/test_data/soybean_eval/frogeye_leaf_spot_1.jpg",
+    "ground_truth": "Frogeye Leaf Spot",
+    "crop": "Soybean",
+    "source": "anandvermagmailcom/soybean-leaf-diseases"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/soybean_eval/frogeye_leaf_spot_2.jpg",
+    "ground_truth": "Frogeye Leaf Spot",
+    "crop": "Soybean",
+    "source": "anandvermagmailcom/soybean-leaf-diseases"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/soybean_eval/frogeye_leaf_spot_3.jpg",
+    "ground_truth": "Frogeye Leaf Spot",
+    "crop": "Soybean",
+    "source": "anandvermagmailcom/soybean-leaf-diseases"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/soybean_eval/frogeye_leaf_spot_4.jpg",
+    "ground_truth": "Frogeye Leaf Spot",
+    "crop": "Soybean",
+    "source": "anandvermagmailcom/soybean-leaf-diseases"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/soybean_eval/healthy_foliage_1.jpg",
+    "ground_truth": "Healthy Foliage",
+    "crop": "Soybean",
+    "source": "anandvermagmailcom/soybean-leaf-diseases"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/soybean_eval/healthy_foliage_2.jpg",
+    "ground_truth": "Healthy Foliage",
+    "crop": "Soybean",
+    "source": "anandvermagmailcom/soybean-leaf-diseases"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/soybean_eval/healthy_foliage_3.jpg",
+    "ground_truth": "Healthy Foliage",
+    "crop": "Soybean",
+    "source": "anandvermagmailcom/soybean-leaf-diseases"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/soybean_eval/healthy_foliage_4.jpg",
+    "ground_truth": "Healthy Foliage",
+    "crop": "Soybean",
+    "source": "anandvermagmailcom/soybean-leaf-diseases"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/soybean_eval/soybean_rust_1.jpg",
+    "ground_truth": "Asian Soybean Rust",
+    "crop": "Soybean",
+    "source": "anandvermagmailcom/soybean-leaf-diseases"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/soybean_eval/soybean_rust_2.jpg",
+    "ground_truth": "Asian Soybean Rust",
+    "crop": "Soybean",
+    "source": "anandvermagmailcom/soybean-leaf-diseases"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/soybean_eval/soybean_rust_3.jpg",
+    "ground_truth": "Asian Soybean Rust",
+    "crop": "Soybean",
+    "source": "anandvermagmailcom/soybean-leaf-diseases"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/soybean_eval/soybean_rust_4.jpg",
+    "ground_truth": "Asian Soybean Rust",
+    "crop": "Soybean",
+    "source": "anandvermagmailcom/soybean-leaf-diseases"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/soybean_eval/bacterial_blight_ood_1.jpg",
+    "ground_truth": "Bacterial Blight (OOD)",
+    "crop": "Soybean",
+    "source": "anandvermagmailcom/soybean-leaf-diseases"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/soybean_eval/bacterial_blight_ood_2.jpg",
+    "ground_truth": "Bacterial Blight (OOD)",
+    "crop": "Soybean",
+    "source": "anandvermagmailcom/soybean-leaf-diseases"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/soybean_eval/bacterial_blight_ood_3.jpg",
+    "ground_truth": "Bacterial Blight (OOD)",
+    "crop": "Soybean",
+    "source": "anandvermagmailcom/soybean-leaf-diseases"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/soybean_eval/bacterial_blight_ood_4.jpg",
+    "ground_truth": "Bacterial Blight (OOD)",
+    "crop": "Soybean",
+    "source": "anandvermagmailcom/soybean-leaf-diseases"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/soybean_eval/septoria_brown_spot_1.jpg",
+    "ground_truth": "Brown Spot (Septoria)",
+    "crop": "Soybean",
+    "source": "Project-AgML/soybean_leaf_disease_classification"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/soybean_eval/septoria_brown_spot_2.jpg",
+    "ground_truth": "Brown Spot (Septoria)",
+    "crop": "Soybean",
+    "source": "Project-AgML/soybean_leaf_disease_classification"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/soybean_eval/septoria_brown_spot_3.jpg",
+    "ground_truth": "Brown Spot (Septoria)",
+    "crop": "Soybean",
+    "source": "Project-AgML/soybean_leaf_disease_classification"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/soybean_eval/septoria_brown_spot_4.jpg",
+    "ground_truth": "Brown Spot (Septoria)",
+    "crop": "Soybean",
+    "source": "Project-AgML/soybean_leaf_disease_classification"
+  }
+]

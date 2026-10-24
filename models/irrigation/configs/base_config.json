@@ -1,0 +1,37 @@
+{
+    "system": {
+        "region": "India",
+        "timezone": "Asia/Kolkata",
+        "enable_rl_optimization": false
+    },
+    "models": {
+        "eto": {
+            "type": "lstm_attention",
+            "weights_path": "models/eto/weights.pth",
+            "sequence_length": 14,
+            "fine_tune_required": true
+        },
+        "soil_moisture": {
+            "type": "transformer",
+            "weights_path": "models/soil_moisture/weights.pth",
+            "retrain_required": true
+        },
+        "fao56": {
+            "type": "pyfao56",
+            "use_custom_kcb": true
+        },
+        "stress": {
+            "type": "multimodal_fusion",
+            "weights_path": "models/stress/weights.pth",
+            "retrain_required": true
+        },
+        "irrigation_decision": {
+            "type": "rule_based_fao56_adjusted"
+        },
+        "rl_optimizer": {
+            "type": "ppo",
+            "weights_path": "models/irrigation/rl_weights.pth",
+            "enabled": false
+        }
+    }
+}

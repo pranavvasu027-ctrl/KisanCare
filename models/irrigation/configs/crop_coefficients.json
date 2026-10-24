@@ -1,0 +1,155 @@
+{
+    "wheat": {
+        "initial": {
+            "kcb": 0.30,
+            "root_depth_m": 0.3,
+            "source": "FAO-56 Table 12 & Table 22 (Small grain)"
+        },
+        "mid": {
+            "kcb": 1.15,
+            "root_depth_m": 1.5,
+            "source": "FAO-56 Table 12 & Table 22"
+        },
+        "late": {
+            "kcb": 0.40,
+            "root_depth_m": 1.5,
+            "source": "FAO-56 Table 12 & Table 22"
+        }
+    },
+    "rice": {
+        "initial": {
+            "kcb": 1.05,
+            "root_depth_m": 0.3,
+            "source": "FAO-56 Table 12 & Table 22 (Paddy rice)"
+        },
+        "mid": {
+            "kcb": 1.20,
+            "root_depth_m": 0.8,
+            "source": "FAO-56 Table 12 & Table 22"
+        },
+        "late": {
+            "kcb": 0.90,
+            "root_depth_m": 0.8,
+            "source": "FAO-56 Table 12 & Table 22"
+        }
+    },
+    "maize": {
+        "initial": {
+            "kcb": 0.30,
+            "root_depth_m": 0.3,
+            "source": "FAO-56 Table 12 & Table 22 (Field corn)"
+        },
+        "mid": {
+            "kcb": 1.20,
+            "root_depth_m": 1.2,
+            "source": "FAO-56 Table 12 & Table 22"
+        },
+        "late": {
+            "kcb": 0.35,
+            "root_depth_m": 1.2,
+            "source": "FAO-56 Table 12 & Table 22"
+        }
+    },
+    "cotton": {
+        "initial": {
+            "kcb": 0.35,
+            "root_depth_m": 0.3,
+            "source": "FAO-56 Table 12 & Table 22"
+        },
+        "mid": {
+            "kcb": 1.15,
+            "root_depth_m": 1.4,
+            "source": "FAO-56 Table 12 & Table 22"
+        },
+        "late": {
+            "kcb": 0.50,
+            "root_depth_m": 1.4,
+            "source": "FAO-56 Table 12 & Table 22"
+        }
+    },
+    "sugarcane": {
+        "initial": {
+            "kcb": 0.40,
+            "root_depth_m": 0.4,
+            "source": "FAO-56 Table 12 & Table 22"
+        },
+        "mid": {
+            "kcb": 1.25,
+            "root_depth_m": 1.5,
+            "source": "FAO-56 Table 12 & Table 22"
+        },
+        "late": {
+            "kcb": 0.75,
+            "root_depth_m": 1.5,
+            "source": "FAO-56 Table 12 & Table 22"
+        }
+    },
+    "barley": {
+        "initial": {
+            "kcb": 0.30,
+            "root_depth_m": 0.3,
+            "source": "FAO-56 Table 12 & Table 22"
+        },
+        "mid": {
+            "kcb": 1.15,
+            "root_depth_m": 1.3,
+            "source": "FAO-56 Table 12 & Table 22"
+        },
+        "late": {
+            "kcb": 0.25,
+            "root_depth_m": 1.3,
+            "source": "FAO-56 Table 12 & Table 22"
+        }
+    },
+    "potato": {
+        "initial": {
+            "kcb": 0.50,
+            "root_depth_m": 0.3,
+            "source": "FAO-56 Table 12 & Table 22"
+        },
+        "mid": {
+            "kcb": 1.15,
+            "root_depth_m": 0.6,
+            "source": "FAO-56 Table 12 & Table 22"
+        },
+        "late": {
+            "kcb": 0.75,
+            "root_depth_m": 0.6,
+            "source": "FAO-56 Table 12 & Table 22"
+        }
+    },
+    "tomato": {
+        "initial": {
+            "kcb": 0.60,
+            "root_depth_m": 0.3,
+            "source": "FAO-56 Table 12 & Table 22"
+        },
+        "mid": {
+            "kcb": 1.15,
+            "root_depth_m": 1.0,
+            "source": "FAO-56 Table 12 & Table 22"
+        },
+        "late": {
+            "kcb": 0.80,
+            "root_depth_m": 1.0,
+            "source": "FAO-56 Table 12 & Table 22"
+        }
+    },
+    "mustard": {
+        "initial": {
+            "kcb": 0.35,
+            "root_depth_m": 0.3,
+            "source": "FAO-56 Table 12 & Table 22 (Canola/Mustard)"
+        },
+        "mid": {
+            "kcb": 1.15,
+            "root_depth_m": 1.2,
+            "source": "FAO-56 Table 12 & Table 22"
+        },
+        "late": {
+            "kcb": 0.35,
+            "root_depth_m": 1.2,
+            "source": "FAO-56 Table 12 & Table 22"
+        }
+    }
+}

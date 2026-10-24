@@ -1,0 +1,933 @@
+{
+  "status": "PRELIMINARY_EVALUATION",
+  "benchmark_timestamp": "2026-10-23T18:40:42Z",
+  "test_dataset": {
+    "name": "Soybean Independent Field Benchmark (AgML + Anand Verma CC-BY)",
+    "sample_count": 20,
+    "classes_evaluated": [
+      "Frogeye Leaf Spot",
+      "Healthy Foliage",
+      "Rust",
+      "Septoria Brown Spot",
+      "Bacterial Blight"
+    ],
+    "in_distribution_count": 16,
+    "out_of_distribution_count": 4,
+    "provenance": "Aggregated from Project-AgML and anandvermagmailcom/soybean-leaf-diseases. Ground truth verified."
+  },
+  "models": {
+    "convnext_specialist": {
+      "name": "Soybean ConvNeXt-Small Specialist (ixrbhii/soybean-disease-convnext)",
+      "classes_count": 6,
+      "disk_size_mb": 94.37,
+      "device": "cpu",
+      "mean_latency_ms": 255.81,
+      "in_distribution_accuracy": 0.625,
+      "macro_f1": 0.5762,
+      "per_class": {
+        "Frogeye Leaf Spot": {
+          "precision": 1.0,
+          "recall": 0.75,
+          "f1": 0.8571,
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "support": 4
+        },
+        "Healthy Foliage": {
+          "precision": 1.0,
+          "recall": 0.5,
+          "f1": 0.6667,
+          "tp": 2,
+          "fp": 0,
+          "fn": 2,
+          "support": 4
+        },
+        "Rust": {
+          "precision": 1.0,
+          "recall": 0.75,
+          "f1": 0.8571,
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "support": 4
+        },
+        "Septoria Brown Spot": {
+          "precision": 0.5,
+          "recall": 0.5,
+          "f1": 0.5,
+          "tp": 2,
+          "fp": 2,
+          "fn": 2,
+          "support": 4
+        },
+        "Bacterial Blight": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 4,
+          "support": 4
+        }
+      },
+      "confusion_matrix": {
+        "Frogeye Leaf Spot": {
+          "Frogeye Leaf Spot": 3,
+          "Healthy Foliage": 0,
+          "Rust": 0,
+          "Septoria Brown Spot": 0,
+          "Bacterial Blight": 0,
+          "Abstained / Other": 1
+        },
+        "Healthy Foliage": {
+          "Frogeye Leaf Spot": 0,
+          "Healthy Foliage": 2,
+          "Rust": 0,
+          "Septoria Brown Spot": 0,
+          "Bacterial Blight": 0,
+          "Abstained / Other": 2
+        },
+        "Rust": {
+          "Frogeye Leaf Spot": 0,
+          "Healthy Foliage": 0,
+          "Rust": 3,
+          "Septoria Brown Spot": 1,
+          "Bacterial Blight": 0,
+          "Abstained / Other": 0
+        },
+        "Septoria Brown Spot": {
+          "Frogeye Leaf Spot": 0,
+          "Healthy Foliage": 0,
+          "Rust": 0,
+          "Septoria Brown Spot": 2,
+          "Bacterial Blight": 0,
+          "Abstained / Other": 2
+        },
+        "Bacterial Blight": {
+          "Frogeye Leaf Spot": 0,
+          "Healthy Foliage": 0,
+          "Rust": 0,
+          "Septoria Brown Spot": 1,
+          "Bacterial Blight": 0,
+          "Abstained / Other": 3
+        }
+      }
+    },
+    "dinov2_generalist": {
+      "name": "India Multi-Crop DINOv2 ViT-B/14 Generalist (wpzvqrs8/SIH_2026)",
+      "classes_count": 387,
+      "disk_size_mb": 328.22,
+      "device": "cpu",
+      "mean_latency_ms": 428.16,
+      "in_distribution_accuracy": 0.4375,
+      "macro_f1": 0.5467,
+      "per_class": {
+        "Frogeye Leaf Spot": {
+          "precision": 1.0,
+          "recall": 0.5,
+          "f1": 0.6667,
+          "tp": 2,
+          "fp": 0,
+          "fn": 2,
+          "support": 4
+        },
+        "Healthy Foliage": {
+          "precision": 1.0,
+          "recall": 0.25,
+          "f1": 0.4,
+          "tp": 1,
+          "fp": 0,
+          "fn": 3,
+          "support": 4
+        },
+        "Rust": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 4,
+          "support": 4
+        },
+        "Septoria Brown Spot": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "tp": 4,
+          "fp": 0,
+          "fn": 0,
+          "support": 4
+        },
+        "Bacterial Blight": {
+          "precision": 1.0,
+          "recall": 0.5,
+          "f1": 0.6667,
+          "tp": 2,
+          "fp": 0,
+          "fn": 2,
+          "support": 4
+        }
+      },
+      "confusion_matrix": {
+        "Frogeye Leaf Spot": {
+          "Frogeye Leaf Spot": 2,
+          "Healthy Foliage": 0,
+          "Rust": 0,
+          "Septoria Brown Spot": 0,
+          "Bacterial Blight": 0,
+          "Abstained / Other": 2
+        },
+        "Healthy Foliage": {
+          "Frogeye Leaf Spot": 0,
+          "Healthy Foliage": 1,
+          "Rust": 0,
+          "Septoria Brown Spot": 0,
+          "Bacterial Blight": 0,
+          "Abstained / Other": 3
+        },
+        "Rust": {
+          "Frogeye Leaf Spot": 0,
+          "Healthy Foliage": 0,
+          "Rust": 0,
+          "Septoria Brown Spot": 0,
+          "Bacterial Blight": 0,
+          "Abstained / Other": 4
+        },
+        "Septoria Brown Spot": {
+          "Frogeye Leaf Spot": 0,
+          "Healthy Foliage": 0,
+          "Rust": 0,
+          "Septoria Brown Spot": 4,
+          "Bacterial Blight": 0,
+          "Abstained / Other": 0
+        },
+        "Bacterial Blight": {
+          "Frogeye Leaf Spot": 0,
+          "Healthy Foliage": 0,
+          "Rust": 0,
+          "Septoria Brown Spot": 0,
+          "Bacterial Blight": 2,
+          "Abstained / Other": 2
+        }
+      }
+    },
+    "fused_router": {
+      "name": "Intelligent Fused Router (ConvNeXt-Small + DINOv2 Cross-Model Agreement)",
+      "device": "cpu",
+      "mean_latency_ms": 642.92,
+      "in_distribution_accuracy": 0.375,
+      "macro_f1": 0.3657,
+      "per_class": {
+        "Frogeye Leaf Spot": {
+          "precision": 1.0,
+          "recall": 0.75,
+          "f1": 0.8571,
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "support": 4
+        },
+        "Healthy Foliage": {
+          "precision": 1.0,
+          "recall": 0.25,
+          "f1": 0.4,
+          "tp": 1,
+          "fp": 0,
+          "fn": 3,
+          "support": 4
+        },
+        "Rust": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 4,
+          "support": 4
+        },
+        "Septoria Brown Spot": {
+          "precision": 0.6667,
+          "recall": 0.5,
+          "f1": 0.5714,
+          "tp": 2,
+          "fp": 1,
+          "fn": 2,
+          "support": 4
+        },
+        "Bacterial Blight": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 4,
+          "support": 4
+        }
+      },
+      "confusion_matrix": {
+        "Frogeye Leaf Spot": {
+          "Frogeye Leaf Spot": 3,
+          "Healthy Foliage": 0,
+          "Rust": 0,
+          "Septoria Brown Spot": 0,
+          "Bacterial Blight": 0,
+          "Abstained / Other": 1
+        },
+        "Healthy Foliage": {
+          "Frogeye Leaf Spot": 0,
+          "Healthy Foliage": 1,
+          "Rust": 0,
+          "Septoria Brown Spot": 0,
+          "Bacterial Blight": 0,
+          "Abstained / Other": 3
+        },
+        "Rust": {
+          "Frogeye Leaf Spot": 0,
+          "Healthy Foliage": 0,
+          "Rust": 0,
+          "Septoria Brown Spot": 1,
+          "Bacterial Blight": 0,
+          "Abstained / Other": 3
+        },
+        "Septoria Brown Spot": {
+          "Frogeye Leaf Spot": 0,
+          "Healthy Foliage": 0,
+          "Rust": 0,
+          "Septoria Brown Spot": 2,
+          "Bacterial Blight": 0,
+          "Abstained / Other": 2
+        },
+        "Bacterial Blight": {
+          "Frogeye Leaf Spot": 0,
+          "Healthy Foliage": 0,
+          "Rust": 0,
+          "Septoria Brown Spot": 0,
+          "Bacterial Blight": 0,
+          "Abstained / Other": 4
+        }
+      }
+    }
+  },
+  "disagreement_handling": {
+    "total_evaluated": 20,
+    "outcomes_distribution": {
+      "agree": 8,
+      "disputed": 10,
+      "crop_uncertain": 0,
+      "insufficient_evidence": 2,
+      "single_model": 0
+    },
+    "abstention_count": 12,
+    "safety_invariant_verified": true,
+    "zero_chemical_on_dispute": true
+  },
+  "individual_sample_results": {
+    "specialist": [
+      {
+        "image": "frogeye_leaf_spot_1.jpg",
+        "ground_truth": "Frogeye Leaf Spot",
+        "predicted": "Mosaic Virus",
+        "raw_condition": "Soybean Mosaic Virus",
+        "confidence": 0.8307,
+        "percentage": 83,
+        "latency_ms": 460.5
+      },
+      {
+        "image": "frogeye_leaf_spot_2.jpg",
+        "ground_truth": "Frogeye Leaf Spot",
+        "predicted": "Frogeye Leaf Spot",
+        "raw_condition": "Frogeye Leaf Spot",
+        "confidence": 0.92,
+        "percentage": 92,
+        "latency_ms": 190.05
+      },
+      {
+        "image": "frogeye_leaf_spot_3.jpg",
+        "ground_truth": "Frogeye Leaf Spot",
+        "predicted": "Frogeye Leaf Spot",
+        "raw_condition": "Frogeye Leaf Spot",
+        "confidence": 0.8801,
+        "percentage": 88,
+        "latency_ms": 212.6
+      },
+      {
+        "image": "frogeye_leaf_spot_4.jpg",
+        "ground_truth": "Frogeye Leaf Spot",
+        "predicted": "Frogeye Leaf Spot",
+        "raw_condition": "Frogeye Leaf Spot",
+        "confidence": 0.6697,
+        "percentage": 67,
+        "latency_ms": 229.39
+      },
+      {
+        "image": "healthy_foliage_1.jpg",
+        "ground_truth": "Healthy Foliage",
+        "predicted": "Healthy Foliage",
+        "raw_condition": "Healthy Foliage",
+        "confidence": 0.672,
+        "percentage": 67,
+        "latency_ms": 185.51
+      },
+      {
+        "image": "healthy_foliage_2.jpg",
+        "ground_truth": "Healthy Foliage",
+        "predicted": "Healthy Foliage",
+        "raw_condition": "Healthy Foliage",
+        "confidence": 0.5539,
+        "percentage": 55,
+        "latency_ms": 189.58
+      },
+      {
+        "image": "healthy_foliage_3.jpg",
+        "ground_truth": "Healthy Foliage",
+        "predicted": "Downy Mildew",
+        "raw_condition": "Downy Mildew",
+        "confidence": 0.6723,
+        "percentage": 67,
+        "latency_ms": 170.16
+      },
+      {
+        "image": "healthy_foliage_4.jpg",
+        "ground_truth": "Healthy Foliage",
+        "predicted": "Healthy Foliage",
+        "raw_condition": "Healthy Foliage",
+        "confidence": 0.3992,
+        "percentage": 40,
+        "latency_ms": 165.32
+      },
+      {
+        "image": "soybean_rust_1.jpg",
+        "ground_truth": "Rust",
+        "predicted": "Rust",
+        "raw_condition": "Asian Soybean Rust",
+        "confidence": 0.8717,
+        "percentage": 87,
+        "latency_ms": 198.14
+      },
+      {
+        "image": "soybean_rust_2.jpg",
+        "ground_truth": "Rust",
+        "predicted": "Rust",
+        "raw_condition": "Asian Soybean Rust",
+        "confidence": 0.6394,
+        "percentage": 64,
+        "latency_ms": 212.23
+      },
+      {
+        "image": "soybean_rust_3.jpg",
+        "ground_truth": "Rust",
+        "predicted": "Septoria Brown Spot",
+        "raw_condition": "Brown Spot (Septoria)",
+        "confidence": 0.4934,
+        "percentage": 49,
+        "latency_ms": 199.83
+      },
+      {
+        "image": "soybean_rust_4.jpg",
+        "ground_truth": "Rust",
+        "predicted": "Rust",
+        "raw_condition": "Asian Soybean Rust",
+        "confidence": 0.6211,
+        "percentage": 62,
+        "latency_ms": 173.35
+      },
+      {
+        "image": "bacterial_blight_ood_1.jpg",
+        "ground_truth": "Bacterial Blight",
+        "predicted": "Mosaic Virus",
+        "raw_condition": "Soybean Mosaic Virus",
+        "confidence": 0.6663,
+        "percentage": 67,
+        "latency_ms": 154.56
+      },
+      {
+        "image": "bacterial_blight_ood_2.jpg",
+        "ground_truth": "Bacterial Blight",
+        "predicted": "Mosaic Virus",
+        "raw_condition": "Soybean Mosaic Virus",
+        "confidence": 0.4742,
+        "percentage": 47,
+        "latency_ms": 418.02
+      },
+      {
+        "image": "bacterial_blight_ood_3.jpg",
+        "ground_truth": "Bacterial Blight",
+        "predicted": "Septoria Brown Spot",
+        "raw_condition": "Brown Spot (Septoria)",
+        "confidence": 0.5527,
+        "percentage": 55,
+        "latency_ms": 161.97
+      },
+      {
+        "image": "bacterial_blight_ood_4.jpg",
+        "ground_truth": "Bacterial Blight",
+        "predicted": "Mosaic Virus",
+        "raw_condition": "Soybean Mosaic Virus",
+        "confidence": 0.4499,
+        "percentage": 45,
+        "latency_ms": 343.07
+      },
+      {
+        "image": "septoria_brown_spot_1.jpg",
+        "ground_truth": "Septoria Brown Spot",
+        "predicted": "Septoria Brown Spot",
+        "raw_condition": "Brown Spot (Septoria)",
+        "confidence": 0.393,
+        "percentage": 39,
+        "latency_ms": 375.88
+      },
+      {
+        "image": "septoria_brown_spot_2.jpg",
+        "ground_truth": "Septoria Brown Spot",
+        "predicted": "Septoria Brown Spot",
+        "raw_condition": "Brown Spot (Septoria)",
+        "confidence": 0.6417,
+        "percentage": 64,
+        "latency_ms": 376.4
+      },
+      {
+        "image": "septoria_brown_spot_3.jpg",
+        "ground_truth": "Septoria Brown Spot",
+        "predicted": "Rust",
+        "raw_condition": "Asian Soybean Rust",
+        "confidence": 0.3895,
+        "percentage": 39,
+        "latency_ms": 340.35
+      },
+      {
+        "image": "septoria_brown_spot_4.jpg",
+        "ground_truth": "Septoria Brown Spot",
+        "predicted": "Septoria Brown Spot",
+        "raw_condition": "Brown Spot (Septoria)",
+        "confidence": 0.5452,
+        "percentage": 55,
+        "latency_ms": 359.32
+      }
+    ],
+    "generalist": [
+      {
+        "image": "frogeye_leaf_spot_1.jpg",
+        "ground_truth": "Frogeye Leaf Spot",
+        "predicted": "Mosaic Virus",
+        "raw_label": "soybean::Mosaic virus",
+        "confidence": 0.054,
+        "percentage": 5,
+        "latency_ms": 431.59
+      },
+      {
+        "image": "frogeye_leaf_spot_2.jpg",
+        "ground_truth": "Frogeye Leaf Spot",
+        "predicted": "Frogeye Leaf Spot",
+        "raw_label": "soybean::Frogeye leaf spot",
+        "confidence": 0.3317,
+        "percentage": 33,
+        "latency_ms": 478.79
+      },
+      {
+        "image": "frogeye_leaf_spot_3.jpg",
+        "ground_truth": "Frogeye Leaf Spot",
+        "predicted": "Frogeye Leaf Spot",
+        "raw_label": "soybean::Frogeye leaf spot",
+        "confidence": 0.8088,
+        "percentage": 81,
+        "latency_ms": 399.58
+      },
+      {
+        "image": "frogeye_leaf_spot_4.jpg",
+        "ground_truth": "Frogeye Leaf Spot",
+        "predicted": "Frogeye Leaf Spot",
+        "raw_label": "soybean::Frogeye leaf spot",
+        "confidence": 0.5012,
+        "percentage": 50,
+        "latency_ms": 414.59
+      },
+      {
+        "image": "healthy_foliage_1.jpg",
+        "ground_truth": "Healthy Foliage",
+        "predicted": "Healthy Foliage",
+        "raw_label": "guava::Healthy",
+        "confidence": 0.042,
+        "percentage": 4,
+        "latency_ms": 446.5
+      },
+      {
+        "image": "healthy_foliage_2.jpg",
+        "ground_truth": "Healthy Foliage",
+        "predicted": "Healthy Foliage",
+        "raw_label": "soybean::Healthy",
+        "confidence": 0.4241,
+        "percentage": 42,
+        "latency_ms": 346.64
+      },
+      {
+        "image": "healthy_foliage_3.jpg",
+        "ground_truth": "Healthy Foliage",
+        "predicted": "Healthy Foliage",
+        "raw_label": "black_gram::Healthy",
+        "confidence": 0.1202,
+        "percentage": 12,
+        "latency_ms": 371.66
+      },
+      {
+        "image": "healthy_foliage_4.jpg",
+        "ground_truth": "Healthy Foliage",
+        "predicted": "Healthy Foliage",
+        "raw_label": "soybean::Healthy",
+        "confidence": 0.2829,
+        "percentage": 28,
+        "latency_ms": 485.83
+      },
+      {
+        "image": "soybean_rust_1.jpg",
+        "ground_truth": "Rust",
+        "predicted": "Septoria Brown Spot",
+        "raw_label": "soybean::Septoria brown spot",
+        "confidence": 0.1275,
+        "percentage": 13,
+        "latency_ms": 336.95
+      },
+      {
+        "image": "soybean_rust_2.jpg",
+        "ground_truth": "Rust",
+        "predicted": "Septoria Brown Spot",
+        "raw_label": "soybean::Septoria brown spot",
+        "confidence": 0.2106,
+        "percentage": 21,
+        "latency_ms": 467.96
+      },
+      {
+        "image": "soybean_rust_3.jpg",
+        "ground_truth": "Rust",
+        "predicted": "Septoria Brown Spot",
+        "raw_label": "soybean::Septoria brown spot",
+        "confidence": 0.1995,
+        "percentage": 20,
+        "latency_ms": 373.83
+      },
+      {
+        "image": "soybean_rust_4.jpg",
+        "ground_truth": "Rust",
+        "predicted": "Bacterial Blight",
+        "raw_label": "soybean::Bacterial blight",
+        "confidence": 0.0368,
+        "percentage": 4,
+        "latency_ms": 332.06
+      },
+      {
+        "image": "bacterial_blight_ood_1.jpg",
+        "ground_truth": "Bacterial Blight",
+        "predicted": "Bacterial Blight",
+        "raw_label": "soybean::Bacterial blight",
+        "confidence": 0.208,
+        "percentage": 21,
+        "latency_ms": 306.33
+      },
+      {
+        "image": "bacterial_blight_ood_2.jpg",
+        "ground_truth": "Bacterial Blight",
+        "predicted": "Bacterial Blight",
+        "raw_label": "soybean::Bacterial blight",
+        "confidence": 0.4463,
+        "percentage": 45,
+        "latency_ms": 351.13
+      },
+      {
+        "image": "bacterial_blight_ood_3.jpg",
+        "ground_truth": "Bacterial Blight",
+        "predicted": "Bacterial Blight",
+        "raw_label": "soybean::Bacterial blight",
+        "confidence": 0.5774,
+        "percentage": 58,
+        "latency_ms": 307.75
+      },
+      {
+        "image": "bacterial_blight_ood_4.jpg",
+        "ground_truth": "Bacterial Blight",
+        "predicted": "Bacterial Blight",
+        "raw_label": "soybean::Bacterial blight",
+        "confidence": 0.1239,
+        "percentage": 12,
+        "latency_ms": 419.11
+      },
+      {
+        "image": "septoria_brown_spot_1.jpg",
+        "ground_truth": "Septoria Brown Spot",
+        "predicted": "Septoria Brown Spot",
+        "raw_label": "soybean::Septoria brown spot",
+        "confidence": 0.9122,
+        "percentage": 91,
+        "latency_ms": 527.69
+      },
+      {
+        "image": "septoria_brown_spot_2.jpg",
+        "ground_truth": "Septoria Brown Spot",
+        "predicted": "Septoria Brown Spot",
+        "raw_label": "soybean::Septoria brown spot",
+        "confidence": 0.8693,
+        "percentage": 87,
+        "latency_ms": 660.32
+      },
+      {
+        "image": "septoria_brown_spot_3.jpg",
+        "ground_truth": "Septoria Brown Spot",
+        "predicted": "Septoria Brown Spot",
+        "raw_label": "soybean::Septoria brown spot",
+        "confidence": 0.8508,
+        "percentage": 85,
+        "latency_ms": 645.12
+      },
+      {
+        "image": "septoria_brown_spot_4.jpg",
+        "ground_truth": "Septoria Brown Spot",
+        "predicted": "Septoria Brown Spot",
+        "raw_label": "soybean::Septoria brown spot",
+        "confidence": 0.7858,
+        "percentage": 79,
+        "latency_ms": 459.7
+      }
+    ],
+    "fused": [
+      {
+        "image": "frogeye_leaf_spot_1.jpg",
+        "ground_truth": "Frogeye Leaf Spot",
+        "predicted": "Mosaic Virus",
+        "condition": "Soybean Mosaic Virus",
+        "fusion_outcome": "agree",
+        "abstention": false,
+        "abstention_reason": null,
+        "confidence": 0.8307,
+        "percentage": 83,
+        "latency_ms": 719.56
+      },
+      {
+        "image": "frogeye_leaf_spot_2.jpg",
+        "ground_truth": "Frogeye Leaf Spot",
+        "predicted": "Frogeye Leaf Spot",
+        "condition": "Frogeye Leaf Spot",
+        "fusion_outcome": "agree",
+        "abstention": false,
+        "abstention_reason": null,
+        "confidence": 0.92,
+        "percentage": 92,
+        "latency_ms": 596.01
+      },
+      {
+        "image": "frogeye_leaf_spot_3.jpg",
+        "ground_truth": "Frogeye Leaf Spot",
+        "predicted": "Frogeye Leaf Spot",
+        "condition": "Frogeye Leaf Spot",
+        "fusion_outcome": "agree",
+        "abstention": false,
+        "abstention_reason": null,
+        "confidence": 0.8801,
+        "percentage": 88,
+        "latency_ms": 636.16
+      },
+      {
+        "image": "frogeye_leaf_spot_4.jpg",
+        "ground_truth": "Frogeye Leaf Spot",
+        "predicted": "Frogeye Leaf Spot",
+        "condition": "Frogeye Leaf Spot",
+        "fusion_outcome": "agree",
+        "abstention": false,
+        "abstention_reason": null,
+        "confidence": 0.6697,
+        "percentage": 67,
+        "latency_ms": 662.83
+      },
+      {
+        "image": "healthy_foliage_1.jpg",
+        "ground_truth": "Healthy Foliage",
+        "predicted": "Abstained / Other",
+        "condition": "Disputed foliar diagnosis",
+        "fusion_outcome": "disputed",
+        "abstention": true,
+        "abstention_reason": "disputed",
+        "confidence": 0.672,
+        "percentage": 67,
+        "latency_ms": 634.89
+      },
+      {
+        "image": "healthy_foliage_2.jpg",
+        "ground_truth": "Healthy Foliage",
+        "predicted": "Healthy Foliage",
+        "condition": "Healthy Foliage",
+        "fusion_outcome": "agree",
+        "abstention": false,
+        "abstention_reason": null,
+        "confidence": 0.5539,
+        "percentage": 55,
+        "latency_ms": 458.31
+      },
+      {
+        "image": "healthy_foliage_3.jpg",
+        "ground_truth": "Healthy Foliage",
+        "predicted": "Abstained / Other",
+        "condition": "Disputed foliar diagnosis",
+        "fusion_outcome": "disputed",
+        "abstention": true,
+        "abstention_reason": "disputed",
+        "confidence": 0.6723,
+        "percentage": 67,
+        "latency_ms": 532.04
+      },
+      {
+        "image": "healthy_foliage_4.jpg",
+        "ground_truth": "Healthy Foliage",
+        "predicted": "Abstained / Other",
+        "condition": "Inconclusive foliar diagnosis",
+        "fusion_outcome": "insufficient_evidence",
+        "abstention": true,
+        "abstention_reason": "insufficient_evidence",
+        "confidence": 0.3992,
+        "percentage": 40,
+        "latency_ms": 634.56
+      },
+      {
+        "image": "soybean_rust_1.jpg",
+        "ground_truth": "Rust",
+        "predicted": "Abstained / Other",
+        "condition": "Disputed foliar diagnosis",
+        "fusion_outcome": "disputed",
+        "abstention": true,
+        "abstention_reason": "disputed",
+        "confidence": 0.8717,
+        "percentage": 87,
+        "latency_ms": 517.28
+      },
+      {
+        "image": "soybean_rust_2.jpg",
+        "ground_truth": "Rust",
+        "predicted": "Abstained / Other",
+        "condition": "Disputed foliar diagnosis",
+        "fusion_outcome": "disputed",
+        "abstention": true,
+        "abstention_reason": "disputed",
+        "confidence": 0.6394,
+        "percentage": 64,
+        "latency_ms": 647.76
+      },
+      {
+        "image": "soybean_rust_3.jpg",
+        "ground_truth": "Rust",
+        "predicted": "Septoria Brown Spot",
+        "condition": "Brown Spot (Septoria)",
+        "fusion_outcome": "agree",
+        "abstention": false,
+        "abstention_reason": null,
+        "confidence": 0.4934,
+        "percentage": 49,
+        "latency_ms": 539.65
+      },
+      {
+        "image": "soybean_rust_4.jpg",
+        "ground_truth": "Rust",
+        "predicted": "Abstained / Other",
+        "condition": "Disputed foliar diagnosis",
+        "fusion_outcome": "disputed",
+        "abstention": true,
+        "abstention_reason": "disputed",
+        "confidence": 0.6211,
+        "percentage": 62,
+        "latency_ms": 498.99
+      },
+      {
+        "image": "bacterial_blight_ood_1.jpg",
+        "ground_truth": "Bacterial Blight",
+        "predicted": "Abstained / Other",
+        "condition": "Disputed foliar diagnosis",
+        "fusion_outcome": "disputed",
+        "abstention": true,
+        "abstention_reason": "disputed",
+        "confidence": 0.6663,
+        "percentage": 67,
+        "latency_ms": 509.06
+      },
+      {
+        "image": "bacterial_blight_ood_2.jpg",
+        "ground_truth": "Bacterial Blight",
+        "predicted": "Abstained / Other",
+        "condition": "Disputed foliar diagnosis",
+        "fusion_outcome": "disputed",
+        "abstention": true,
+        "abstention_reason": "disputed",
+        "confidence": 0.4742,
+        "percentage": 47,
+        "latency_ms": 500.98
+      },
+      {
+        "image": "bacterial_blight_ood_3.jpg",
+        "ground_truth": "Bacterial Blight",
+        "predicted": "Abstained / Other",
+        "condition": "Disputed foliar diagnosis",
+        "fusion_outcome": "disputed",
+        "abstention": true,
+        "abstention_reason": "disputed",
+        "confidence": 0.5527,
+        "percentage": 55,
+        "latency_ms": 480.38
+      },
+      {
+        "image": "bacterial_blight_ood_4.jpg",
+        "ground_truth": "Bacterial Blight",
+        "predicted": "Abstained / Other",
+        "condition": "Disputed foliar diagnosis",
+        "fusion_outcome": "disputed",
+        "abstention": true,
+        "abstention_reason": "disputed",
+        "confidence": 0.4499,
+        "percentage": 45,
+        "latency_ms": 638.91
+      },
+      {
+        "image": "septoria_brown_spot_1.jpg",
+        "ground_truth": "Septoria Brown Spot",
+        "predicted": "Abstained / Other",
+        "condition": "Inconclusive foliar diagnosis",
+        "fusion_outcome": "insufficient_evidence",
+        "abstention": true,
+        "abstention_reason": "insufficient_evidence",
+        "confidence": 0.393,
+        "percentage": 39,
+        "latency_ms": 1087.38
+      },
+      {
+        "image": "septoria_brown_spot_2.jpg",
+        "ground_truth": "Septoria Brown Spot",
+        "predicted": "Septoria Brown Spot",
+        "condition": "Brown Spot (Septoria)",
+        "fusion_outcome": "agree",
+        "abstention": false,
+        "abstention_reason": null,
+        "confidence": 0.6417,
+        "percentage": 64,
+        "latency_ms": 896.24
+      },
+      {
+        "image": "septoria_brown_spot_3.jpg",
+        "ground_truth": "Septoria Brown Spot",
+        "predicted": "Abstained / Other",
+        "condition": "Disputed foliar diagnosis",
+        "fusion_outcome": "disputed",
+        "abstention": true,
+        "abstention_reason": "disputed",
+        "confidence": 0.3895,
+        "percentage": 39,
+        "latency_ms": 969.52
+      },
+      {
+        "image": "septoria_brown_spot_4.jpg",
+        "ground_truth": "Septoria Brown Spot",
+        "predicted": "Septoria Brown Spot",
+        "condition": "Brown Spot (Septoria)",
+        "fusion_outcome": "agree",
+        "abstention": false,
+        "abstention_reason": null,
+        "confidence": 0.5452,
+        "percentage": 55,
+        "latency_ms": 697.85
+      }
+    ]
+  }
+}

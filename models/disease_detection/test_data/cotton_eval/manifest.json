@@ -1,0 +1,110 @@
+[
+  {
+    "image_path": "models/disease_detection/test_data/cotton_eval/bacterial_blight_1.jpg",
+    "ground_truth": "Bacterial Blight",
+    "crop": "Cotton",
+    "source": "Project-AgML/cotton_leaf_disease_classification"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/cotton_eval/bacterial_blight_2.jpg",
+    "ground_truth": "Bacterial Blight",
+    "crop": "Cotton",
+    "source": "Project-AgML/cotton_leaf_disease_classification"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/cotton_eval/bacterial_blight_3.jpg",
+    "ground_truth": "Bacterial Blight",
+    "crop": "Cotton",
+    "source": "Project-AgML/cotton_leaf_disease_classification"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/cotton_eval/bacterial_blight_4.jpg",
+    "ground_truth": "Bacterial Blight",
+    "crop": "Cotton",
+    "source": "Project-AgML/cotton_leaf_disease_classification"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/cotton_eval/fusarium_wilt_1.jpg",
+    "ground_truth": "Fusarium Wilt",
+    "crop": "Cotton",
+    "source": "Project-AgML/cotton_leaf_disease_classification"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/cotton_eval/fusarium_wilt_2.jpg",
+    "ground_truth": "Fusarium Wilt",
+    "crop": "Cotton",
+    "source": "Project-AgML/cotton_leaf_disease_classification"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/cotton_eval/fusarium_wilt_3.jpg",
+    "ground_truth": "Fusarium Wilt",
+    "crop": "Cotton",
+    "source": "Project-AgML/cotton_leaf_disease_classification"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/cotton_eval/fusarium_wilt_4.jpg",
+    "ground_truth": "Fusarium Wilt",
+    "crop": "Cotton",
+    "source": "Project-AgML/cotton_leaf_disease_classification"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/cotton_eval/healthy_foliage_1.jpg",
+    "ground_truth": "Healthy Foliage",
+    "crop": "Cotton",
+    "source": "Project-AgML/cotton_leaf_disease_classification"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/cotton_eval/healthy_foliage_2.jpg",
+    "ground_truth": "Healthy Foliage",
+    "crop": "Cotton",
+    "source": "Project-AgML/cotton_leaf_disease_classification"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/cotton_eval/healthy_foliage_3.jpg",
+    "ground_truth": "Healthy Foliage",
+    "crop": "Cotton",
+    "source": "Project-AgML/cotton_leaf_disease_classification"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/cotton_eval/healthy_foliage_4.jpg",
+    "ground_truth": "Healthy Foliage",
+    "crop": "Cotton",
+    "source": "Project-AgML/cotton_leaf_disease_classification"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/cotton_eval/curl_virus_1.jpg",
+    "ground_truth": "Cotton Leaf Curl Virus",
+    "crop": "Cotton",
+    "source": "Project-AgML/cotton_leaf_disease_classification_bangladesh_2"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/cotton_eval/curl_virus_2.jpg",
+    "ground_truth": "Cotton Leaf Curl Virus",
+    "crop": "Cotton",
+    "source": "Project-AgML/cotton_leaf_disease_classification_bangladesh_2"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/cotton_eval/curl_virus_3.jpg",
+    "ground_truth": "Cotton Leaf Curl Virus",
+    "crop": "Cotton",
+    "source": "Project-AgML/cotton_leaf_disease_classification_bangladesh_2"
+  },
+  {
+    "image_path": "models/disease_detection/test_data/cotton_eval/curl_virus_4.jpg",
+    "ground_truth": "Cotton Leaf Curl Virus",
+    "crop": "Cotton",
+    "source": "Project-AgML/cotton_leaf_disease_classification_bangladesh_2"
+  },
+  {
+    "image_path": "frontend/public/test_images/cotton_leaf_spot.jpg",
+    "ground_truth": "Bacterial Blight",
+    "crop": "Cotton",
+    "source": "local_field_leaf"
+  },
+  {
+    "image_path": "frontend/public/test_images/cotton_field_leaf.jpg",
+    "ground_truth": "Bacterial Blight",
+    "crop": "Cotton",
+    "source": "local_field_leaf"
+  }
+]

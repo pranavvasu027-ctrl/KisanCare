@@ -1,0 +1,241 @@
+{
+  "specialists": {
+    "cotton": {
+      "model_id": "FarmGuard/cotton-densenet121",
+      "version": "1.0.0",
+      "status": "active",
+      "crop": "Cotton",
+      "architecture": "DenseNet-121 (torchvision)",
+      "framework": "pytorch",
+      "checkpoint_relpath": "models/disease_detection/specialists/cotton/best_densenet.pth",
+      "license": "MIT",
+      "provenance": {
+        "author": "FarmGuard",
+        "huggingface_repo": "https://huggingface.co/FarmGuard/cotton-densenet121",
+        "weights_sha256": "4b680786cfceb7a7c73db8e05cb02781b0a514d8692780e95db0f4ff31998971",
+        "training_framework": "PyTorch / torchvision",
+        "reported_metrics": {
+          "best_val_accuracy": 0.9966,
+          "test_accuracy": 0.9899,
+          "test_macro_f1": 0.9909
+        }
+      },
+      "preprocessing": {
+        "input_size": [224, 224],
+        "resize": 256,
+        "center_crop": 224,
+        "mean": [0.485, 0.456, 0.406],
+        "std": [0.229, 0.224, 0.225]
+      },
+      "class_mapping": [
+        {
+          "index": 0,
+          "raw": "bacterial blight",
+          "canonical_condition": "Bacterial Blight",
+          "canonical_label": "cotton::Bacterial blight",
+          "category": "disease",
+          "scientific_name": "Xanthomonas citri pv. malvacearum"
+        },
+        {
+          "index": 1,
+          "raw": "curl virus",
+          "canonical_condition": "Cotton Leaf Curl Virus",
+          "canonical_label": "cotton::Leaf curl virus",
+          "category": "disease",
+          "scientific_name": "Cotton leaf curl virus (CLCuV)"
+        },
+        {
+          "index": 2,
+          "raw": "fussarium wilt",
+          "canonical_condition": "Fusarium Wilt",
+          "canonical_label": "cotton::Fusarium wilt",
+          "category": "disease",
+          "scientific_name": "Fusarium oxysporum f. sp. vasinfectum"
+        },
+        {
+          "index": 3,
+          "raw": "healthy",
+          "canonical_condition": "Healthy Foliage",
+          "canonical_label": "cotton::Healthy",
+          "category": "healthy",
+          "scientific_name": null
+        }
+      ],
+      "abstention_threshold": 0.45,
+      "calibration": {
+        "method": "temperature_scaling",
+        "temperature": 1.2
+      }
+    },
+    "wheat": {
+      "model_id": "horshe/agrisentry-wheat-disease-classifier",
+      "version": "1.0.0",
+      "status": "planned",
+      "crop": "Wheat",
+      "architecture": "CNN (Keras/TensorFlow)",
+      "framework": "tensorflow",
+      "checkpoint_relpath": "models/disease_detection/specialists/wheat/wheat_cnn.h5",
+      "license": "MIT",
+      "provenance": {
+        "author": "horshe",
+        "huggingface_repo": "https://huggingface.co/horshe/agrisentry-wheat-disease-classifier"
+      },
+      "class_mapping": [
+        {
+          "index": 0,
+          "raw": "healthy",
+          "canonical_condition": "Healthy Foliage",
+          "canonical_label": "wheat::Healthy",
+          "category": "healthy",
+          "scientific_name": null
+        },
+        {
+          "index": 1,
+          "raw": "brown_rust",
+          "canonical_condition": "Brown (Leaf) Rust",
+          "canonical_label": "wheat::Brown (leaf) rust",
+          "category": "disease",
+          "scientific_name": "Puccinia triticina"
+        },
+        {
+          "index": 2,
+          "raw": "yellow_rust",
+          "canonical_condition": "Yellow (Stripe) Rust",
+          "canonical_label": "wheat::Yellow (stripe) rust",
+          "category": "disease",
+          "scientific_name": "Puccinia striiformis"
+        },
+        {
+          "index": 3,
+          "raw": "septoria",
+          "canonical_condition": "Septoria Leaf Blotch",
+          "canonical_label": "wheat::Septoria",
+          "category": "disease",
+          "scientific_name": "Zymoseptoria tritici"
+        }
+      ]
+    },
+    "soybean": {
+      "model_id": "ixrbhii/soybean-disease-convnext",
+      "version": "1.0.0",
+      "status": "active",
+      "crop": "Soybean",
+      "architecture": "ConvNeXt-Small (timm)",
+      "framework": "pytorch",
+      "checkpoint_relpath": "models/disease_detection/specialists/soybean/model.safetensors",
+      "license": "CC-BY-4.0",
+      "provenance": {
+        "author": "ixrbhii",
+        "huggingface_repo": "https://huggingface.co/ixrbhii/soybean-disease-convnext",
+        "weights_sha256": "41f79f767719150bfe8e4574fd4c299fdbcfaa7a924923cb630ad055a57a6f0f",
+        "dataset_reference": "Project-AgML/soybean_leaf_disease_classification",
+        "reported_metrics": {
+          "test_accuracy": 0.917,
+          "test_macro_f1": 0.881,
+          "test_photos_count": 336
+        }
+      },
+      "preprocessing": {
+        "input_size": [224, 224],
+        "resize": 256,
+        "center_crop": 224,
+        "mean": [0.485, 0.456, 0.406],
+        "std": [0.229, 0.224, 0.225]
+      },
+      "class_mapping": [
+        {
+          "index": 0,
+          "raw": "Downy Mildew",
+          "canonical_condition": "Downy Mildew",
+          "canonical_label": "soybean::Downy mildew",
+          "category": "disease",
+          "scientific_name": "Peronospora manshurica"
+        },
+        {
+          "index": 1,
+          "raw": "Frogeye Leaf Spot",
+          "canonical_condition": "Frogeye Leaf Spot",
+          "canonical_label": "soybean::Frogeye leaf spot",
+          "category": "disease",
+          "scientific_name": "Cercospora sojina"
+        },
+        {
+          "index": 2,
+          "raw": "Healthy",
+          "canonical_condition": "Healthy Foliage",
+          "canonical_label": "soybean::Healthy",
+          "category": "healthy",
+          "scientific_name": null
+        },
+        {
+          "index": 3,
+          "raw": "Mosaic Virus",
+          "canonical_condition": "Soybean Mosaic Virus",
+          "canonical_label": "soybean::Mosaic virus",
+          "category": "disease",
+          "scientific_name": "Soybean mosaic virus (SMV)"
+        },
+        {
+          "index": 4,
+          "raw": "Rust",
+          "canonical_condition": "Asian Soybean Rust",
+          "canonical_label": "soybean::Rust",
+          "category": "disease",
+          "scientific_name": "Phakopsora pachyrhizi"
+        },
+        {
+          "index": 5,
+          "raw": "Septoria Brown Spot",
+          "canonical_condition": "Brown Spot (Septoria)",
+          "canonical_label": "soybean::Septoria brown spot",
+          "category": "disease",
+          "scientific_name": "Septoria glycines"
+        }
+      ],
+      "abstention_threshold": 0.40,
+      "calibration": {
+        "method": "temperature_scaling",
+        "temperature": 1.15
+      }
+    },
+    "rice": {
+      "model_id": "haiderAI/vision-model-Vit-rice-leaf-disease-detection",
+      "version": "1.0.0",
+      "status": "planned",
+      "crop": "Rice",
+      "architecture": "ViT-Base-Patch16-224 (HuggingFace)",
+      "framework": "pytorch",
+      "license": "Apache-2.0",
+      "provenance": {
+        "author": "haiderAI",
+        "huggingface_repo": "https://huggingface.co/haiderAI/vision-model-Vit-rice-leaf-disease-detection"
+      },
+      "class_mapping": [
+        {
+          "index": 0,
+          "raw": "Bacterial leaf blight",
+          "canonical_condition": "Bacterial Blight",
+          "canonical_label": "rice::Bacterial blight",
+          "category": "disease",
+          "scientific_name": "Xanthomonas oryzae pv. oryzae"
+        },
+        {
+          "index": 1,
+          "raw": "Brown spot",
+          "canonical_condition": "Brown Spot",
+          "canonical_label": "rice::Brown spot",
+          "category": "disease",
+          "scientific_name": "Bipolaris oryzae"
+        },
+        {
+          "index": 2,
+          "raw": "Leaf smut",
+          "canonical_condition": "Leaf Smut",
+          "canonical_label": "rice::Leaf smut",
+          "category": "disease",
+          "scientific_name": "Entyloma oryzae"
+        }
+      ]
+    }
+  }
+}
