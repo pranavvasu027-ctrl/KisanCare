@@ -228,7 +228,7 @@ def list_farms(authorization: Optional[str] = Header(None)):
             sb = create_client(url, key)
             res = sb.table("farms").select(
                 "id, farm_name, location, latitude, longitude, total_area, area_unit, status"
-            ).eq("user_id", token_user_id).order("created_at", { "ascending": False }).execute()
+            ).eq("user_id", token_user_id).order("created_at", desc=True).execute()
 
             farms_data = []
             for f in (res.data or []):
@@ -247,6 +247,11 @@ def list_farms(authorization: Optional[str] = Header(None)):
             return {"farms": farms_data, "count": len(farms_data), "is_mock": False}
         except Exception as exc:
             print(f"[ListFarms] Supabase query failed: {exc}")
+            raise HTTPException(status_code=500, detail=f"Database query failed: {exc}")
+
+    if token_user_id:
+        # Authenticated user but Supabase not configured
+        raise HTTPException(status_code=503, detail="Database service not configured")
 
     # Fallback for unauthenticated/demo mode: return default verified farm
     return {
@@ -795,8 +800,6 @@ def get_market_price(data: MarketPriceRequest):
     try:
         return _proxy_to_ml("/api/v1/models/market-price", data.model_dump())
     except HTTPException as exc:
-        if exc.status_code in (502, 503, 504) and os.getenv("ML_MOCK_FALLBACK_ENABLED", "false").lower() == "true":
-            return _market_mock(data)
         if exc.status_code == 503:
             try:
                 from ml.market_price.predict import MarketPricePredictor
@@ -812,7 +815,11 @@ def get_market_price(data: MarketPriceRequest):
             except Exception as inner:
                 if isinstance(inner, HTTPException):
                     raise inner
+                if os.getenv("ML_MOCK_FALLBACK_ENABLED", "false").lower() == "true":
+                    return _market_mock(data)
                 raise exc
+        if exc.status_code in (502, 503, 504) and os.getenv("ML_MOCK_FALLBACK_ENABLED", "false").lower() == "true":
+            return _market_mock(data)
         raise
 
 

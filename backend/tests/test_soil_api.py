@@ -384,3 +384,116 @@ def test_upload_soil_report_03_alternate_format_ground_truth():
     assert data["phosphorus"]["reported_value"] == 16.8
     assert data["potassium"]["reported_value"] == 198.0
 
+
+
+# ---------------------------------------------------------------------------
+# Persistence & Multi-Tenant Authorization Tests
+# ---------------------------------------------------------------------------
+import jwt
+
+TEST_SECRET = "kisancare-soil-persistence-test-secret-key-32c"
+
+def _make_auth(user_id: str) -> dict:
+    token = jwt.encode({"sub": user_id}, TEST_SECRET, algorithm="HS256")
+    return {"Authorization": f"Bearer {token}"}
+
+
+def test_soil_timeline_disk_persistence_and_reload(tmp_path):
+    """Verify that plot timelines and agronomic events survive simulated server restarts."""
+    from backend.app.api.soil.store import SoilPlotStore
+
+    test_file = tmp_path / "soil_test_store.pickle"
+    store1 = SoilPlotStore(persistence_file=test_file)
+
+    # 1. Add timeline and events in store1
+    tm1 = store1.get_or_create_timeline("PLOT_PERSIST_01", farm_id="FARM_PERSIST_01", owner_id="farmer_owner")
+    tm1.record_crop_harvest("Cotton", 3.0, "2024-06-01")
+    tm1.record_fertilizer_application("Urea", 50.0, "2024-06-15")
+    store1.save()
+
+    assert test_file.exists(), "Persistence file was not created on disk"
+    assert (tmp_path / "soil_test_store.json").exists(), "JSON metadata file was not created"
+
+    # 2. Simulate complete server restart by creating a new store instance from same file
+    store2 = SoilPlotStore(persistence_file=test_file)
+    assert "PLOT_PERSIST_01" in store2.list_plots()
+
+    tm2 = store2.get_timeline("PLOT_PERSIST_01")
+    assert tm2 is not None
+    assert tm2.plot_id == "PLOT_PERSIST_01"
+    assert tm2.farm_id == "FARM_PERSIST_01"
+    assert len(tm2.flux_events) == 2
+    assert tm2.flux_events[0].event_date == "2024-06-01"
+    assert tm2.flux_events[1].event_date == "2024-06-15"
+
+
+def test_soil_multi_tenant_cross_user_protection():
+    """Verify Farmer A's plot timeline cannot be viewed, mutated, or deleted by Farmer B."""
+    plot_id = "PLOT_SECURE_101"
+
+    # 1. Farmer A establishes baseline
+    baseline_payload = {
+        "plot_id": plot_id,
+        "farm_id": "FARM_ALICE_01",
+        "sample_date": "2024-01-15",
+        "lab_name": "District Soil Testing Laboratory, Akola",
+        "nitrogen_kg_ha": 250.0,
+        "phosphorus_kg_ha": 20.0,
+        "potassium_kg_ha": 300.0,
+        "ph": 7.20
+    }
+    r_base = client.post("/api/v1/soil/reports/confirm", json=baseline_payload, headers=_make_auth("farmer_alice"))
+    assert r_base.status_code == 200
+
+    # 2. Farmer Bob attempts to log fertilizer event on Alice's plot
+    fert_payload = {
+        "fertilizer_grade": "DAP",
+        "quantity_kg_ha": 100.0,
+        "application_date": "2024-02-01"
+    }
+    r_fert_bob = client.post(
+        f"/api/v1/soil/plots/{plot_id}/events/fertilizer",
+        json=fert_payload,
+        headers=_make_auth("farmer_bob")
+    )
+    assert r_fert_bob.status_code == 403
+    assert "Access denied" in r_fert_bob.json()["detail"]
+
+    # 3. Farmer Bob attempts to log harvest event on Alice's plot
+    harv_payload = {
+        "crop_name": "Cotton",
+        "yield_tonnes_ha": 2.5,
+        "harvest_date": "2024-05-01"
+    }
+    r_harv_bob = client.post(
+        f"/api/v1/soil/plots/{plot_id}/events/harvest",
+        json=harv_payload,
+        headers=_make_auth("farmer_bob")
+    )
+    assert r_harv_bob.status_code == 403
+    assert "Access denied" in r_harv_bob.json()["detail"]
+
+    # 4. Farmer Bob attempts to read Alice's status or PDF
+    r_stat_bob = client.get(f"/api/v1/soil/plots/{plot_id}/status", headers=_make_auth("farmer_bob"))
+    assert r_stat_bob.status_code == 403
+    assert "Access denied" in r_stat_bob.json()["detail"]
+
+    r_pdf_bob = client.get(f"/api/v1/soil/plots/{plot_id}/report.pdf", headers=_make_auth("farmer_bob"))
+    assert r_pdf_bob.status_code == 403
+    assert "Access denied" in r_pdf_bob.json()["detail"]
+
+    # 5. Farmer Bob attempts to delete Alice's plot
+    r_del_bob = client.delete(f"/api/v1/soil/plots/{plot_id}", headers=_make_auth("farmer_bob"))
+    assert r_del_bob.status_code == 403
+    assert "Access denied" in r_del_bob.json()["detail"]
+
+    # 6. Farmer Alice successfully performs operations
+    r_fert_alice = client.post(
+        f"/api/v1/soil/plots/{plot_id}/events/fertilizer",
+        json=fert_payload,
+        headers=_make_auth("farmer_alice")
+    )
+    assert r_fert_alice.status_code == 200
+
+    r_stat_alice = client.get(f"/api/v1/soil/plots/{plot_id}/status", headers=_make_auth("farmer_alice"))
+    assert r_stat_alice.status_code == 200
