@@ -78,7 +78,8 @@ class SoilPlotStore:
             with open(self._json_meta_file, "w", encoding="utf-8") as f:
                 json.dump(summary, f, indent=2)
         except Exception as exc:
-            logger.warning("Failed to persist SoilPlotStore to disk: %s", exc)
+            logger.error("Failed to persist SoilPlotStore to disk: %s", exc)
+            raise RuntimeError(f"Failed to persist SoilPlotStore to disk: {exc}") from exc
 
     def _load_from_disk(self) -> None:
         """Load stored timelines from disk if available."""

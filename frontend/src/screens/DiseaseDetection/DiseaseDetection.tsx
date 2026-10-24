@@ -1,5 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { translateDynamic } from '../../i18n/translateHelper';
 import {
   Bug, Camera, Upload, ShieldAlert, CheckCircle, Loader2,
   RotateCcw, AlertCircle, ShieldCheck, Sprout, Info, Leaf,
@@ -71,6 +73,8 @@ interface DiagnosisResult {
 
 export default function DiseaseDetection() {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'en';
   const [diagnosisMode, setDiagnosisMode] = useState<'disease' | 'pest'>('disease');
   const [crop, setCrop] = useState('Tomato');
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>(['Yellow leaves', 'Stunted growth']);
@@ -229,19 +233,19 @@ export default function DiseaseDetection() {
           <Bug size={32} />
         </div>
         <div className="flex items-center justify-center gap-2">
-          <h1 className="text-3xl font-serif font-bold text-[#103D2C]">Disease & Pest Detection</h1>
+          <h1 className="text-3xl font-serif font-bold text-[#103D2C]">{t('disease.title')}</h1>
           {isDemo ? (
             <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-amber-300">
-              Demo / Mock Mode
+              {t('disease.sampleBadge')}
             </span>
           ) : (
             <span className="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-emerald-300 flex items-center gap-1">
-              <Cpu size={12} /> PyTorch EfficientNetV2-S Deep Learning
+              <Cpu size={12} /> {t('disease.deepLearningBadge')}
             </span>
           )}
         </div>
         <p className="text-[#292B26]/70 mt-2 text-sm">
-          Authentic plant foliar diagnosis powered by KisanCare's deep learning vision classifier (38 PlantVillage pathology classes) coupled with CIB&RC regulatory treatment protocols.
+          {t('disease.subtitle')}
         </p>
       </div>
 
@@ -257,7 +261,7 @@ export default function DiseaseDetection() {
         {/* Mode Selector Toggle */}
         <div className="flex items-center justify-between border-b border-[#E5DDCF] pb-3">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-[#103D2C] uppercase tracking-wider">Diagnostic Mode:</span>
+            <span className="text-xs font-bold text-[#103D2C] uppercase tracking-wider">{t('disease.diagnosticMode')}</span>
             <div className="flex rounded-lg border border-[#E5DDCF] p-0.5 bg-[#FBF7EF]">
               <button
                 type="button"
@@ -268,7 +272,7 @@ export default function DiseaseDetection() {
                     : 'text-[#292B26]/70 hover:text-[#103D2C]'
                 }`}
               >
-                Foliar Disease (EfficientNetV2-S)
+                {t('disease.foliarMode')}
               </button>
               <button
                 type="button"
@@ -279,18 +283,18 @@ export default function DiseaseDetection() {
                     : 'text-[#292B26]/70 hover:text-[#103D2C]'
                 }`}
               >
-                Insect Pest (YOLO11s)
+                {t('disease.pestMode')}
               </button>
             </div>
           </div>
           <span className="text-[11px] text-[#292B26]/60">
-            {diagnosisMode === 'disease' ? '38 PlantVillage pathology classes' : '102 IP102 insect pest classes'}
+            {diagnosisMode === 'disease' ? t('disease.foliarClasses') : t('disease.pestClasses')}
           </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-bold text-[#103D2C] uppercase tracking-wider mb-2">Affected Crop</label>
+            <label className="block text-xs font-bold text-[#103D2C] uppercase tracking-wider mb-2">{t('disease.affectedCrop')}</label>
             <select
               value={crop}
               onChange={(e) => setCrop(e.target.value)}
@@ -308,14 +312,14 @@ export default function DiseaseDetection() {
               className="w-full bg-[#103D2C] hover:bg-[#17643E] text-white font-medium py-2 px-4 rounded-lg text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-xs"
             >
               {analyzing ? <Loader2 size={16} className="animate-spin" /> : <Bug size={16} />}
-              <span>{analyzing ? 'Executing Deep Learning Inference...' : `Run ${diagnosisMode === 'pest' ? 'Pest' : 'Disease'} Diagnosis`}</span>
+              <span>{analyzing ? t('disease.executingInference') : t('disease.runDiagnosis', { mode: diagnosisMode === 'pest' ? 'Pest' : 'Disease' })}</span>
             </button>
           </div>
         </div>
 
         <div>
           <label className="block text-xs font-bold text-[#103D2C] uppercase tracking-wider mb-2">
-            Observed Symptoms / Field Signs
+            {t('disease.observedSymptoms')}
           </label>
           <div className="flex flex-wrap gap-2">
             {AVAILABLE_SYMPTOMS.map((sym) => {
@@ -331,7 +335,7 @@ export default function DiseaseDetection() {
                       : 'bg-[#FBF7EF] text-[#292B26]/80 border-[#E5DDCF] hover:border-[#17643E]'
                   }`}
                 >
-                  {active ? `✓ ${sym}` : `+ ${sym}`}
+                  {active ? `✓ ${translateDynamic(sym, currentLang) || sym}` : `+ ${translateDynamic(sym, currentLang) || sym}`}
                 </button>
               );
             })}
@@ -390,7 +394,7 @@ export default function DiseaseDetection() {
           ) : (
             <div className="py-4 flex flex-col items-center justify-center max-w-sm">
               <Upload className="w-10 h-10 text-[#A8C69A] mb-3" />
-              <h3 className="font-bold text-[#103D2C] mb-1">Upload Genuine Leaf Photo</h3>
+              <h3 className="font-bold text-[#103D2C] mb-1">{t('disease.uploadLeafPhoto')}</h3>
               <p className="text-[11px] text-[#292B26]/60 mb-4 leading-relaxed">
                 Upload a clear close-up photograph of the symptomatic leaf (JPEG, PNG, WebP up to 15 MB). The real EfficientNetV2-S neural network will perform multi-class pathology classification.
               </p>
@@ -565,10 +569,10 @@ export default function DiseaseDetection() {
                 {/* Treatment / Clinical Protocol */}
                 <div className="pt-2 border-t border-[#E5DDCF]/60">
                   <h5 className="text-xs font-bold text-[#103D2C] uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                    <CheckCircle size={14} className="text-[#17643E]" /> Direct Clinical Protocol
+                    <CheckCircle size={14} className="text-[#17643E]" /> {t('disease.treatmentProtocol')}
                   </h5>
                   <div className="bg-[#FBF7EF] p-3 rounded-lg border border-[#E5DDCF] text-xs text-[#292B26] leading-relaxed">
-                    {result.treatment}
+                    {translateDynamic(result.treatment, currentLang) || result.treatment}
                   </div>
                 </div>
 
@@ -576,7 +580,7 @@ export default function DiseaseDetection() {
                 {result.chemicalTreatments && result.chemicalTreatments.length > 0 && (
                   <div className="pt-2 border-t border-[#E5DDCF]/60 space-y-1.5">
                     <h5 className="text-xs font-bold text-[#103D2C] uppercase tracking-wider flex items-center gap-1.5">
-                      <ExternalLink size={13} className="text-[#17643E]" /> CIB&RC Registered Interventions
+                      <ExternalLink size={13} className="text-[#17643E]" /> {t('disease.chemicalTreatments')}
                     </h5>
                     <div className="space-y-1.5">
                       {result.chemicalTreatments.map((chem, i) => (
@@ -598,7 +602,7 @@ export default function DiseaseDetection() {
                 {/* Non-Chemical Management Options */}
                 <div className="pt-2 border-t border-[#E5DDCF]/60 space-y-1.5">
                   <h5 className="text-xs font-bold text-[#103D2C] uppercase tracking-wider flex items-center gap-1.5">
-                    <Leaf size={14} className="text-[#17643E]" /> Non-Chemical & Biological Controls
+                    <Leaf size={14} className="text-[#17643E]" /> {t('disease.nonChemicalOptions')}
                   </h5>
                   <ul className="text-xs text-[#292B26]/80 list-disc pl-4 space-y-1">
                     {result.nonChemicalOptions.map((opt, i) => (
@@ -610,7 +614,7 @@ export default function DiseaseDetection() {
                 {/* Preventive Management */}
                 <div className="pt-2 border-t border-[#E5DDCF]/60 space-y-1.5">
                   <h5 className="text-xs font-bold text-[#103D2C] uppercase tracking-wider flex items-center gap-1.5">
-                    <ShieldCheck size={14} className="text-[#17643E]" /> Preventive Field Practices
+                    <ShieldCheck size={14} className="text-[#17643E]" /> {t('disease.preventiveManagement')}
                   </h5>
                   <ul className="text-xs text-[#292B26]/80 list-disc pl-4 space-y-1">
                     {result.preventiveManagement.map((prev, i) => (

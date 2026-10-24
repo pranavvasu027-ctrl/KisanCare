@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { translateDynamic } from '../../i18n/translateHelper';
 import {
   TestTube, Upload, FileText, CheckCircle2, AlertTriangle, Download,
   Plus, RefreshCw, Clock, ShieldAlert, Sparkles, Calendar,
@@ -49,6 +51,8 @@ Available Potassium: 310.0 kg/ha K2O
 type TabType = 'overview' | 'upload' | 'baseline' | 'timeline' | 'compare';
 
 export default function SoilIntelligence() {
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'en';
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [plotId, setPlotId] = useState<string>('PLOT_MH_LAT_881');
   const [farmId, setFarmId] = useState<string>('FARM_LAT_01');
@@ -476,9 +480,9 @@ export default function SoilIntelligence() {
                 <TestTube className="w-6 h-6 text-emerald-300" />
               </span>
               <div>
-                <h1 className="text-2xl lg:text-3xl font-serif font-bold tracking-tight">Soil Intelligence V1</h1>
+                <h1 className="text-2xl lg:text-3xl font-serif font-bold tracking-tight">{t('soil.v1Title')}</h1>
                 <p className="text-emerald-100/80 text-xs mt-0.5">
-                  Dynamic Multi-Year Nutrient Ledger & Agronomic Depletion Engine
+                  {t('soil.v1Subtitle')}
                 </p>
               </div>
             </div>
@@ -486,7 +490,7 @@ export default function SoilIntelligence() {
 
           <div className="flex flex-wrap items-center gap-3">
             <div className="bg-[#072B1E] px-3 py-1.5 rounded-xl border border-emerald-800/60 flex items-center gap-2">
-              <span className="text-xs text-emerald-300 font-medium">Active Plot:</span>
+              <span className="text-xs text-emerald-300 font-medium">{t('soil.activePlot')}</span>
               <input
                 type="text"
                 value={plotId}
@@ -513,7 +517,7 @@ export default function SoilIntelligence() {
                 className="bg-[#DDA74A] hover:bg-[#C9963E] text-[#103D2C] px-4 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
               >
                 <Download className={`w-3.5 h-3.5 ${pdfDownloading ? 'animate-spin' : ''}`} />
-                {pdfDownloading ? 'Generating PDF...' : 'Download Soil PDF'}
+                {pdfDownloading ? 'Generating PDF...' : t('soil.downloadPdf')}
               </button>
             )}
           </div>
@@ -537,9 +541,9 @@ export default function SoilIntelligence() {
       <div className="bg-amber-50 border border-amber-300 rounded-2xl p-5 text-amber-900 shadow-sm space-y-2">
         <div className="flex items-center justify-between">
           <span className="bg-amber-200 text-amber-900 text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded">
-            Soil Data Provenance: Farmer Observation
+            {t('soil.farmerObservationTitle')}
           </span>
-          <span className="text-xs text-amber-800 font-semibold">Laboratory Verification Pending</span>
+          <span className="text-xs text-amber-800 font-semibold">{t('soil.labPending')}</span>
         </div>
         <p className="text-xs leading-relaxed text-amber-900">
           <strong>Soil Classification:</strong> Black cotton soil (&ldquo;koralvahu jamin&rdquo;), deep, flat terrain with good drainage.<br/>
@@ -563,11 +567,11 @@ export default function SoilIntelligence() {
       {/* Navigation Tabs */}
       <div className="flex border-b border-[#E5DDCF] gap-2 overflow-x-auto pb-1">
         {[
-          { id: 'overview', label: 'Soil Status & Overview', icon: Layers },
-          { id: 'upload', label: 'Upload & OCR Ingestion', icon: Upload },
-          { id: 'baseline', label: 'Laboratory Baseline', icon: FileCheck },
-          { id: 'timeline', label: 'Nutrient Timeline Ledger', icon: Clock },
-          { id: 'compare', label: 'Lab Retest & Comparator', icon: TrendingUp },
+          { id: 'overview', label: t('soil.tabOverview'), icon: Layers },
+          { id: 'upload', label: t('soil.tabUpload'), icon: Upload },
+          { id: 'baseline', label: t('soil.tabBaseline'), icon: FileCheck },
+          { id: 'timeline', label: t('soil.tabEvents'), icon: Clock },
+          { id: 'compare', label: t('soil.tabCompare'), icon: TrendingUp },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -603,10 +607,10 @@ export default function SoilIntelligence() {
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <h4 className="font-bold text-xs uppercase tracking-wider text-amber-900">
-                    Scientific Data Gate & Prediction Safeguard
+                    {t('soil.safeguardTitle')}
                   </h4>
                   <span className="bg-amber-200/70 text-amber-900 text-[10px] font-mono px-2 py-0.5 rounded-full font-bold">
-                    PREDICTION GATE: STRICTLY BLOCKED
+                    {t('soil.predictionBlocked')}
                   </span>
                 </div>
                 <p className="text-xs text-amber-900/90 leading-relaxed">
@@ -627,9 +631,9 @@ export default function SoilIntelligence() {
             <div className="bg-white rounded-2xl p-8 border border-[#E5DDCF] text-center space-y-4">
               <TestTube className="w-12 h-12 text-[#103D2C]/30 mx-auto" />
               <div>
-                <h3 className="font-bold text-base text-[#103D2C]">No Baseline Established for Plot "{plotId}"</h3>
+                <h3 className="font-bold text-base text-[#103D2C]">{t('soil.noBaselineTitle', { plotId })}</h3>
                 <p className="text-xs text-stone-500 max-w-md mx-auto mt-1">
-                  Upload an existing Soil Health Card (SHC) or directly enter an accredited laboratory soil test to anchor the digital timeline.
+                  {t('soil.noBaselineDesc')}
                 </p>
               </div>
               <div className="flex justify-center gap-3">
@@ -637,13 +641,13 @@ export default function SoilIntelligence() {
                   onClick={() => setActiveTab('upload')}
                   className="bg-[#103D2C] hover:bg-[#17643E] text-white px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2"
                 >
-                  <Upload className="w-3.5 h-3.5" /> Upload Lab Report
+                  <Upload className="w-3.5 h-3.5" /> {t('soil.uploadLabReport')}
                 </button>
                 <button
                   onClick={() => setActiveTab('baseline')}
                   className="border border-[#103D2C] text-[#103D2C] hover:bg-stone-50 px-4 py-2 rounded-xl text-xs font-semibold"
                 >
-                  Enter Baseline Manually
+                  {t('soil.enterBaselineManually')}
                 </button>
               </div>
             </div>
@@ -842,12 +846,12 @@ export default function SoilIntelligence() {
                         </span>
                       </div>
                       <p className="text-xs text-stone-700 leading-relaxed">
-                        {adv.educational_interpretation}
+                        {translateDynamic(adv.educational_interpretation, currentLang)}
                       </p>
                       {adv.management_considerations?.length > 0 && (
                         <ul className="text-[11px] text-stone-600 space-y-1 list-disc list-inside">
                           {adv.management_considerations.map((c, ci) => (
-                            <li key={ci}>{c}</li>
+                            <li key={ci}>{translateDynamic(c, currentLang)}</li>
                           ))}
                         </ul>
                       )}
@@ -862,11 +866,11 @@ export default function SoilIntelligence() {
                   <h5 className="font-bold text-xs text-emerald-900">General Agronomic Principles:</h5>
                   <ul className="text-xs text-emerald-800/90 list-disc list-inside space-y-0.5">
                     {status.general_recommendations.map((rec, ri) => (
-                      <li key={ri}>{rec}</li>
+                      <li key={ri}>{translateDynamic(rec, currentLang)}</li>
                     ))}
                   </ul>
                   <p className="text-[10px] text-emerald-700 pt-1 italic">
-                    {status.agronomic_disclaimer}
+                    {translateDynamic(status.agronomic_disclaimer, currentLang)}
                   </p>
                 </div>
               </div>
@@ -931,10 +935,10 @@ export default function SoilIntelligence() {
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-[#103D2C]">
-                      Drag &amp; drop your soil report here
+                      {t('soil.dragDropText')}
                     </p>
                     <p className="text-xs text-stone-500 mt-1">
-                      or click below to choose a file from your computer
+                      {t('soil.dropzoneSubtext')}
                     </p>
                   </div>
                   <div>
@@ -943,7 +947,7 @@ export default function SoilIntelligence() {
                       onClick={() => fileInputRef.current?.click()}
                       className="bg-[#103D2C] hover:bg-[#17643E] text-white px-5 py-2 rounded-xl text-xs font-bold inline-flex items-center gap-2 cursor-pointer transition-colors shadow-sm"
                     >
-                      <Upload className="w-4 h-4" /> Choose File
+                      <Upload className="w-4 h-4" /> {t('soil.browseFiles')}
                     </button>
                   </div>
                   <p className="text-[11px] text-stone-400 font-medium">
@@ -1026,7 +1030,7 @@ export default function SoilIntelligence() {
                       className="bg-[#103D2C] hover:bg-[#17643E] disabled:bg-stone-400 text-white px-6 py-2 rounded-xl text-xs font-bold inline-flex items-center gap-2 cursor-pointer shadow-sm transition-colors"
                     >
                       <Sparkles className={`w-4 h-4 ${(uploadPhase === 'uploading' || uploadPhase === 'processing' || uploadPhase === 'validation') ? 'animate-spin' : ''}`} />
-                      {(uploadPhase === 'uploading' || uploadPhase === 'processing' || uploadPhase === 'validation') ? 'Processing Document...' : 'Upload & Parse Document'}
+                      {(uploadPhase === 'uploading' || uploadPhase === 'processing' || uploadPhase === 'validation') ? t('soil.analyzingReport') : t('soil.uploadAndAnalyze')}
                     </button>
                     <button
                       type="button"
@@ -1123,7 +1127,7 @@ export default function SoilIntelligence() {
               <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-stone-100 pb-3">
                 <div>
                   <h4 className="font-bold text-sm text-[#103D2C] uppercase tracking-wider">
-                    Extracted Soil Parameters & Range Validation
+                    {t('soil.extractedParameters')}
                   </h4>
                   <p className="text-xs text-stone-500 mt-0.5">
                     Confidence: <strong>{(parsedDoc.confidence_score * 100).toFixed(1)}%</strong> • Sample ID: <strong className="text-stone-700">{parsedDoc.report_id || 'Not detected'}</strong> • Date: <strong className="text-stone-700">{parsedDoc.sample_date || 'Not detected'}</strong>
@@ -1133,7 +1137,7 @@ export default function SoilIntelligence() {
                 <div className="flex items-center gap-2">
                   {parsedDoc.requires_human_review ? (
                     <span className="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 border border-amber-300">
-                      <AlertTriangle className="w-3.5 h-3.5" /> Agronomist Review Required
+                      <AlertTriangle className="w-3.5 h-3.5" /> {t('soil.manualReviewRequired')}
                     </span>
                   ) : (
                     <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 border border-emerald-300">
@@ -1145,7 +1149,7 @@ export default function SoilIntelligence() {
                     onClick={populateBaselineFromOCR}
                     className="bg-[#DDA74A] hover:bg-[#C9963E] text-[#103D2C] px-3 py-1 rounded-lg text-xs font-bold"
                   >
-                    Transfer to Baseline
+                    {t('soil.confirmAsBaseline')}
                   </button>
                 </div>
               </div>

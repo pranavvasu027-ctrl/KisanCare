@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { translateDynamic } from '../../i18n/translateHelper';
 import { useNavigate } from 'react-router-dom';
 import {
   Map as MapIcon, Leaf, Droplets, Thermometer, Wind, AlertTriangle, Layers,
@@ -55,6 +57,8 @@ function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }
 }
 
 export default function DigitalTwin() {
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'en';
   const navigate = useNavigate();
   const [farmsList, setFarmsList] = useState<any[]>([]);
   const [selectedFarmId, setSelectedFarmId] = useState<string>('');
@@ -156,7 +160,7 @@ export default function DigitalTwin() {
         </div>
         <h2 className="text-2xl font-serif font-bold text-[#103D2C]">No Farm Profile Found</h2>
         <p className="text-[#292B26]/70 text-sm max-w-md">
-          To explore the interactive Digital Twin map and micro-climate telemetry, create your first farm parcel in My Farms.
+          To explore the interactive {t('digitalTwin.title')} map and micro-climate telemetry, create your first farm parcel in My Farms.
         </p>
         <button
           onClick={() => navigate('/farm-setup')}
@@ -174,7 +178,7 @@ export default function DigitalTwin() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-serif font-bold text-[#103D2C]">Farm Digital Twin</h1>
+            <h1 className="text-3xl font-serif font-bold text-[#103D2C]">Farm {t('digitalTwin.title')}</h1>
             {farmData?.is_mock ? (
               <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-amber-300">
                 Mock Telemetry
@@ -273,7 +277,7 @@ export default function DigitalTwin() {
           {loading ? (
             <div className="absolute inset-0 z-20 bg-white/80 backdrop-blur-xs flex flex-col items-center justify-center">
               <Loader2 className="w-8 h-8 animate-spin text-[#103D2C] mb-2" />
-              <span className="text-xs font-medium text-[#292B26]/70">Loading Farm Digital Twin Map...</span>
+              <span className="text-xs font-medium text-[#292B26]/70">Loading Farm {t('digitalTwin.title')} Map...</span>
             </div>
           ) : null}
 

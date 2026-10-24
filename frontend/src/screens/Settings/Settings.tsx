@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   User, Settings as SettingsIcon, Globe, Ruler, Bell, Shield,
   LogOut, Save, CheckCircle2, AlertCircle, Loader2, Database, Laptop
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../services/supabase';
+import { changeLanguage, SupportedLanguage } from '../../i18n';
 
 interface LocalPreferences {
   areaUnit: 'acre' | 'hectare' | 'guntha' | 'bigha';
@@ -24,11 +26,14 @@ const DEFAULT_PREFERENCES: LocalPreferences = {
 export default function Settings() {
   const navigate = useNavigate();
   const { user, session, isDemoMode, signOut } = useAuth();
+  const { t, i18n } = useTranslation();
   const isAuthenticated = Boolean(user);
 
   // Profile data (Supabase 'profiles' table)
   const [farmerName, setFarmerName] = useState('Pranav Vasu');
-  const [preferredLanguage, setPreferredLanguage] = useState('en');
+  const [preferredLanguage, setPreferredLanguage] = useState<SupportedLanguage>(
+    (['en', 'mr', 'hi'].includes(i18n.language) ? i18n.language : 'en') as SupportedLanguage
+  );
   const [phoneNumber, setPhoneNumber] = useState('+91 98765 43210');
 
   // Preferences (Client localStorage)
@@ -38,6 +43,13 @@ export default function Settings() {
   const [isSaving, setIsSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Sync preferredLanguage if i18n language changed outside
+  useEffect(() => {
+    if (['en', 'mr', 'hi'].includes(i18n.language)) {
+      setPreferredLanguage(i18n.language as SupportedLanguage);
+    }
+  }, [i18n.language]);
 
   // Load preferences from localStorage and profile from Supabase on mount
   useEffect(() => {
@@ -75,15 +87,22 @@ export default function Settings() {
 
       if (data) {
         if (data.name) setFarmerName(data.name);
-        if (data.preferred_language) setPreferredLanguage(data.preferred_language);
+        if (data.preferred_language && ['en', 'mr', 'hi'].includes(data.preferred_language)) {
+          setPreferredLanguage(data.preferred_language as SupportedLanguage);
+        }
         if (data.phone) setPhoneNumber(data.phone);
       }
     } catch (err: any) {
-      console.error('Unexpected error loading profile:', err);
-      setErrorMessage(`Error: ${err.message || String(err)}`);
+      console.error('Exception loading profile:', err);
+      setErrorMessage(`Error fetching profile from Supabase: ${err.message || String(err)}`);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleLanguageSelect = (lang: SupportedLanguage) => {
+    setPreferredLanguage(lang);
+    changeLanguage(lang);
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -91,38 +110,32 @@ export default function Settings() {
     setErrorMessage(null);
     setStatusMessage(null);
 
-    // Validation
     const trimmedName = farmerName.trim();
-    if (!trimmedName || trimmedName.length < 2) {
-      setErrorMessage('Farmer profile name must be at least 2 characters long.');
-      return;
-    }
-
-    const supportedLanguages = ['en', 'hi', 'mr'];
-    if (!supportedLanguages.includes(preferredLanguage)) {
-      setErrorMessage('Selected language is not supported. Please select English, Hindi, or Marathi.');
-      return;
-    }
-
     const trimmedPhone = phoneNumber.trim();
-    if (trimmedPhone) {
-      const numericDigits = trimmedPhone.replace(/[^0-9]/g, '');
-      if (numericDigits.length < 10 || numericDigits.length > 15) {
-        setErrorMessage('Phone number must contain between 10 and 15 digits (e.g. +91 98765 43210).');
-        return;
-      }
+
+    if (!trimmedName) {
+      setErrorMessage('Farmer name cannot be blank.');
+      return;
     }
 
-    // 1. Save local preferences (Client localStorage Persistence)
+    // Change language in application
+    changeLanguage(preferredLanguage);
+
+    // 1. Persist local preferences & language to browser storage
     try {
-      localStorage.setItem('kisancare_user_preferences', JSON.stringify(preferences));
+      const payload = {
+        ...preferences,
+        preferredLanguage
+      };
+      localStorage.setItem('kisancare_user_preferences', JSON.stringify(payload));
+      localStorage.setItem('kisanCareLanguage', preferredLanguage);
     } catch {
       // Local storage disabled or full
     }
 
     // 2. If unauthenticated / demo mode
     if (!user || !isAuthenticated) {
-      setStatusMessage('Preferences updated for active demo session (Saved to browser storage). Sign in to persist profile to Supabase.');
+      setStatusMessage(t('settings.profileSaved'));
       setTimeout(() => setStatusMessage(null), 5000);
       return;
     }
@@ -142,7 +155,7 @@ export default function Settings() {
 
       if (profileErr) throw profileErr;
 
-      setStatusMessage('Profile and preferences successfully saved to Supabase and browser settings!');
+      setStatusMessage(t('settings.profileSaved'));
       setTimeout(() => setStatusMessage(null), 5000);
     } catch (err: any) {
       console.error('Failed to save profile:', err);
@@ -157,7 +170,6 @@ export default function Settings() {
     setStatusMessage(null);
     try {
       await signOut();
-      // Verify session termination
       const { data: sessionData } = await supabase.auth.getSession();
       if (sessionData?.session) {
         setErrorMessage('Sign out failed: active session is still present on the server.');
@@ -175,10 +187,10 @@ export default function Settings() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-serif font-bold text-[#103D2C]">Account Settings</h1>
+            <h1 className="text-3xl font-serif font-bold text-[#103D2C]">{t('settings.title')}</h1>
             {(!isAuthenticated || isDemoMode) ? (
               <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-amber-300">
-                Demo Profile
+                {t('settings.demoAccount')}
               </span>
             ) : (
               <span className="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-emerald-300 flex items-center gap-1">
@@ -188,7 +200,7 @@ export default function Settings() {
             )}
           </div>
           <p className="text-[#292B26]/70 mt-1">
-            Manage your farmer profile, display languages, unit conventions, and account security.
+            {t('settings.subtitle')}
           </p>
         </div>
 
@@ -197,14 +209,14 @@ export default function Settings() {
           className="bg-white hover:bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-lg font-medium text-xs sm:text-sm flex items-center gap-2 transition-colors cursor-pointer shadow-xs"
         >
           <LogOut size={16} />
-          <span>{isAuthenticated ? 'Sign Out' : 'Exit to Login'}</span>
+          <span>{isAuthenticated ? t('settings.signOut') : t('nav.logout')}</span>
         </button>
       </div>
 
       {isLoading && (
         <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-xl text-xs flex items-center gap-2">
           <Loader2 className="w-4 h-4 text-blue-600 animate-spin shrink-0" />
-          <span>Loading farmer profile from database...</span>
+          <span>{t('common.loading')}</span>
         </div>
       )}
 
@@ -227,7 +239,7 @@ export default function Settings() {
         <div className="bg-white rounded-2xl shadow-sm border border-[#E5DDCF] p-6 space-y-4">
           <div className="flex items-center justify-between border-b border-[#E5DDCF] pb-3">
             <h2 className="text-lg font-bold text-[#103D2C] flex items-center gap-2">
-              <User size={18} className="text-[#17643E]" /> Farmer Profile
+              <User size={18} className="text-[#17643E]" /> {t('settings.accountSettings')}
             </h2>
             <span className="text-[11px] font-medium text-[#292B26]/60 flex items-center gap-1">
               <Database size={11} /> Persisted to Supabase (profiles)
@@ -236,7 +248,7 @@ export default function Settings() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-[#292B26] mb-1">Farmer Full Name</label>
+              <label className="block text-xs font-semibold text-[#292B26] mb-1">{t('settings.farmerName')}</label>
               <input
                 type="text"
                 value={farmerName}
@@ -247,7 +259,7 @@ export default function Settings() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#292B26] mb-1">Phone Number (Optional)</label>
+              <label className="block text-xs font-semibold text-[#292B26] mb-1">{t('settings.phoneNumber')}</label>
               <input
                 type="tel"
                 value={phoneNumber}
@@ -263,7 +275,7 @@ export default function Settings() {
         <div className="bg-white rounded-2xl shadow-sm border border-[#E5DDCF] p-6 space-y-4">
           <div className="flex items-center justify-between border-b border-[#E5DDCF] pb-3">
             <h2 className="text-lg font-bold text-[#103D2C] flex items-center gap-2">
-              <Globe size={18} className="text-[#17643E]" /> Localization & Measurement Units
+              <Globe size={18} className="text-[#17643E]" /> {t('settings.localization')}
             </h2>
             <span className="text-[11px] font-medium text-[#292B26]/60 flex items-center gap-1">
               <Laptop size={11} /> Stored in browser preferences
@@ -272,48 +284,48 @@ export default function Settings() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-[#292B26] mb-1">Preferred Language</label>
+              <label className="block text-xs font-semibold text-[#292B26] mb-1">{t('settings.preferredLanguage')}</label>
               <select
                 value={preferredLanguage}
-                onChange={(e) => setPreferredLanguage(e.target.value)}
-                className="w-full border border-[#E5DDCF] bg-[#FBF7EF] rounded-lg px-3 py-2 text-sm text-[#103D2C] font-medium focus:outline-none focus:border-[#17643E]"
+                onChange={(e) => handleLanguageSelect(e.target.value as SupportedLanguage)}
+                className="w-full border border-[#E5DDCF] bg-[#FBF7EF] rounded-lg px-3 py-2 text-sm text-[#103D2C] font-medium focus:outline-none focus:border-[#17643E] cursor-pointer"
               >
-                <option value="en">English (Default)</option>
-                <option value="hi">हिंदी (Hindi)</option>
+                <option value="en">English (English)</option>
                 <option value="mr">मराठी (Marathi)</option>
+                <option value="hi">हिंदी (Hindi)</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#292B26] mb-1">Land Area Unit</label>
+              <label className="block text-xs font-semibold text-[#292B26] mb-1">{t('settings.landAreaUnit')}</label>
               <select
                 value={preferences.areaUnit}
                 onChange={(e) => setPreferences({ ...preferences, areaUnit: e.target.value as any })}
                 className="w-full border border-[#E5DDCF] bg-[#FBF7EF] rounded-lg px-3 py-2 text-sm text-[#103D2C] font-medium focus:outline-none focus:border-[#17643E]"
               >
-                <option value="acre">Acres (Standard)</option>
-                <option value="hectare">Hectares</option>
-                <option value="guntha">Gunthas (33x33 ft)</option>
-                <option value="bigha">Bighas</option>
+                <option value="acre">{t('common.acres')} (Standard)</option>
+                <option value="hectare">{t('common.hectares')}</option>
+                <option value="guntha">{t('common.gunthas')} (33x33 ft)</option>
+                <option value="bigha">{t('common.bighas')}</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#292B26] mb-1">Crop Yield Weight Unit</label>
+              <label className="block text-xs font-semibold text-[#292B26] mb-1">{t('settings.cropYieldUnit')}</label>
               <select
                 value={preferences.weightUnit}
                 onChange={(e) => setPreferences({ ...preferences, weightUnit: e.target.value as any })}
                 className="w-full border border-[#E5DDCF] bg-[#FBF7EF] rounded-lg px-3 py-2 text-sm text-[#103D2C] font-medium focus:outline-none focus:border-[#17643E]"
               >
-                <option value="qtl">Quintals (100 kg)</option>
-                <option value="ton">Metric Tons (1,000 kg)</option>
-                <option value="kg">Kilograms (kg)</option>
+                <option value="qtl">{t('common.qtl')} (100 kg)</option>
+                <option value="ton">{t('common.ton')} (1,000 kg)</option>
+                <option value="kg">{t('common.kg')} (kg)</option>
               </select>
             </div>
           </div>
         </div>
 
-        {/* Notifications & System Info */}
+        {/* Advisory Alerts */}
         <div className="bg-white rounded-2xl shadow-sm border border-[#E5DDCF] p-6 space-y-4">
           <div className="flex items-center justify-between border-b border-[#E5DDCF] pb-3">
             <h2 className="text-lg font-bold text-[#103D2C] flex items-center gap-2">
@@ -369,7 +381,7 @@ export default function Settings() {
             className="bg-[#103D2C] hover:bg-[#17643E] text-white px-6 py-2.5 rounded-lg font-medium text-sm flex items-center gap-2 transition-colors cursor-pointer shadow-sm disabled:opacity-50"
           >
             {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-            <span>{isSaving ? 'Saving Preferences...' : 'Save Settings'}</span>
+            <span>{isSaving ? t('common.saving') : t('settings.savePreferences')}</span>
           </button>
         </div>
       </form>

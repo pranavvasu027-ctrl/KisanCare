@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { translateDynamic } from '../../i18n/translateHelper';
 import { useNavigate } from 'react-router-dom';
 import {
   Calendar, Sprout, TrendingUp, Plus, Trash2, Edit3, X,
@@ -159,6 +161,8 @@ const DEFAULT_SAMPLE_SEASONS: HistoricalSeason[] = [
 ];
 
 export default function FarmMemory() {
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'en';
   const navigate = useNavigate();
   const { user } = useAuth();
   const isAuthenticated = Boolean(user);

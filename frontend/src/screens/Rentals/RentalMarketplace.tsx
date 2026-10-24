@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { translateDynamic } from '../../i18n/translateHelper';
 import { useSearchParams } from 'react-router-dom';
 import {
   Tractor, Wrench, Truck, Users, Search, Filter, MapPin, Calendar,
@@ -34,6 +36,8 @@ export type MarketplaceSection =
   | 'owner_dashboard';
 
 export default function RentalMarketplace() {
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'en';
   const [searchParams, setSearchParams] = useSearchParams();
   const initialSection = (searchParams.get('tab') as MarketplaceSection) || 'discover';
 
@@ -117,17 +121,17 @@ export default function RentalMarketplace() {
 
   // Section navigation tabs
   const sections = [
-    { id: 'discover', label: '1. Discover Rentals', icon: <Layers size={14} /> },
-    { id: 'equipment', label: '2. Equipment', icon: <Wrench size={14} /> },
-    { id: 'tractors', label: '3. Tractors & Machinery', icon: <Tractor size={14} /> },
-    { id: 'transport', label: '4. Trucks & Transport', icon: <Truck size={14} /> },
-    { id: 'labour', label: '5. Labour & Farm Workers', icon: <Users size={14} /> },
-    { id: 'specialists', label: '6. Specialists & Experts', icon: <GraduationCap size={14} /> },
-    { id: 'upcoming', label: '7. Upcoming Bookings', icon: <Calendar size={14} /> },
-    { id: 'active', label: '8. Active Rentals', icon: <Clock size={14} /> },
-    { id: 'history', label: '9. Rental History', icon: <CheckCircle2 size={14} /> },
-    { id: 'list_equipment', label: '10. List Equipment', icon: <PlusCircle size={14} /> },
-    { id: 'owner_dashboard', label: 'Owner Dashboard', icon: <ShieldCheck size={14} /> },
+    { id: 'discover', label: t('rentals.discoverRentals', '1. Discover Rentals'), icon: <Layers size={14} /> },
+    { id: 'equipment', label: t('rentals.equipment', '2. Equipment'), icon: <Wrench size={14} /> },
+    { id: 'tractors', label: t('rentals.tractors', '3. Tractors & Machinery'), icon: <Tractor size={14} /> },
+    { id: 'transport', label: t('rentals.transport', '4. Trucks & Transport'), icon: <Truck size={14} /> },
+    { id: 'labour', label: t('rentals.labour', '5. Labour & Farm Workers'), icon: <Users size={14} /> },
+    { id: 'specialists', label: t('rentals.specialists', '6. Specialists & Experts'), icon: <GraduationCap size={14} /> },
+    { id: 'upcoming', label: t('rentals.upcoming', '7. Upcoming Bookings'), icon: <Calendar size={14} /> },
+    { id: 'active', label: t('rentals.active', '8. Active Rentals'), icon: <Clock size={14} /> },
+    { id: 'history', label: t('rentals.history', '9. Rental History'), icon: <CheckCircle2 size={14} /> },
+    { id: 'list_equipment', label: t('rentals.listEquipment', '10. List Equipment'), icon: <PlusCircle size={14} /> },
+    { id: 'owner_dashboard', label: t('rentals.ownerDashboard', 'Owner Dashboard'), icon: <ShieldCheck size={14} /> },
   ];
 
   return (
@@ -137,15 +141,15 @@ export default function RentalMarketplace() {
         <div>
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded bg-[#103D2C] text-[#FBF7EF]">
-              Uber for Agriculture • Vidarbha Hub
+              {t('rentals.hubBadge', 'Uber for Agriculture • Vidarbha Hub')}
             </span>
-            <span className="text-xs text-[#103D2C]/70">Akola, Maharashtra</span>
+            <span className="text-xs text-[#103D2C]/70">{t('rentals.locationBadge', 'Akola, Maharashtra')}</span>
           </div>
           <h1 className="text-3xl font-serif font-bold text-[#103D2C] mt-2">
-            Agricultural Rental Marketplace
+            {t('rentals.title', 'Agricultural Rental Marketplace')}
           </h1>
           <p className="text-xs text-[#292B26]/80 mt-1 max-w-2xl">
-            Rent verified tractors, precision seed drills, boom sprayers, transport trucks, and farm labour crews at authentic local market rates.
+            {t('rentals.subtitle', 'Rent verified tractors, precision seed drills, boom sprayers, transport trucks, and farm labour crews at authentic local market rates.')}
           </p>
         </div>
 
@@ -155,7 +159,7 @@ export default function RentalMarketplace() {
             <MapPin size={20} />
           </div>
           <div>
-            <div className="text-[10px] uppercase font-bold text-gray-400">Current Farm Context</div>
+            <div className="text-[10px] uppercase font-bold text-gray-400">{t('rentals.currentFarmContext', 'Current Farm Context')}</div>
             <div className="font-bold text-[#103D2C]">{activeFarm?.name || 'Green Acres'} • {cropName} ({acreage} Acres)</div>
             <div className="text-[11px] text-gray-500">{farmLocation}</div>
           </div>
@@ -209,6 +213,7 @@ export default function RentalMarketplace() {
             selectedDivision={selectedDivision}
             selectedDistrict={selectedDistrict}
             selectedTaluka={selectedTaluka}
+            language={currentLang}
             onLocationChange={({ division, district, taluka }) => {
               setSelectedDivision(division);
               setSelectedDistrict(district);
@@ -225,7 +230,7 @@ export default function RentalMarketplace() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by equipment, tractor HP, implement, or labour task..."
+                  placeholder={t('rentals.searchPlaceholder', 'Search by machinery name, model, attachment, or provider...')}
                   className="w-full pl-9 pr-4 py-2.5 bg-[#FBF7EF] border border-[#E5DDCF] rounded-xl text-xs font-semibold text-[#103D2C] focus:outline-none focus:ring-2 focus:ring-[#17643E]"
                 />
                 <Search size={16} className="absolute left-3 top-3 text-gray-400" />
@@ -442,7 +447,7 @@ export default function RentalMarketplace() {
                             onClick={() => setSelectedListingForBooking(item)}
                             className="bg-[#103D2C] hover:bg-[#17643E] text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all flex items-center gap-1 shadow-sm hover:scale-105"
                           >
-                            <span>Book Now</span>
+                            <span>{t('rentals.bookNow', 'Book Now')}</span>
                             <ChevronRight size={14} />
                           </button>
                         </div>

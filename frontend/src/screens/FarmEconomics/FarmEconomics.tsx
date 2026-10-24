@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { translateDynamic } from '../../i18n/translateHelper';
 import { IndianRupee, TrendingUp, TrendingDown, PieChart, BarChart, Loader2, AlertCircle } from 'lucide-react';
 import { api } from '../../services/api';
 
 export default function FarmEconomics() {
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'en';
   const [expectedYield, setExpectedYield] = useState<number>(50);
   const [expectedPrice, setExpectedPrice] = useState<number>(8000);
   const [inputCost, setInputCost] = useState<number>(31010);
@@ -48,18 +52,18 @@ export default function FarmEconomics() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-serif font-bold text-[#103D2C]">Farm Economics</h1>
+            <h1 className="text-3xl font-serif font-bold text-[#103D2C]">{t('economics.title')}</h1>
             {isDemo ? (
               <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-amber-300">
-                Sample Economics Data
+                {t('economics.sampleBadge')}
               </span>
             ) : (
               <span className="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-emerald-300">
-                Live Economics Engine
+                {t('economics.liveBadge')}
               </span>
             )}
           </div>
-          <p className="text-[#292B26]/70 mt-1">Track costs, expected revenue, and overall profitability.</p>
+          <p className="text-[#292B26]/70 mt-1">{t('economics.subtitle')}</p>
         </div>
       </div>
 
@@ -67,7 +71,7 @@ export default function FarmEconomics() {
       <div className="bg-amber-50 border border-amber-300 rounded-2xl p-5 text-amber-900 shadow-sm space-y-2">
         <div className="flex items-center justify-between">
           <span className="bg-amber-200 text-amber-900 text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded">
-            Recorded Cost Ambiguities &amp; Disclosures
+            {t('economics.ambiguityTitle')}
           </span>
           <span className="text-xs text-amber-800 font-semibold">Farmer: Pranav Vasu &bull; Cotton 2026&ndash;27</span>
         </div>
@@ -97,7 +101,7 @@ export default function FarmEconomics() {
         <h3 className="font-bold text-sm text-[#103D2C] uppercase tracking-wider mb-4">Economic Model Parameters</h3>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <div>
-            <label className="block text-xs font-medium text-[#292B26] mb-1">Expected Yield (Quintals)</label>
+            <label className="block text-xs font-medium text-[#292B26] mb-1">{t('economics.expectedYieldLabel')}</label>
             <input
               type="number"
               min="1"
@@ -107,7 +111,7 @@ export default function FarmEconomics() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#292B26] mb-1">Expected Price (₹/Qtl)</label>
+            <label className="block text-xs font-medium text-[#292B26] mb-1">{t('economics.expectedPriceLabel')}</label>
             <input
               type="number"
               min="100"
@@ -118,7 +122,7 @@ export default function FarmEconomics() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#292B26] mb-1">Inputs Cost (₹)</label>
+            <label className="block text-xs font-medium text-[#292B26] mb-1">{t('economics.inputCostLabel')}</label>
             <input
               type="number"
               min="0"
@@ -129,7 +133,7 @@ export default function FarmEconomics() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#292B26] mb-1">Labour Cost (₹)</label>
+            <label className="block text-xs font-medium text-[#292B26] mb-1">{t('economics.labourCostLabel')}</label>
             <input
               type="number"
               min="0"
@@ -140,7 +144,7 @@ export default function FarmEconomics() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#292B26] mb-1">Irrigation Cost (₹)</label>
+            <label className="block text-xs font-medium text-[#292B26] mb-1">{t('economics.irrigationCostLabel')}</label>
             <input
               type="number"
               min="0"
@@ -156,7 +160,7 @@ export default function FarmEconomics() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-[#E5DDCF]">
           <div className="flex items-center justify-between mb-1">
-            <p className="text-xs font-bold text-[#B6532A] uppercase tracking-wider">Recorded Expenses</p>
+            <p className="text-xs font-bold text-[#B6532A] uppercase tracking-wider">{t('economics.totalCost')}</p>
             <span className="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded">Ambiguities Pending</span>
           </div>
           <div className="text-3xl font-bold text-[#B6532A] mb-1">
@@ -169,7 +173,7 @@ export default function FarmEconomics() {
 
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-[#E5DDCF]">
           <div className="flex items-center justify-between mb-1">
-            <p className="text-xs font-bold text-[#17643E] uppercase tracking-wider">Benchmark Revenue</p>
+            <p className="text-xs font-bold text-[#17643E] uppercase tracking-wider">{t('economics.grossRevenue')}</p>
             <span className="text-[10px] bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded">Market Benchmark</span>
           </div>
           <div className="text-3xl font-bold text-[#17643E] mb-1">

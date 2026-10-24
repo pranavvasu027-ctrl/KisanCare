@@ -1,5 +1,7 @@
 import { supabase } from '../services/supabase';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { changeLanguage } from '../i18n';
 import {
   Leaf, TrendingUp, ShieldCheck, Droplets, Sprout, BarChart2,
   Phone, Lock, EyeOff, Eye, User, Users, MapPin,
@@ -331,7 +333,7 @@ export default function Onboarding({ onComplete }: { onComplete?: () => void }) 
                     return (
                       <div
                         key={lang.id}
-                        onClick={() => setLanguage(lang.id)}
+                        onClick={() => { setLanguage(lang.id); changeLanguage(lang.id === 'Marathi' ? 'mr' : lang.id === 'Hindi' ? 'hi' : 'en'); }}
                         className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
                           isSelected ? 'border-[#164B35] bg-[#F2E8D5] shadow-sm' : 'border-[#E5DDCF] bg-white hover:border-[#A8C69A]'
                         }`}

@@ -42,31 +42,9 @@ router = APIRouter(prefix="/rentals", tags=["Rental Marketplace"])
 
 
 def _extract_user_id(authorization: Optional[str] = Header(None)) -> Optional[str]:
-    """Extract authenticated user_id from Bearer token."""
-    if not authorization or not authorization.startswith("Bearer "):
-        return None
-    token = authorization.split("Bearer ", 1)[1].strip()
-    if not token:
-        return None
-
-    url = os.environ.get("SUPABASE_URL")
-    anon_key = os.environ.get("SUPABASE_ANON_KEY") or os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
-    if url and anon_key:
-        try:
-            from supabase import create_client
-            sb = create_client(url, anon_key)
-            u = sb.auth.get_user(token)
-            if u and u.user:
-                return str(u.user.id)
-        except Exception:
-            pass
-
-    try:
-        import jwt
-        decoded = jwt.decode(token, options={"verify_signature": False})
-        return decoded.get("sub") or decoded.get("user_id")
-    except Exception:
-        return None
+    """Extract authenticated and cryptographically verified user_id from Bearer token."""
+    from backend.app.core.auth import extract_verified_user_id
+    return extract_verified_user_id(authorization, required=False)
 
 
 

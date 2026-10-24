@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   FileText, Upload, Search, Download, Trash2, Filter,
@@ -58,6 +59,8 @@ const DEMO_DOCUMENTS: DocumentItem[] = [
 ];
 
 export default function Documents() {
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'en';
   const { user, isDemoMode } = useAuth();
   const isAuthenticated = Boolean(user);
 
@@ -310,7 +313,7 @@ export default function Documents() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-serif font-bold text-[#103D2C]">Farm Documents</h1>
+            <h1 className="text-3xl font-serif font-bold text-[#103D2C]">{t('documents.title')}</h1>
             {(!isAuthenticated || isDemoMode) ? (
               <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-amber-300">
                 Demo Repository
@@ -323,7 +326,7 @@ export default function Documents() {
             )}
           </div>
           <p className="text-[#292B26]/70 mt-1">
-            Store, organize, and view soil test cards, land records, water quality reports, and scheme documents.
+            {t('documents.subtitle')}
           </p>
         </div>
 
@@ -353,7 +356,7 @@ export default function Documents() {
             className="bg-[#103D2C] hover:bg-[#17643E] text-white px-4 py-2 rounded-lg font-medium text-xs sm:text-sm flex items-center gap-2 transition-colors cursor-pointer disabled:opacity-50"
           >
             {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-            <span>{isUploading ? 'Uploading...' : 'Upload Document'}</span>
+            <span>{isUploading ? t('common.loading') : t('documents.uploadDocument')}</span>
           </button>
         </div>
       </div>
@@ -427,12 +430,12 @@ export default function Documents() {
             <table className="w-full text-left text-xs sm:text-sm">
               <thead className="bg-[#FBF7EF] text-[#103D2C] border-b border-[#E5DDCF] uppercase text-[11px] font-bold tracking-wider">
                 <tr>
-                  <th className="py-3.5 px-4">Document</th>
-                  <th className="py-3.5 px-4">Category</th>
-                  <th className="py-3.5 px-4">Size</th>
-                  <th className="py-3.5 px-4">Date</th>
+                  <th className="py-3.5 px-4">{t('documents.docName')}</th>
+                  <th className="py-3.5 px-4">{t('documents.docType')}</th>
+                  <th className="py-3.5 px-4">{t('documents.fileSize')}</th>
+                  <th className="py-3.5 px-4">{t('documents.uploadDate')}</th>
                   <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-4 text-right">Actions</th>
+                  <th className="py-3.5 px-4 text-right">{t('documents.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E5DDCF]">

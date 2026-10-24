@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   FlaskConical, Sprout, Store, ExternalLink, AlertTriangle,
-  CheckCircle2, Info, Loader2, ArrowLeft, RefreshCw, ShoppingCart,
+  Info, Loader2, ArrowLeft, ShoppingCart,
   MapPin, Phone, ShieldAlert, Sparkles, Scale
 } from 'lucide-react';
 import {
   api,
   FertilizerAdvisoryInput,
   FertilizerAdvisoryResult,
-  FertilizerStoreItem,
-  AmazonProductLinkItem
 } from '../../services/api';
+import { translateDynamic } from '../../i18n/translateHelper';
 
 const CROPS_LIST = [
   { value: 'Corn', label: 'Corn (Maize) — Core Model Class' },
@@ -28,6 +28,8 @@ const CROPS_LIST = [
 ];
 
 export default function FertilizerAdvisory() {
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'en';
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -35,7 +37,7 @@ export default function FertilizerAdvisory() {
   const navState = (location.state || {}) as { crop?: string; disease?: string; location?: string };
 
   const [crop, setCrop] = useState<string>(navState.crop || 'Corn');
-  const [diseaseContext, setDiseaseContext] = useState<string | null>(navState.disease || null);
+  const [diseaseContext] = useState<string | null>(navState.disease || null);
   const [fieldSize, setFieldSize] = useState<number>(1.0);
   const [targetYield, setTargetYield] = useState<number>(3600.0);
 
@@ -112,13 +114,15 @@ export default function FertilizerAdvisory() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-serif font-bold text-[#103D2C]">Fertilizer & Soil Nutrition</h1>
+            <h1 className="text-3xl font-serif font-bold text-[#103D2C]">
+              {t('fertilizer.title', 'Fertilizer & Soil Nutrition')}
+            </h1>
             <span className="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-emerald-300 flex items-center gap-1">
-              <Sparkles size={12} /> Real ML Random Forest
+              <Sparkles size={12} /> {t('fertilizer.realMlBadge', 'Real ML Random Forest')}
             </span>
           </div>
           <p className="text-[#292B26]/70 mt-1">
-            Soil-evidence nutrient forecasting, commercial dose formulation, and local store discovery.
+            {t('fertilizer.subtitle', 'Soil-evidence nutrient forecasting, commercial dose formulation, and local store discovery.')}
           </p>
         </div>
 
@@ -127,7 +131,7 @@ export default function FertilizerAdvisory() {
             onClick={() => navigate('/disease')}
             className="text-xs text-[#103D2C] hover:text-[#17643E] font-medium flex items-center gap-1.5 bg-[#FBF7EF] border border-[#E5DDCF] px-3 py-1.5 rounded-lg cursor-pointer transition-colors"
           >
-            <ArrowLeft size={14} /> Back to Disease Scan
+            <ArrowLeft size={14} /> {t('fertilizer.backToDisease', 'Back to Disease Scan')}
           </button>
         )}
       </div>
@@ -137,12 +141,18 @@ export default function FertilizerAdvisory() {
         <div className="bg-amber-50 border border-amber-300 text-amber-900 p-4 rounded-xl text-xs flex items-start gap-3 shadow-xs">
           <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <span className="font-bold text-sm block">Pre-filled from Recent Leaf Pathology Scan:</span>
+            <span className="font-bold text-sm block">
+              {t('fertilizer.diseaseBannerTitle', 'Pre-filled from Recent Leaf Pathology Scan:')}
+            </span>
             <p className="leading-relaxed">
-              Detected Condition: <strong>{diseaseContext}</strong> for crop <strong>{crop}</strong>.
+              {t('fertilizer.diseaseBannerDetected', {
+                disease: translateDynamic(diseaseContext, currentLang),
+                crop: translateDynamic(crop, currentLang)
+              })}
             </p>
             <p className="text-[11px] text-amber-800 leading-relaxed">
-              <strong>Clinical Guardrail:</strong> Soil nutrition and disease treatment are independent operations. Applying fertilizers does not cure fungal or viral foliar infections; ensure separate CIB&RC or IPM controls are maintained as diagnosed.
+              <strong>{t('fertilizer.clinicalGuardrailTitle', 'Clinical Guardrail:')}</strong>{' '}
+              {t('fertilizer.clinicalGuardrailDesc', 'Soil nutrition and disease treatment are independent operations. Applying fertilizers does not cure fungal or viral foliar infections; ensure separate CIB&RC or IPM controls are maintained as diagnosed.')}
             </p>
           </div>
         </div>
@@ -154,14 +164,14 @@ export default function FertilizerAdvisory() {
         <div className="lg:col-span-5 bg-white rounded-2xl shadow-sm border border-[#E5DDCF] p-5 space-y-4">
           <div className="flex justify-between items-center border-b border-[#E5DDCF]/60 pb-3">
             <h3 className="font-bold text-[#103D2C] flex items-center gap-2 text-sm uppercase tracking-wider">
-              <FlaskConical size={16} className="text-[#17643E]" /> Soil & Field Parameters
+              <FlaskConical size={16} className="text-[#17643E]" /> {t('fertilizer.soilFieldParameters', 'Soil & Field Parameters')}
             </h3>
             <button
               type="button"
               onClick={handleLoadSampleSoilCard}
               className="text-[11px] text-[#17643E] hover:underline font-semibold cursor-pointer"
             >
-              Load Akola Sample Soil Data
+              {t('fertilizer.loadSampleData', 'Load Akola Sample Soil Data')}
             </button>
           </div>
 
@@ -169,7 +179,7 @@ export default function FertilizerAdvisory() {
             {/* Crop Selector */}
             <div>
               <label className="text-xs font-semibold text-[#292B26] block mb-1">
-                Target Crop <span className="text-red-500">*</span>
+                {t('fertilizer.targetCrop', 'Target Crop')} <span className="text-red-500">*</span>
               </label>
               <select
                 value={crop}
@@ -177,7 +187,9 @@ export default function FertilizerAdvisory() {
                 className="w-full text-xs p-2.5 rounded-lg border border-[#E5DDCF] bg-[#FBF7EF] focus:ring-1 focus:ring-[#103D2C] outline-hidden cursor-pointer"
               >
                 {CROPS_LIST.map((c) => (
-                  <option key={c.value} value={c.value}>{c.label}</option>
+                  <option key={c.value} value={c.value}>
+                    {translateDynamic(c.value, currentLang)} — {c.label.split('—')[1]?.trim() || c.label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -186,7 +198,7 @@ export default function FertilizerAdvisory() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs font-semibold text-[#292B26] block mb-1">
-                  Field Area (ha)
+                  {t('fertilizer.fieldAreaHa', 'Field Area (ha)')}
                 </label>
                 <input
                   type="number"
@@ -199,7 +211,7 @@ export default function FertilizerAdvisory() {
               </div>
               <div>
                 <label className="text-xs font-semibold text-[#292B26] block mb-1">
-                  Target Yield (kg/ha)
+                  {t('fertilizer.targetYieldKgHa', 'Target Yield (kg/ha)')}
                 </label>
                 <input
                   type="number"
@@ -215,11 +227,13 @@ export default function FertilizerAdvisory() {
             {/* Soil Health Card Measurements */}
             <div className="pt-2 border-t border-[#E5DDCF]/60">
               <span className="text-[11px] font-bold text-[#103D2C] uppercase tracking-wider block mb-2">
-                Soil Health Card (SHC) Lab Values:
+                {t('fertilizer.soilHealthCardValues', 'Soil Health Card (SHC) Lab Values:')}
               </span>
               <div className="grid grid-cols-2 gap-2.5 text-xs">
                 <div>
-                  <label className="text-[11px] font-medium text-[#292B26]/80 block">Soil pH (water)</label>
+                  <label className="text-[11px] font-medium text-[#292B26]/80 block">
+                    {t('fertilizer.phWater', 'Soil pH (water)')}
+                  </label>
                   <input
                     type="number"
                     step="0.1"
@@ -231,7 +245,9 @@ export default function FertilizerAdvisory() {
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-medium text-[#292B26]/80 block">Organic Carbon (g/kg)</label>
+                  <label className="text-[11px] font-medium text-[#292B26]/80 block">
+                    {t('fertilizer.organicCarbon', 'Organic Carbon (g/kg)')}
+                  </label>
                   <input
                     type="number"
                     step="0.5"
@@ -242,7 +258,9 @@ export default function FertilizerAdvisory() {
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-medium text-[#292B26]/80 block">Total Nitrogen (g/kg)</label>
+                  <label className="text-[11px] font-medium text-[#292B26]/80 block">
+                    {t('fertilizer.totalNitrogen', 'Total Nitrogen (g/kg)')}
+                  </label>
                   <input
                     type="number"
                     step="0.1"
@@ -253,7 +271,9 @@ export default function FertilizerAdvisory() {
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-medium text-[#292B26]/80 block">Avail. Phosphorus (mg/kg)</label>
+                  <label className="text-[11px] font-medium text-[#292B26]/80 block">
+                    {t('fertilizer.availablePhosphorus', 'Avail. Phosphorus (mg/kg)')}
+                  </label>
                   <input
                     type="number"
                     step="0.1"
@@ -264,7 +284,9 @@ export default function FertilizerAdvisory() {
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-medium text-[#292B26]/80 block">Exch. Potassium (mmol/kg)</label>
+                  <label className="text-[11px] font-medium text-[#292B26]/80 block">
+                    {t('fertilizer.exchangeablePotassium', 'Exch. Potassium (mmol/kg)')}
+                  </label>
                   <input
                     type="number"
                     step="0.1"
@@ -275,7 +297,9 @@ export default function FertilizerAdvisory() {
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-medium text-[#292B26]/80 block">Soil Moisture (%)</label>
+                  <label className="text-[11px] font-medium text-[#292B26]/80 block">
+                    {t('fertilizer.soilMoisture', 'Soil Moisture (%)')}
+                  </label>
                   <input
                     type="number"
                     step="1"
@@ -292,11 +316,13 @@ export default function FertilizerAdvisory() {
             {/* Locality Matching */}
             <div className="pt-2 border-t border-[#E5DDCF]/60">
               <span className="text-[11px] font-bold text-[#103D2C] uppercase tracking-wider block mb-2 flex items-center gap-1">
-                <MapPin size={13} className="text-[#17643E]" /> Farmer Locality (Store Matching):
+                <MapPin size={13} className="text-[#17643E]" /> {t('fertilizer.farmerLocality', 'Farmer Locality (Store Matching):')}
               </span>
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="text-[10px] font-medium text-[#292B26]/70 block">District</label>
+                  <label className="text-[10px] font-medium text-[#292B26]/70 block">
+                    {t('fertilizer.district', 'District')}
+                  </label>
                   <input
                     type="text"
                     value={district}
@@ -305,7 +331,9 @@ export default function FertilizerAdvisory() {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-medium text-[#292B26]/70 block">Village/Town</label>
+                  <label className="text-[10px] font-medium text-[#292B26]/70 block">
+                    {t('fertilizer.villageTown', 'Village/Town')}
+                  </label>
                   <input
                     type="text"
                     value={locality}
@@ -314,7 +342,9 @@ export default function FertilizerAdvisory() {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-medium text-[#292B26]/70 block">PIN Code</label>
+                  <label className="text-[10px] font-medium text-[#292B26]/70 block">
+                    {t('fertilizer.pinCode', 'PIN Code')}
+                  </label>
                   <input
                     type="text"
                     value={pinCode}
@@ -334,12 +364,12 @@ export default function FertilizerAdvisory() {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Evaluating Random Forest Regressors...</span>
+                  <span>{t('fertilizer.calculating', 'Evaluating Random Forest Regressors...')}</span>
                 </>
               ) : (
                 <>
                   <Scale size={15} />
-                  <span>Calculate Real ML Fertilizer Dosage</span>
+                  <span>{t('fertilizer.calculateButton', 'Calculate Real ML Fertilizer Dosage')}</span>
                 </>
               )}
             </button>
@@ -352,7 +382,7 @@ export default function FertilizerAdvisory() {
             <div className="bg-red-50 border border-red-300 text-red-900 p-4 rounded-xl text-xs flex items-start gap-2">
               <ShieldAlert className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
               <div>
-                <span className="font-bold block">Model Evaluation Failed</span>
+                <span className="font-bold block">{t('fertilizer.evaluationFailed', 'Model Evaluation Failed')}</span>
                 <p>{errorMessage}</p>
               </div>
             </div>
@@ -361,9 +391,11 @@ export default function FertilizerAdvisory() {
           {loading ? (
             <div className="bg-white rounded-2xl border border-[#E5DDCF] p-12 text-center flex flex-col items-center justify-center min-h-[380px]">
               <Loader2 className="w-10 h-10 text-[#17643E] animate-spin mb-3" />
-              <h4 className="font-bold text-[#103D2C] text-base">Running Scikit-Learn Model Inference</h4>
+              <h4 className="font-bold text-[#103D2C] text-base">
+                {t('fertilizer.runningInference', 'Running Scikit-Learn Model Inference')}
+              </h4>
               <p className="text-xs text-[#292B26]/60 mt-1 max-w-sm">
-                Transforming soil chemistry vectors through ColumnTransformer and evaluating 10 Random Forest regression targets (DNgigi/FertiliserApplication)...
+                {t('fertilizer.inferenceDesc', 'Transforming soil chemistry vectors through ColumnTransformer and evaluating 10 Random Forest regression targets (DNgigi/FertiliserApplication)...')}
               </p>
             </div>
           ) : result ? (
@@ -372,7 +404,7 @@ export default function FertilizerAdvisory() {
               <div className="bg-amber-50/80 border border-amber-300 text-amber-900 p-3.5 rounded-xl text-xs space-y-1">
                 <div className="flex items-center gap-1.5 font-bold text-amber-950">
                   <AlertTriangle size={15} className="text-amber-700" />
-                  <span>Experimental Status & Agricultural Disclaimer:</span>
+                  <span>{t('fertilizer.experimentalDisclaimer', 'Experimental Status & Agricultural Disclaimer:')}</span>
                 </div>
                 <p className="text-[11px] leading-relaxed text-amber-900/90">
                   {result.validation_notice}
@@ -382,13 +414,15 @@ export default function FertilizerAdvisory() {
                 </div>
               </div>
 
-              {/* Warnings from model adapter (e.g. crop out of distribution or alkaline vertisol) */}
+              {/* Warnings from model adapter */}
               {result.warnings && result.warnings.length > 0 && (
                 <div className="bg-neutral-50 border border-neutral-300 p-3 rounded-xl text-xs space-y-1">
-                  <span className="font-bold text-[#103D2C] block">Model Observations:</span>
+                  <span className="font-bold text-[#103D2C] block">
+                    {t('fertilizer.modelObservations', 'Model Observations:')}
+                  </span>
                   <ul className="list-disc pl-4 space-y-0.5 text-[11px] text-[#292B26]/80">
                     {result.warnings.map((w, i) => (
-                      <li key={i}>{w}</li>
+                      <li key={i}>{translateDynamic(w, currentLang)}</li>
                     ))}
                   </ul>
                 </div>
@@ -397,18 +431,20 @@ export default function FertilizerAdvisory() {
               {/* Predicted Pure Nutrient Requirements */}
               <div className="bg-white rounded-2xl border border-[#E5DDCF] p-5 shadow-xs space-y-3">
                 <h4 className="font-bold text-[#103D2C] text-sm uppercase tracking-wider flex items-center gap-2">
-                  <Sparkles size={16} className="text-[#17643E]" /> Real ML Predicted Nutrient Requirements
+                  <Sparkles size={16} className="text-[#17643E]" /> {t('fertilizer.predictedNutrients', 'Real ML Predicted Nutrient Requirements')}
                 </h4>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {result.nutrient_requirements.map((nr, idx) => (
                     <div key={idx} className="bg-[#FBF7EF] p-3 rounded-xl border border-[#E5DDCF] space-y-1">
-                      <span className="text-[11px] font-bold text-[#292B26]/70 block">{nr.nutrient}</span>
+                      <span className="text-[11px] font-bold text-[#292B26]/70 block">
+                        {translateDynamic(nr.nutrient, currentLang)}
+                      </span>
                       <div className="text-xl font-bold text-[#103D2C]">
                         {nr.quantity} <span className="text-xs font-normal text-[#292B26]/60">{nr.unit}</span>
                       </div>
                       {nr.application_stage && (
                         <span className="text-[10px] text-[#17643E] font-medium block leading-tight">
-                          {nr.application_stage}
+                          {translateDynamic(nr.application_stage, currentLang)}
                         </span>
                       )}
                     </div>
@@ -420,18 +456,24 @@ export default function FertilizerAdvisory() {
               {result.commercial_recommendations && result.commercial_recommendations.length > 0 && (
                 <div className="bg-white rounded-2xl border border-[#E5DDCF] p-5 shadow-xs space-y-3">
                   <h4 className="font-bold text-[#103D2C] text-sm uppercase tracking-wider flex items-center gap-2">
-                    <Scale size={16} className="text-[#17643E]" /> Commercial Product Formulations
+                    <Scale size={16} className="text-[#17643E]" /> {t('fertilizer.commercialFormulations', 'Commercial Product Formulations')}
                   </h4>
                   <div className="space-y-2.5">
                     {result.commercial_recommendations.map((cr, idx) => (
                       <div key={idx} className="bg-[#FBF7EF] p-3 rounded-xl border border-[#E5DDCF] flex flex-col sm:flex-row justify-between sm:items-center gap-2 text-xs">
                         <div>
-                          <span className="font-bold text-sm text-[#103D2C] block">{cr.fertilizer_name}</span>
-                          <span className="text-[11px] text-[#292B26]/60 block">{cr.grade} • {cr.application_timing}</span>
+                          <span className="font-bold text-sm text-[#103D2C] block">
+                            {translateDynamic(cr.fertilizer_name, currentLang)}
+                          </span>
+                          <span className="text-[11px] text-[#292B26]/60 block">
+                            {cr.grade} • {translateDynamic(cr.application_timing, currentLang)}
+                          </span>
                         </div>
                         <div className="text-right sm:shrink-0 bg-white px-3 py-1.5 rounded-lg border border-[#E5DDCF]">
                           <span className="text-base font-bold text-[#B6532A]">{cr.dose_kg_ha} kg/ha</span>
-                          <span className="text-[10px] text-[#292B26]/60 block">~{cr.bags_50kg_per_ha} bags/ha</span>
+                          <span className="text-[10px] text-[#292B26]/60 block">
+                            {t('fertilizer.bagsPerHa', { bags: cr.bags_50kg_per_ha })}
+                          </span>
                         </div>
                       </div>
                     ))}
@@ -443,10 +485,10 @@ export default function FertilizerAdvisory() {
               <div className="bg-white rounded-2xl border border-[#E5DDCF] p-5 shadow-xs space-y-4">
                 <div className="flex justify-between items-center">
                   <h4 className="font-bold text-[#103D2C] text-sm uppercase tracking-wider flex items-center gap-2">
-                    <Store size={16} className="text-[#17643E]" /> Nearby Fertilizer Retailers (Demo Catalog)
+                    <Store size={16} className="text-[#17643E]" /> {t('fertilizer.nearbyRetailers', 'Nearby Fertilizer Retailers (Demo Catalog)')}
                   </h4>
                   <span className="bg-neutral-100 text-[#292B26]/70 text-[10px] px-2 py-0.5 rounded font-mono">
-                    Locality: {district}
+                    {t('fertilizer.locality', { district })}
                   </span>
                 </div>
 
@@ -462,7 +504,9 @@ export default function FertilizerAdvisory() {
                               store.locality_match_level === 'same_pincode' ? 'bg-blue-100 text-blue-800' :
                               'bg-amber-100 text-amber-800'
                             }`}>
-                              {store.locality_match_level.replace('_', ' ')}
+                              {store.locality_match_level === 'same_village' ? t('fertilizer.sameVillage', 'Same Village') :
+                               store.locality_match_level === 'same_pincode' ? t('fertilizer.samePincode', 'Same PIN Code') :
+                               t('fertilizer.sameDistrict', 'Same District')}
                             </span>
                           </div>
                           <span className="text-[11px] text-[#292B26]/70 block mt-0.5">
@@ -479,7 +523,9 @@ export default function FertilizerAdvisory() {
                       <div className="pt-2 border-t border-[#E5DDCF]/50 flex flex-wrap gap-2 text-[11px]">
                         {store.available_products.map((p, i) => (
                           <div key={i} className="bg-white px-2.5 py-1 rounded-md border border-[#E5DDCF] flex items-center gap-2">
-                            <span className="font-medium text-[#292B26]">{p.product_name}</span>
+                            <span className="font-medium text-[#292B26]">
+                              {translateDynamic(p.product_name, currentLang)}
+                            </span>
                             <span className="font-bold text-[#103D2C]">₹{p.mock_price_inr}</span>
                             <span className="text-[9px] text-[#292B26]/50">({p.unit})</span>
                           </div>
@@ -499,13 +545,15 @@ export default function FertilizerAdvisory() {
                 <div className="bg-white rounded-2xl border border-[#E5DDCF] p-5 shadow-xs space-y-3">
                   <div className="flex justify-between items-center">
                     <h4 className="font-bold text-[#103D2C] text-sm uppercase tracking-wider flex items-center gap-2">
-                      <ShoppingCart size={16} className="text-[#17643E]" /> Online Product Discovery (Amazon.in)
+                      <ShoppingCart size={16} className="text-[#17643E]" /> {t('fertilizer.onlineDiscovery', 'Online Product Discovery (Amazon.in)')}
                     </h4>
-                    <span className="text-[10px] text-[#292B26]/60">Verified Direct Search Links</span>
+                    <span className="text-[10px] text-[#292B26]/60">
+                      {t('fertilizer.verifiedSearchLinks', 'Verified Direct Search Links')}
+                    </span>
                   </div>
 
                   <p className="text-[11px] text-[#292B26]/70 leading-relaxed">
-                    Official Creators API credentials are kept server-side; when live APIs are unconfigured, direct search query links to Amazon.in agricultural supplies are provided. No artificial prices or simulated stock are claimed.
+                    {t('fertilizer.amazonDesc', 'Official Creators API credentials are kept server-side; when live APIs are unconfigured, direct search query links to Amazon.in agricultural supplies are provided. No artificial prices or simulated stock are claimed.')}
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
@@ -519,10 +567,10 @@ export default function FertilizerAdvisory() {
                       >
                         <div>
                           <span className="font-bold text-[#103D2C] group-hover:text-[#17643E] block">
-                            {item.product_name}
+                            {translateDynamic(item.product_name, currentLang)}
                           </span>
                           <span className="text-[10px] text-[#292B26]/60 block">
-                            Search: &ldquo;{item.search_query}&rdquo;
+                            {t('fertilizer.searchQuery', { query: item.search_query })}
                           </span>
                         </div>
                         <ExternalLink size={14} className="text-[#17643E] shrink-0" />
@@ -531,7 +579,7 @@ export default function FertilizerAdvisory() {
                   </div>
 
                   <div className="text-[10px] text-[#292B26]/50 italic pt-1">
-                    Notice: Prices, delivery fees, and stock on Amazon.in fluctuate. Always check seller reputation, formulation purity, and delivery estimates before placing orders.
+                    {t('fertilizer.amazonNotice', 'Notice: Prices, delivery fees, and stock on Amazon.in fluctuate. Always check seller reputation, formulation purity, and delivery estimates before placing orders.')}
                   </div>
                 </div>
               )}
@@ -539,9 +587,11 @@ export default function FertilizerAdvisory() {
           ) : (
             <div className="bg-white rounded-2xl border border-[#E5DDCF] p-12 text-center flex flex-col items-center justify-center min-h-[380px]">
               <Sprout className="w-12 h-12 text-[#A8C69A] mb-3" />
-              <h4 className="font-bold text-[#103D2C] text-base">Awaiting Soil Parameters</h4>
+              <h4 className="font-bold text-[#103D2C] text-base">
+                {t('fertilizer.awaitingParameters', 'Awaiting Soil Parameters')}
+              </h4>
               <p className="text-xs text-[#292B26]/60 max-w-sm mt-1">
-                Enter your target crop, yield expectation, and Soil Health Card lab parameters on the left to compute real ML fertilizer recommendations and discover matching local Krishi Kendras.
+                {t('fertilizer.awaitingDesc', 'Enter your target crop, yield expectation, and Soil Health Card lab parameters on the left to compute real ML fertilizer recommendations and discover matching local Krishi Kendras.')}
               </p>
             </div>
           )}
