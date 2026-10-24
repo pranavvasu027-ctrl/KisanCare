@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { translateDynamic } from '../../i18n/translateHelper';
+import { WorkflowStepper } from '../../components/workflow/WorkflowStepper';
+import { WorkflowFooter } from '../../components/workflow/WorkflowFooter';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -20,8 +22,6 @@ import { useAuth } from '../../hooks/useAuth';
 
 import { supabase } from '../../services/supabase';
 
-
-
 interface FieldOption {
 
   id: string;
@@ -33,8 +33,6 @@ interface FieldOption {
   crop: string;
 
 }
-
-
 
 interface CropRecommendationItem {
 
@@ -74,8 +72,6 @@ interface CropRecommendationItem {
 
 }
 
-
-
 const MAHARASHTRA_DISTRICTS = [
 
   'Nashik', 'Pune', 'Nagpur', 'Amravati', 'Chhatrapati Sambhajinagar',
@@ -92,8 +88,6 @@ const MAHARASHTRA_DISTRICTS = [
 
 ];
 
-
-
 export default function CropRecommendation() {
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language || 'en';
@@ -103,8 +97,6 @@ export default function CropRecommendation() {
   const { user } = useAuth();
 
   const isAuthenticated = Boolean(user);
-
-
 
   // Workflow Step 1: Farm and Field Selection
 
@@ -118,8 +110,6 @@ export default function CropRecommendation() {
 
   const [selectedFieldId, setSelectedFieldId] = useState<string>('field-1');
 
-
-
   // Workflow Step 2 & 3: Soil Information & NPK Values
 
   const [soilType, setSoilType] = useState('Black Cotton Soil / Medium Clay');
@@ -132,8 +122,6 @@ export default function CropRecommendation() {
 
   const [potassium, setPotassium] = useState<number>(43);
 
-
-
   // Workflow Step 4: Weather & Climate Telemetry
 
   const [temperature, setTemperature] = useState<number>(26.0);
@@ -141,8 +129,6 @@ export default function CropRecommendation() {
   const [humidity, setHumidity] = useState<number>(70.0);
 
   const [rainfall, setRainfall] = useState<number>(720.0);
-
-
 
   // Regional Dimensions
 
@@ -153,8 +139,6 @@ export default function CropRecommendation() {
   const [waterAvailability, setWaterAvailability] = useState<'Low' | 'Medium' | 'High'>('Medium');
 
   const [regionalWarning, setRegionalWarning] = useState<string | null>(null);
-
-
 
   // Workflow Step 5: Recommendation Request & Output
 
@@ -182,8 +166,6 @@ export default function CropRecommendation() {
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-
-
   // Workflow Step 7 & 8: Selected Crop & Nutrient Guidance
 
   const [selectedCrop, setSelectedCrop] = useState<CropRecommendationItem | null>(null);
@@ -200,8 +182,6 @@ export default function CropRecommendation() {
 
   const [loadingNutrients, setLoadingNutrients] = useState(false);
 
-
-
   // Load fields from Supabase when authenticated
 
   useEffect(() => {
@@ -213,8 +193,6 @@ export default function CropRecommendation() {
     }
 
   }, [user, isAuthenticated]);
-
-
 
   const loadUserFields = async (userId: string) => {
 
@@ -231,8 +209,6 @@ export default function CropRecommendation() {
         .limit(1)
 
         .maybeSingle();
-
-
 
       if (farmData && Array.isArray(farmData.fields) && farmData.fields.length > 0) {
 
@@ -262,8 +238,6 @@ export default function CropRecommendation() {
 
   };
 
-
-
   // Initial recommendation run on mount
 
   useEffect(() => {
@@ -271,8 +245,6 @@ export default function CropRecommendation() {
     fetchRecommendations();
 
   }, []);
-
-
 
   const validateInputs = (): string | null => {
 
@@ -294,8 +266,6 @@ export default function CropRecommendation() {
 
   };
 
-
-
   const fetchRecommendations = async () => {
 
     const valErr = validateInputs();
@@ -308,15 +278,11 @@ export default function CropRecommendation() {
 
     }
 
-
-
     setLoading(true);
 
     setErrorMessage(null);
 
     setRegionalWarning(null);
-
-
 
     try {
 
@@ -348,11 +314,7 @@ export default function CropRecommendation() {
 
       });
 
-
-
       setIsDemo(response.isDemo);
-
-
 
       let recs: CropRecommendationItem[] = [];
 
@@ -372,13 +334,9 @@ export default function CropRecommendation() {
 
           const reg = typeof item.region_score === 'number' ? item.region_score : item.regional_score;
 
-
-
           const isRegionallySupported = item.is_regionally_supported !== false;
 
           const evidenceTier = item.evidence_tier || (isRegionallySupported ? `Verified in ${district}` : `{t('crop.biophysicalOnly')} (Unverified in ${district})`);
-
-
 
           return {
 
@@ -446,8 +404,6 @@ export default function CropRecommendation() {
 
       }
 
-
-
       setRecommendations(recs);
 
       if (recs.length > 0) {
@@ -463,8 +419,6 @@ export default function CropRecommendation() {
         setNutrientAssessment(null);
 
       }
-
-
 
       if (response.raw) {
 
@@ -536,8 +490,6 @@ export default function CropRecommendation() {
 
   };
 
-
-
   const handleSelectCrop = (cropItem: CropRecommendationItem) => {
 
     setSelectedCrop(cropItem);
@@ -546,15 +498,12 @@ export default function CropRecommendation() {
 
   };
 
-
-
   const selectedField = fields.find((f) => f.id === selectedFieldId) || fields[0];
-
-
 
   return (
 
     <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-6">
+      <WorkflowStepper currentStageId={2} />
 
       {/* Header */}
 
@@ -596,8 +545,6 @@ export default function CropRecommendation() {
 
         </div>
 
-
-
         <button
 
           onClick={fetchRecommendations}
@@ -616,8 +563,6 @@ export default function CropRecommendation() {
 
       </div>
 
-
-
       {errorMessage && (
 
         <div className="bg-red-50 border border-red-300 text-red-900 px-4 py-3 rounded-xl text-xs flex items-center gap-2 shadow-xs">
@@ -629,8 +574,6 @@ export default function CropRecommendation() {
         </div>
 
       )}
-
-
 
       {regionalWarning && (
 
@@ -649,8 +592,6 @@ export default function CropRecommendation() {
         </div>
 
       )}
-
-
 
       {/* WORKFLOW BAR: Step 1 to 4 Input Context */}
 
@@ -671,8 +612,6 @@ export default function CropRecommendation() {
           </span>
 
         </div>
-
-
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
 
@@ -706,8 +645,6 @@ export default function CropRecommendation() {
 
           </div>
 
-
-
           {/* Step 2: District */}
 
           <div>
@@ -733,8 +670,6 @@ export default function CropRecommendation() {
             </select>
 
           </div>
-
-
 
           {/* Step 3: Planned Season */}
 
@@ -764,8 +699,6 @@ export default function CropRecommendation() {
 
           </div>
 
-
-
           {/* Step 4: Water Availability */}
 
           <div>
@@ -794,8 +727,6 @@ export default function CropRecommendation() {
 
         </div>
 
-
-
         {/* Soil Chemistry & Weather Telemetry (7 Model Inputs) */}
 
         <div className="pt-3 border-t border-[#E5DDCF]/80 space-y-3">
@@ -811,8 +742,6 @@ export default function CropRecommendation() {
             <span className="text-[10px] text-[#292B26]/60">{t('crop.reviewFeatures')}</span>
 
           </div>
-
-
 
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 text-xs">
 
@@ -840,8 +769,6 @@ export default function CropRecommendation() {
 
             </div>
 
-
-
             <div>
 
               <label className="block text-[#292B26]/70 text-[10px] font-semibold mb-0.5">{t('crop.phosphorus')}</label>
@@ -866,8 +793,6 @@ export default function CropRecommendation() {
 
             </div>
 
-
-
             <div>
 
               <label className="block text-[#292B26]/70 text-[10px] font-semibold mb-0.5">{t('crop.potassium')}</label>
@@ -891,8 +816,6 @@ export default function CropRecommendation() {
               <span className="text-[9px] text-[#292B26]/50 block text-center mt-0.5">0–300 kg/ha</span>
 
             </div>
-
-
 
             <div>
 
@@ -920,8 +843,6 @@ export default function CropRecommendation() {
 
             </div>
 
-
-
             <div>
 
               <label className="block text-[#292B26]/70 text-[10px] font-semibold mb-0.5">{t('crop.meanTemp')}</label>
@@ -948,8 +869,6 @@ export default function CropRecommendation() {
 
             </div>
 
-
-
             <div>
 
               <label className="block text-[#292B26]/70 text-[10px] font-semibold mb-0.5">{t('crop.humidity')}</label>
@@ -973,8 +892,6 @@ export default function CropRecommendation() {
               <span className="text-[9px] text-[#292B26]/50 block text-center mt-0.5">% (10–100)</span>
 
             </div>
-
-
 
             <div>
 
@@ -1005,8 +922,6 @@ export default function CropRecommendation() {
         </div>
 
       </div>
-
-
 
       {/* Main Grid: Recommendations & Selected Crop Nutrient Guidance */}
 
@@ -1043,8 +958,6 @@ export default function CropRecommendation() {
               )}
 
             </div>
-
-
 
             {recommendations.length > 0 && (
 
@@ -1096,8 +1009,6 @@ export default function CropRecommendation() {
 
           </div>
 
-
-
           {/* Model Score Interpretation Banner */}
 
           <div className="bg-[#FBF7EF] border border-[#E5DDCF] rounded-xl p-3.5 text-xs text-[#292B26]/75 flex items-start gap-2.5">
@@ -1117,8 +1028,6 @@ export default function CropRecommendation() {
             </div>
 
           </div>
-
-
 
           {loading ? (
 
@@ -1244,8 +1153,6 @@ export default function CropRecommendation() {
 
                         </div>
 
-
-
                         {/* Tags */}
 
                         <div className="flex flex-wrap gap-1.5 mt-1.5">
@@ -1271,8 +1178,6 @@ export default function CropRecommendation() {
                       </div>
 
                     </div>
-
-
 
                     <div className="text-right shrink-0">
 
@@ -1306,8 +1211,6 @@ export default function CropRecommendation() {
 
                   </div>
 
-
-
                   {/* Reasons & Soil Considerations */}
 
                   <div className="mt-3 text-xs text-[#292B26]/80 space-y-1">
@@ -1325,8 +1228,6 @@ export default function CropRecommendation() {
                     ))}
 
                   </div>
-
-
 
                   {/* Decomposed Scores & Water Advisory Strip */}
 
@@ -1398,8 +1299,6 @@ export default function CropRecommendation() {
 
           )}
 
-
-
           {/* Filtered Out Candidates Explanation */}
 
           {filteredOutCandidates.length > 0 && (
@@ -1432,8 +1331,6 @@ export default function CropRecommendation() {
 
         </div>
 
-
-
         {/* Right Column: Step 8 - Crop-Specific Nutrient Guidance (Task 3) */}
 
         <div className="space-y-4">
@@ -1458,8 +1355,6 @@ export default function CropRecommendation() {
 
             </div>
 
-
-
             {selectedCrop ? (
 
               <div className="space-y-4">
@@ -1479,8 +1374,6 @@ export default function CropRecommendation() {
                   </span>
 
                 </div>
-
-
 
                 {/* Soil Nutrient Deficiencies from Backend Model */}
 
@@ -1544,8 +1437,6 @@ export default function CropRecommendation() {
 
                 </div>
 
-
-
                 {/* Integration Boundary Notice for Codex */}
 
                 <div className="bg-[#FBF7EF] border border-[#E5DDCF] p-3.5 rounded-xl text-[11px] text-[#292B26]/70 space-y-1.5">
@@ -1564,13 +1455,11 @@ export default function CropRecommendation() {
 
                 </div>
 
-
-
                 <div className="pt-2">
 
                   <button
 
-                    onClick={() => navigate('/farm-economics')}
+                    onClick={() => navigate('/economics')}
 
                     className="w-full bg-[#103D2C] hover:bg-[#17643E] text-white py-2 px-4 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
 
@@ -1602,9 +1491,31 @@ export default function CropRecommendation() {
 
       </div>
 
-    </div>
+    
+      <WorkflowFooter
+        currentStageNumber={2}
+        currentStageName="Crop Planning & Selection"
+        completedActionMessage={
+          selectedCrop
+            ? `Selected ${selectedCrop.crop}! Compare side-by-side or proceed to in-season management.`
+            : recommendations.length > 0
+              ? "Recommendations generated! Review candidates or compare side-by-side."
+              : null
+        }
+        prevStep={{ label: "Soil Intelligence", path: "/soil" }}
+        nextStep={{
+          label: "Crop Comparison",
+          labelMr: "पीक तुलना",
+          path: "/crop-comparison",
+          description: "Compare candidate crops side-by-side on yield, revenue, and costs"
+        }}
+        alternativeNextStep={{
+          label: "Run What-If Simulator",
+          path: "/simulator"
+        }}
+      />
+</div>
 
   );
 
 }
-

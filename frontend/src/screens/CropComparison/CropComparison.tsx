@@ -1,7 +1,9 @@
-import { useTranslation } from 'react-i18next';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Leaf, TrendingUp, Droplets, ShieldAlert, BarChart2 } from 'lucide-react';
+import { WorkflowStepper } from '../../components/workflow/WorkflowStepper';
+import { WorkflowFooter } from '../../components/workflow/WorkflowFooter';
 import { translateDynamic } from '../../i18n/translateHelper';
 
 export default function CropComparison() {
@@ -11,6 +13,8 @@ export default function CropComparison() {
 
   return (
     <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-6">
+      <WorkflowStepper currentStageId={2} />
+
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center gap-2">
@@ -89,6 +93,23 @@ export default function CropComparison() {
           <div className="p-5 text-center text-[#B6532A] font-medium">{t('cropComparison.riskModerate')}</div>
         </div>
       </div>
+
+      <WorkflowFooter
+        currentStageNumber={2}
+        currentStageName="Crop Planning & Selection"
+        completedActionMessage="Crop comparison evaluated! Proceed to What-If scenario simulation or setup in-season irrigation management."
+        prevStep={{ label: "Crop Recommendations", path: "/crop-recommendation" }}
+        nextStep={{
+          label: "In-Season Irrigation & Climate",
+          labelMr: "हंगामी निगा",
+          path: "/irrigation",
+          description: "Monitor real-time weather risks and irrigation schedules"
+        }}
+        alternativeNextStep={{
+          label: "Run What-If Simulator",
+          path: "/simulator"
+        }}
+      />
     </div>
   );
 }

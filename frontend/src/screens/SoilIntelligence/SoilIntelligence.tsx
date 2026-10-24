@@ -7,6 +7,9 @@ import {
   TrendingUp, TrendingDown, Layers, ExternalLink, Eye, Check, X,
   ChevronRight, Info, Lock, AlertCircle, FileCheck, FileUp, Trash2
 } from 'lucide-react';
+import { api } from '../../services/api';
+import { WorkflowStepper } from '../../components/workflow/WorkflowStepper';
+import { WorkflowFooter } from '../../components/workflow/WorkflowFooter';
 import {
   soilIntelligenceApi,
   PlotStatusResponse,
@@ -469,6 +472,7 @@ export default function SoilIntelligence() {
 
   return (
     <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-6">
+      <WorkflowStepper currentStageId={1} />
       {/* Header Banner */}
       <div className="bg-[#103D2C] rounded-2xl p-6 text-white shadow-md relative overflow-hidden">
         <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-[#17643E]/40 to-transparent pointer-events-none" />
@@ -487,6 +491,7 @@ export default function SoilIntelligence() {
               </div>
             </div>
           </div>
+
 
           <div className="flex flex-wrap items-center gap-3">
             <div className="bg-[#072B1E] px-3 py-1.5 rounded-xl border border-emerald-800/60 flex items-center gap-2">
@@ -519,12 +524,36 @@ export default function SoilIntelligence() {
                 <Download className={`w-3.5 h-3.5 ${pdfDownloading ? 'animate-spin' : ''}`} />
                 {pdfDownloading ? 'Generating PDF...' : t('soil.downloadPdf')}
               </button>
+
             )}
           </div>
         </div>
       </div>
 
-      {/* Notifications */}
+
+      {/* VISUAL BANNER WITH SOIL ROOTS PHOTOGRAPHY */}
+      <div className="relative rounded-2xl overflow-hidden shadow-sm border border-[#E6ECE3] min-h-[140px] flex items-center p-6 bg-[#072F22]">
+        <img
+          src="/images/soil-roots.jpg"
+          alt="Soil organic structure and root profile"
+          className="absolute inset-0 w-full h-full object-cover opacity-70"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#05261B]/95 via-[#083827]/75 to-transparent"></div>
+        <div className="relative z-10 text-white max-w-xl">
+          <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-300 block mb-1">
+            Maha AgriStack &bull; Soil Health &amp; Laboratory Analysis
+          </span>
+          <h2 className="text-xl font-heading font-extrabold text-white">
+            Takli Bu Parcel &bull; Regur Deep Black Soil
+          </h2>
+          <p className="text-xs text-emerald-100/90 mt-1 leading-relaxed">
+            High moisture-retention clay loam matrix with organic matter analysis. Lab tested and verified against ICAR soil fertility indices.
+          </p>
+        </div>
+      </div>
+
+
+            {/* Notifications */}
       {successMessage && (
         <div className="bg-emerald-50 border border-emerald-300 text-emerald-900 px-4 py-3 rounded-xl text-xs flex items-center justify-between shadow-sm animate-fade-in">
           <div className="flex items-center gap-2">
@@ -534,6 +563,7 @@ export default function SoilIntelligence() {
           <button onClick={() => setSuccessMessage(null)} className="text-emerald-700 hover:text-emerald-900">
             <X className="w-4 h-4" />
           </button>
+
         </div>
       )}
 
@@ -543,11 +573,13 @@ export default function SoilIntelligence() {
           <span className="bg-amber-200 text-amber-900 text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded">
             {t('soil.farmerObservationTitle')}
           </span>
+
           <span className="text-xs text-amber-800 font-semibold">{t('soil.labPending')}</span>
+
         </div>
         <p className="text-xs leading-relaxed text-amber-900">
-          <strong>Soil Classification:</strong> Black cotton soil (&ldquo;koralvahu jamin&rdquo;), deep, flat terrain with good drainage.<br/>
-          <strong>Reported pH Range:</strong> 7.6 &ndash; 8.5 (mean 8.05 recorded; laboratory verification pending).<br/>
+          <strong>Soil Classification:</strong> Black cotton soil (&ldquo;koralvahu jamin&rdquo;), deep, flat terrain with good drainage.<br />
+          <strong>Reported pH Range:</strong> 7.6 &ndash; 8.5 (mean 8.05 recorded; laboratory verification pending).<br />
           <strong>NPK &amp; Micronutrients:</strong> Intentionally unpopulated (NULL). The farmer reports a soil test report is available and may be uploaded later. Fabricated laboratory values are strictly prohibited.
         </p>
       </div>
@@ -595,6 +627,7 @@ export default function SoilIntelligence() {
         })}
       </div>
 
+
       {/* =================================================================== */}
       {/* TAB 1: OVERVIEW & STATUS                                            */}
       {/* =================================================================== */}
@@ -611,6 +644,7 @@ export default function SoilIntelligence() {
                   </h4>
                   <span className="bg-amber-200/70 text-amber-900 text-[10px] font-mono px-2 py-0.5 rounded-full font-bold">
                     {t('soil.predictionBlocked')}
+
                   </span>
                 </div>
                 <p className="text-xs text-amber-900/90 leading-relaxed">
@@ -1806,6 +1840,7 @@ export default function SoilIntelligence() {
             )}
           </div>
         </div>
+
       )}
 
       {/* =================================================================== */}
@@ -1980,6 +2015,25 @@ export default function SoilIntelligence() {
           )}
         </div>
       )}
+
+      <WorkflowFooter
+        currentStageNumber={1}
+        currentStageName="Farm & Soil Setup"
+        completedActionMessage={status ? "Soil nutrient profile evaluated! Proceed to discover recommended crops suited to this soil." : null}
+        prevStep={{ label: "Farm Setup", path: "/farm-setup" }}
+        nextStep={{
+          label: "Crop Intelligence & Recommendations",
+          labelMr: "पीक नियोजन",
+          path: "/crop-recommendation",
+          description: "Match soil and water conditions to high-yielding crop varieties"
+        }}
+        alternativeNextStep={{
+          label: "Digital Twin",
+          path: "/digital-twin"
+        }}
+      />
+
+
     </div>
   );
 }

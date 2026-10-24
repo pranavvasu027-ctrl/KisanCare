@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { translateDynamic } from '../../i18n/translateHelper';
 import { Droplets, CloudRain, Sun, Wind, AlertTriangle, Calendar, Loader2, AlertCircle, MapPin, RefreshCw, Compass } from 'lucide-react';
 import { api } from '../../services/api';
+import { WorkflowStepper } from '../../components/workflow/WorkflowStepper';
+import { WorkflowFooter } from '../../components/workflow/WorkflowFooter';
 
 export default function IrrigationClimate() {
   const { t, i18n } = useTranslation();
@@ -98,6 +100,8 @@ export default function IrrigationClimate() {
 
   return (
     <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-6">
+      <WorkflowStepper currentStageId={3} />
+
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center gap-2">
@@ -188,9 +192,9 @@ export default function IrrigationClimate() {
           {/* WEATHER SOURCE DISCLOSURE */}
           <div className="bg-amber-50 border border-amber-300 rounded-2xl p-4 text-xs text-amber-900 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <strong>{t('irrigation.weatherSource')}</strong> {curr.data_source || 'Open-Meteo Ensemble'}<br/>
-              <strong>{t('irrigation.legalAttribution')}</strong> {curr.attribution || weatherForecast?.attribution || 'Weather data by Open-Meteo.com (CC BY 4.0)'}<br/>
-              <strong>{t('irrigation.onFarmRain')}</strong> <em>{t('irrigation.unavailableRain')}</em>
+              <strong>{t('irrigation.weatherSource', 'Meteorological Source:')}</strong> {curr.data_source || 'Open-Meteo Ensemble'}<br />
+              <strong>{t('irrigation.legalAttribution', 'Legal Attribution:')}</strong> {curr.attribution || weatherForecast?.attribution || 'Weather data by Open-Meteo.com (CC BY 4.0)'}<br />
+              <strong>{t('irrigation.onFarmRain', 'On-Farm Cumulative Rain:')}</strong> <em>{t('irrigation.unavailableRain', 'Unavailable')}</em>
             </div>
             <div className="shrink-0 flex items-center gap-2">
               {curr.is_stale && (
@@ -340,11 +344,10 @@ export default function IrrigationClimate() {
               <div className="bg-white rounded-xl border border-[#E5DDCF] p-4 mb-4 space-y-2">
                 <div className="flex justify-between items-center mb-1">
                   <span className="font-bold text-[#103D2C]">{crop} Field</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
-                    irrigationData.irrigation_required
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${irrigationData.irrigation_required
                       ? 'bg-[#B6532A]/10 text-[#B6532A]'
                       : 'bg-[#17643E]/10 text-[#17643E]'
-                  }`}>
+                    }`}>
                     {irrigationData.irrigation_required ? 'Needs Water' : 'Optimal Moisture'}
                   </span>
                 </div>
@@ -371,11 +374,10 @@ export default function IrrigationClimate() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-[#292B26]/60">Overall Risk Level:</span>
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded ${
-                    riskData.overall_risk === 'High' ? 'bg-red-100 text-red-800' :
-                    riskData.overall_risk === 'Medium' ? 'bg-orange-100 text-orange-800' :
-                    'bg-emerald-100 text-emerald-800'
-                  }`}>
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded ${riskData.overall_risk === 'High' ? 'bg-red-100 text-red-800' :
+                      riskData.overall_risk === 'Medium' ? 'bg-orange-100 text-orange-800' :
+                        'bg-emerald-100 text-emerald-800'
+                    }`}>
                     {riskData.overall_risk}
                   </span>
                 </div>
@@ -399,6 +401,23 @@ export default function IrrigationClimate() {
           </div>
         </div>
       </div>
+
+      <WorkflowFooter
+        currentStageNumber={3}
+        currentStageName="In-Season Crop Care"
+        completedActionMessage="Irrigation advisory and climate risks evaluated! Proceed to leaf disease & pest diagnosis."
+        prevStep={{ label: "Crop Planning", path: "/crop-recommendation" }}
+        nextStep={{
+          label: "Disease & Pest Detection",
+          labelMr: "रोग व कीड नियंत्रण",
+          path: "/disease",
+          description: "Diagnose visual leaf symptoms and identify verified treatments"
+        }}
+        alternativeNextStep={{
+          label: "AI Recommendations",
+          path: "/recommendations"
+        }}
+      />
     </div>
   );
 }

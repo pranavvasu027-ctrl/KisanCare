@@ -320,17 +320,15 @@ export default function BoundaryEditorModal({
             <div className="flex rounded-lg border border-[#E5DDCF] bg-[#FBF7EF] p-0.5">
               <button
                 onClick={() => setActiveLayer('osm')}
-                className={`px-2.5 py-1 rounded-md font-medium transition-all cursor-pointer ${
-                  activeLayer === 'osm' ? 'bg-[#103D2C] text-white shadow-xs' : 'text-[#292B26]/70 hover:text-[#103D2C]'
-                }`}
+                className={`px-2.5 py-1 rounded-md font-medium transition-all cursor-pointer ${activeLayer === 'osm' ? 'bg-[#103D2C] text-white shadow-xs' : 'text-[#292B26]/70 hover:text-[#103D2C]'
+                  }`}
               >
                 Street Map
               </button>
               <button
                 onClick={() => setActiveLayer('satellite')}
-                className={`px-2.5 py-1 rounded-md font-medium transition-all cursor-pointer ${
-                  activeLayer === 'satellite' ? 'bg-[#103D2C] text-white shadow-xs' : 'text-[#292B26]/70 hover:text-[#103D2C]'
-                }`}
+                className={`px-2.5 py-1 rounded-md font-medium transition-all cursor-pointer ${activeLayer === 'satellite' ? 'bg-[#103D2C] text-white shadow-xs' : 'text-[#292B26]/70 hover:text-[#103D2C]'
+                  }`}
               >
                 Satellite (Esri)
               </button>
@@ -452,13 +450,12 @@ export default function BoundaryEditorModal({
 
               {/* Status & Feedback message */}
               {feedback && (
-                <div className={`p-3 rounded-xl text-xs flex items-start gap-2 ${
-                  feedback.type === 'success'
+                <div className={`p-3 rounded-xl text-xs flex items-start gap-2 ${feedback.type === 'success'
                     ? 'bg-emerald-50 border border-emerald-300 text-emerald-900'
                     : feedback.type === 'error'
-                    ? 'bg-red-50 border border-red-300 text-red-900'
-                    : 'bg-amber-50 border border-amber-300 text-amber-900'
-                }`}>
+                      ? 'bg-red-50 border border-red-300 text-red-900'
+                      : 'bg-amber-50 border border-amber-300 text-amber-900'
+                  }`}>
                   {feedback.type === 'success' ? (
                     <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5" />
                   ) : (

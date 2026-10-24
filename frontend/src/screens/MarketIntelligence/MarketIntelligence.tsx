@@ -12,6 +12,8 @@ import {
   CartesianGrid, Tooltip, Legend
 } from 'recharts';
 import { api } from '../../services/api';
+import { WorkflowStepper } from '../../components/workflow/WorkflowStepper';
+import { WorkflowFooter } from '../../components/workflow/WorkflowFooter';
 
 type SupportedCrop = 'Cotton' | 'Soyabean' | 'Tur';
 type SupportedMarket = 'Akola' | 'Amravati' | 'Akot';
@@ -186,6 +188,9 @@ export default function MarketIntelligence() {
 
   return (
     <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-6">
+
+      <WorkflowStepper currentStageId={5} />
+
       {/* 1. TOP HEADER & CONTEXT BAR */}
       <div className="bg-white rounded-2xl p-6 border border-[#E5DDCF] shadow-sm space-y-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -217,6 +222,7 @@ export default function MarketIntelligence() {
               <span>{refreshing ? t('common.updating') : t('common.refresh')}</span>
             </button>
           </div>
+
         </div>
 
         {/* Compact status/context bar */}
@@ -775,6 +781,7 @@ export default function MarketIntelligence() {
         </div>
       </div>
 
+
       {/* 6. NEARBY MARKETS TABLE */}
       <div className="bg-white rounded-2xl p-6 border border-[#E5DDCF] shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
@@ -1023,6 +1030,24 @@ export default function MarketIntelligence() {
           </div>
         </div>
       )}
+
+      <WorkflowFooter
+        currentStageNumber={5}
+        currentStageName="Market & Post-Harvest Storage"
+        completedActionMessage={data ? `Mandi forecast loaded for ${crop} at ${market}! Next step: Calculate storage losses to plan your best selling window.` : null}
+        prevStep={{ label: "Farm Economics", path: "/economics" }}
+        nextStep={{
+          label: "Post-Harvest Storage Loss",
+          labelMr: "साठवणूक नुकसान",
+          path: "/post-harvest",
+          description: "Optimize holding period vs storage loss"
+        }}
+        alternativeNextStep={{
+          label: "Government Schemes",
+          path: "/schemes"
+        }}
+      />
+
     </div>
   );
 }
