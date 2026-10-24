@@ -6,6 +6,7 @@ import { IS_DEMO_MODE } from './config/demo';
 
 // Pages
 import Login from './screens/Auth/Login';
+import Onboarding from './screens/Onboarding';
 import Dashboard from './screens/Dashboard/Dashboard';
 import FarmSetup from './screens/FarmSetup/FarmSetup';
 import DigitalTwin from './screens/DigitalTwin/DigitalTwin';
@@ -49,6 +50,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/onboarding" element={<Onboarding />} />
 
           <Route path="/" element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
             <Route index element={<Dashboard />} />

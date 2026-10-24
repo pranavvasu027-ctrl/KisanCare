@@ -1,0 +1,1 @@
+"""KisanCare AI Copilot package."""

@@ -1,3 +1,12 @@
+# Secrets and environment configuration
+.env
+.env.*
+!.env.example
+!.env.template
+secrets/
+*.pem
+credentials.json
+
 # Python
 __pycache__/
 *.py[cod]
@@ -5,14 +14,20 @@ __pycache__/
 *.so
 .Python
 env/
-build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Packaging
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
 parts/
 sdist/
 var/
@@ -22,42 +37,50 @@ share/python-wheels/
 .installed.cfg
 *.egg
 
-# Virtual environments
-venv/
-ENV/
-env.bak/
-venv.bak/
+# Frontend dependencies and builds
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+build/
+coverage/
 
-# Jupyter Notebook
-.ipynb_checkpoints/
+# Flutter / Mobile build artifacts (Keep mobile/lib/ tracked!)
+mobile/.dart_tool/
+mobile/.idea/
+mobile/build/
+mobile/android/.gradle/
+mobile/android/local.properties
+mobile/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
 
-# Environments
-.env
-
-# OS specific
+# Local development files & IDEs
+.vscode/
+.idea/
+*.log
 .DS_Store
 Thumbs.db
+.ipynb_checkpoints/
 
-# IDEs
-.idea/
-.vscode/
+# Local databases and temporary files
+*.sqlite
+*.sqlite3
+*.db
+tmp/
+temp/
+data/temp/
 
 # Large files and datasets
-# Note: Large datasets and models should be stored in cloud storage (e.g., GCS, S3) 
-# or Git LFS, and referenced here. Do not commit large files directly.
 data/raw/*
 data/processed/*
-*.joblib
-*.pkl
 *.h5
 *.onnx
 
-# Secrets
-# Do NOT commit API keys, credentials, or secrets.
-secrets/
-*.pem
-credentials.json
+# ML Models & Artifacts default ignore, with whitelisted lightweight runtime models
+*.joblib
+!models/model6_cost_profit/artifacts/cost_model.joblib
 
-# Node
-node_modules/
-
+*.pkl
+!models/crop_recommendation/crop_recommendation_mvp_v2.pkl
+!models/crop_recommendation/preprocessing_mvp_v2.pkl
+!services/irrigation_yield_api/models/crop_yield/*.pkl
+!services/irrigation_yield_api/models/irrigation/eto/*.pkl

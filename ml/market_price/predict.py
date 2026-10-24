@@ -1,8 +1,20 @@
+from __future__ import annotations
 import os
+import re
 from pathlib import Path
-import xgboost as xgb
-import numpy as np
-import pandas as pd
+try:
+    import xgboost as xgb
+except ImportError:
+    xgb = None
+try:
+    import numpy as np
+except ImportError:
+    np = None
+
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
 from typing import Dict, Any
 from datetime import datetime, timedelta
 
@@ -21,10 +33,21 @@ class MarketPricePredictor:
 
     def _get_model_path(self, crop: str, market: str, horizon: int) -> str:
         crop_clean = crop.lower().replace(" ", "_")
-        # Handle "Pune(Pimpri)" -> "pune_pimpri"
-        market_clean = market.lower().replace("(", "_").replace(")", "").replace(" ", "_")
+        market_clean = market.lower().replace("(", "_").replace(")", "").replace(" ", "_").replace("__", "_")
         filename = f"{crop_clean}_{market_clean}_{horizon}d.json"
-        return os.path.join(self.models_dir, filename)
+        direct_path = os.path.join(self.models_dir, filename)
+        if os.path.exists(direct_path):
+            return direct_path
+        
+        # Try matching by alphanumeric stripping
+        norm_market = re.sub(r'[^a-z0-9]', '', market.lower())
+        if os.path.exists(self.models_dir):
+            for f in os.listdir(self.models_dir):
+                if f.endswith(f"_{horizon}d.json") and f.startswith(f"{crop_clean}_"):
+                    f_mid = f[len(crop_clean)+1 : -len(f"_{horizon}d.json")]
+                    if re.sub(r'[^a-z0-9]', '', f_mid) == norm_market:
+                        return os.path.join(self.models_dir, f)
+        return direct_path
 
     def _load_model(self, model_path: str) -> xgb.Booster:
         if model_path in self.loaded_models:
@@ -43,10 +66,16 @@ class MarketPricePredictor:
             raise ValueError("Historical dataset (mandi_prices.csv) not found. Forecasting requires historical ingestion.")
             
         # Filter for crop and market
-        # Note: Dataset has 'Commodity' and 'Market'
-        crop_df = self.df[(self.df['Commodity'].str.lower() == crop.lower()) & 
-                          (self.df['Market'].str.lower() == market.lower())].copy()
+        crop_mask = self.df['Commodity'].str.lower() == crop.lower()
+        market_mask = self.df['Market'].str.lower() == market.lower()
+        crop_df = self.df[crop_mask & market_mask].copy()
                           
+        if crop_df.empty:
+            # Try fuzzy/normalized match for market
+            norm_target = re.sub(r'[^a-z0-9]', '', market.lower())
+            norm_market_series = self.df['Market'].str.lower().str.replace(r'[^a-z0-9]', '', regex=True)
+            crop_df = self.df[crop_mask & (norm_market_series == norm_target)].copy()
+            
         if crop_df.empty:
             raise ValueError(f"No historical data found for {crop} at {market}.")
             
@@ -54,10 +83,12 @@ class MarketPricePredictor:
         crop_df = crop_df.sort_values('Arrival_Date').set_index('Arrival_Date')
         
         # We need continuous daily data up to the target_date
-        # Create a full date range to find missing days
         min_date = crop_df.index.min()
+        max_date = crop_df.index.max()
         if target_date < min_date:
             raise ValueError("Target date is before the available historical data.")
+        if target_date > max_date + timedelta(days=14):
+            raise ValueError(f"Insufficient recent historical data. Last available record was on {max_date.strftime('%Y-%m-%d')}. Fresh market data ingestion is required.")
             
         idx = pd.date_range(min_date, target_date)
         
