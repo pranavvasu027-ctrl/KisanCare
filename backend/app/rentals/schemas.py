@@ -144,7 +144,7 @@ class AvailabilityCheckResponse(BaseModel):
 
 class BookingCreateRequest(BaseModel):
     listing_id: str
-    farmer_id: Optional[str] = "FARMER_RAMESH_PATIL"
+    farmer_id: Optional[str] = None
     farmer_name: str
     farmer_phone: str
     
@@ -256,7 +256,7 @@ class MarketRateReference(BaseModel):
 class RentalReviewCreate(BaseModel):
     booking_id: str
     listing_id: str
-    farmer_id: Optional[str] = "FARMER_RAMESH_PATIL"
+    farmer_id: Optional[str] = None
     farmer_name: str
     rating: int = Field(..., ge=1, le=5)
     review_text: str = Field(..., min_length=3)

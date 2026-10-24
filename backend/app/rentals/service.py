@@ -87,7 +87,7 @@ class RentalMarketplaceService:
                         self._providers = {p["id"]: p for p in payload.get("providers", [])}
                         self._listings = {l["id"]: l for l in payload.get("listings", [])}
                         self._bookings = {b["id"]: b for b in payload.get("bookings", [])}
-                        self._benchmarks = payload.get("benchmarks", SESEED_BENCHMARKS if 'SESEED_BENCHMARKS' in globals() else SEED_MARKET_BENCHMARKS)
+                        self._benchmarks = payload.get("benchmarks", SEED_MARKET_BENCHMARKS)
                         self._reviews = payload.get("reviews", [])
                         logger.info("Loaded %d listings, %d bookings from %s", len(self._listings), len(self._bookings), RENTALS_FILE)
                         return
@@ -431,7 +431,7 @@ class RentalMarketplaceService:
 
             # Check overlap concurrency safely
             for b in self._bookings.values():
-                if b["listing_id"] == req.listing_id and b["status"] in ("confirmed", "in_progress"):
+                if b["listing_id"] == req.listing_id and b["status"] in ("confirmed", "in_progress", "pending_confirmation"):
                     if req.start_date <= b["end_date"] and b["start_date"] <= req.end_date:
                         raise ValueError(
                             f"Booking conflict: The resource is already reserved by confirmed booking {b['booking_reference']} from {b['start_date']} to {b['end_date']}."
@@ -466,7 +466,7 @@ class RentalMarketplaceService:
                 "provider_id": listing["provider_id"],
                 "provider_name": provider.get("business_name", "Local Agri Provider"),
                 "provider_phone": provider.get("phone", ""),
-                "farmer_id": req.farmer_id or "FARMER_RAMESH_PATIL",
+                "farmer_id": req.farmer_id or "FARMER_DEMO_DEFAULT",
                 "farmer_name": req.farmer_name,
                 "farmer_phone": req.farmer_phone,
                 "farm_id": req.farm_id,
@@ -550,12 +550,20 @@ class RentalMarketplaceService:
             results.sort(key=lambda x: x.start_date, reverse=True)
             return results
 
-    def cancel_booking(self, booking_id: str, reason: str, cancelled_by: str = "farmer") -> BookingRecord:
-        """Authorized cancellation following fair terms."""
+    def cancel_booking(self, booking_id: str, reason: str, cancelled_by: str = "farmer", user_id: Optional[str] = None) -> BookingRecord:
+        """Authorized cancellation following fair terms with user ownership verification."""
         with self._lock:
             b = self._bookings.get(booking_id)
             if not b:
                 raise ValueError(f"Booking {booking_id} not found.")
+
+            if user_id:
+                # If farmer cancelling, ensure they own the booking
+                if cancelled_by == "farmer" and b.get("farmer_id") and b.get("farmer_id") != user_id:
+                    raise PermissionError(f"Access denied: user {user_id} does not own booking {booking_id}.")
+                # If provider cancelling, ensure they own the listing/booking
+                elif cancelled_by == "provider" and b.get("provider_id") and b.get("provider_id") != user_id:
+                    raise PermissionError(f"Access denied: provider {user_id} is not the owner of booking {booking_id}.")
 
             if b["status"] in ("completed", "cancelled", "rejected"):
                 raise ValueError(f"Cannot cancel booking with status '{b['status']}'.")
@@ -582,12 +590,15 @@ class RentalMarketplaceService:
             prov_id = provider_id or "PROV_AKOLA_01"
             return [BookingRecord(**b) for b in self._bookings.values() if b.get("provider_id") == prov_id]
 
-    def respond_to_booking(self, booking_id: str, action: str, reason: Optional[str] = None) -> BookingRecord:
-        """Owner confirms or rejects an incoming booking request."""
+    def respond_to_booking(self, booking_id: str, action: str, reason: Optional[str] = None, provider_id: Optional[str] = None) -> BookingRecord:
+        """Owner confirms or rejects an incoming booking request with provider ownership check."""
         with self._lock:
             b = self._bookings.get(booking_id)
             if not b:
                 raise ValueError(f"Booking {booking_id} not found.")
+
+            if provider_id and b.get("provider_id") and b.get("provider_id") != provider_id:
+                raise PermissionError(f"Access denied: provider {provider_id} does not own listing for booking {booking_id}.")
 
             if b["status"] != "pending_confirmation":
                 raise ValueError(f"Booking is in '{b['status']}' state; only pending bookings can be confirmed/rejected.")
@@ -605,12 +616,15 @@ class RentalMarketplaceService:
             self._save_unlocked()
             return BookingRecord(**b)
 
-    def update_dispatch_status(self, booking_id: str, dispatch_status: DispatchStatus) -> BookingRecord:
-        """Owner updates operational dispatch status: ready -> dispatched -> arrived -> working -> completed."""
+    def update_dispatch_status(self, booking_id: str, dispatch_status: DispatchStatus, provider_id: Optional[str] = None) -> BookingRecord:
+        """Owner updates operational dispatch status: ready -> dispatched -> arrived -> working -> completed with provider ownership check."""
         with self._lock:
             b = self._bookings.get(booking_id)
             if not b:
                 raise ValueError(f"Booking {booking_id} not found.")
+
+            if provider_id and b.get("provider_id") and b.get("provider_id") != provider_id:
+                raise PermissionError(f"Access denied: provider {provider_id} does not own listing for booking {booking_id}.")
 
             b["dispatch_status"] = dispatch_status
             if dispatch_status in ("dispatched", "arrived", "working"):
@@ -655,6 +669,9 @@ class RentalMarketplaceService:
             if b["status"] != "completed":
                 raise ValueError("Expenses can only be recorded for 'completed' rentals.")
 
+            if b.get("recorded_in_economics"):
+                raise ValueError(f"Expense for booking {booking_id} has already been recorded (Expense ID: {b.get('farm_expense_id')}).")
+
             expense_id = f"EXP_{uuid.uuid4().hex[:8]}"
             b["recorded_in_economics"] = True
             b["farm_expense_id"] = expense_id
@@ -697,6 +714,14 @@ class RentalMarketplaceService:
                 raise ValueError(f"Booking {rev.booking_id} not found.")
             if b["status"] != "completed":
                 raise ValueError("Reviews can only be submitted after rental completion.")
+
+            # Check for duplicate review on same booking
+            for r in self._reviews:
+                if r.get("booking_id") == rev.booking_id:
+                    raise ValueError(f"A review has already been submitted for booking {rev.booking_id}.")
+
+            if rev.farmer_id and b.get("farmer_id") and b.get("farmer_id") != rev.farmer_id:
+                raise PermissionError(f"Access denied: user {rev.farmer_id} is not the farmer who booked {rev.booking_id}.")
 
             review_id = f"REV_{uuid.uuid4().hex[:8]}"
             review_obj = {

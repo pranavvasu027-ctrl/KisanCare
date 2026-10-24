@@ -362,3 +362,283 @@ def test_demo_listings_transparency():
     for l in listings:
         assert l["is_demo"] is True
 
+
+
+# -----------------------------------------------------------------------------
+# Security & Authorization Tests: Multi-tenant and Cross-user Protections
+# -----------------------------------------------------------------------------
+import jwt
+
+TEST_SECRET_KEY = "kisancare-super-secure-test-jwt-secret-key-32chars"
+
+def _make_auth_header(user_id: str) -> dict:
+    token = jwt.encode({"sub": user_id}, TEST_SECRET_KEY, algorithm="HS256")
+    return {"Authorization": f"Bearer {token}"}
+
+
+def test_cross_user_cancellation_prevention():
+    """Verify Farmer A's booking cannot be cancelled by Farmer B."""
+    # 1. Create booking by farmer_alice
+    b_req = {
+        "listing_id": "LIST_TRAC_01",
+        "farmer_name": "Alice Farmer",
+        "farmer_phone": "+91 98000 11111",
+        "start_date": "2026-11-15",
+        "end_date": "2026-11-16",
+        "duration": 4.0,
+        "delivery_address": "Field 3, Akola",
+        "notes": "Urgent tilling"
+    }
+    res = client.post("/api/v1/rentals/bookings", json=b_req, headers=_make_auth_header("farmer_alice"))
+    assert res.status_code == 201
+    booking_id = res.json()["id"]
+    assert res.json()["farmer_id"] == "farmer_alice"
+
+    # 2. farmer_bob attempts to cancel farmer_alice's booking
+    cancel_payload = {"reason": "Malicious cancellation attempt", "cancelled_by": "farmer"}
+    res_cancel_bob = client.post(
+        f"/api/v1/rentals/bookings/{booking_id}/cancel",
+        json=cancel_payload,
+        headers=_make_auth_header("farmer_bob")
+    )
+    assert res_cancel_bob.status_code == 403
+    assert "Access denied" in res_cancel_bob.json()["detail"]
+
+    # 3. farmer_alice cancels her own booking
+    res_cancel_alice = client.post(
+        f"/api/v1/rentals/bookings/{booking_id}/cancel",
+        json=cancel_payload,
+        headers=_make_auth_header("farmer_alice")
+    )
+    assert res_cancel_alice.status_code == 200
+    assert res_cancel_alice.json()["status"] == "cancelled"
+
+
+def test_cross_user_provider_response_prevention():
+    """Verify Provider A cannot confirm or reject bookings belonging to Provider B."""
+    # LIST_TRAC_01 is owned by PROV_AKOLA_01
+    b_req = {
+        "listing_id": "LIST_TRAC_01",
+        "farmer_name": "Charlie Farmer",
+        "farmer_phone": "+91 98000 22222",
+        "start_date": "2026-11-20",
+        "end_date": "2026-11-21",
+        "duration": 3.0,
+        "delivery_address": "Farm 2, Akola"
+    }
+    res = client.post("/api/v1/rentals/bookings", json=b_req, headers=_make_auth_header("farmer_charlie"))
+    assert res.status_code == 201
+    booking_id = res.json()["id"]
+
+    # Rogue provider PROV_PUNE_ROGUE tries to respond
+    res_rogue = client.post(
+        f"/api/v1/rentals/owner/bookings/{booking_id}/respond",
+        json={"action": "confirm"},
+        headers=_make_auth_header("PROV_PUNE_ROGUE")
+    )
+    assert res_rogue.status_code == 403
+    assert "Access denied" in res_rogue.json()["detail"]
+
+    # Legitimate owner PROV_AKOLA_01 responds
+    res_owner = client.post(
+        f"/api/v1/rentals/owner/bookings/{booking_id}/respond",
+        json={"action": "confirm"},
+        headers=_make_auth_header("PROV_AKOLA_01")
+    )
+    assert res_owner.status_code == 200
+    assert res_owner.json()["status"] == "confirmed"
+
+
+def test_cross_user_dispatch_prevention():
+    """Verify unauthorized provider cannot alter dispatch workflow."""
+    # BKG_2026_001 is confirmed, provider is PROV_AKOLA_01
+    res = client.post(
+        "/api/v1/rentals/owner/bookings/BKG_2026_001/dispatch",
+        json={"dispatch_status": "arrived"},
+        headers=_make_auth_header("PROV_UNAUTHORIZED")
+    )
+    assert res.status_code == 403
+    assert "Access denied" in res.json()["detail"]
+
+
+def test_cross_user_booking_inspection_prevention():
+    """Verify unrelated users cannot inspect other farmers' booking details."""
+    # Create booking for farmer_david
+    b_req = {
+        "listing_id": "LIST_TRAC_01",
+        "farmer_name": "David Farmer",
+        "farmer_phone": "+91 98000 33333",
+        "start_date": "2026-12-01",
+        "end_date": "2026-12-02",
+        "duration": 5.0,
+        "delivery_address": "Baramati Farm"
+    }
+    res = client.post("/api/v1/rentals/bookings", json=b_req, headers=_make_auth_header("farmer_david"))
+    assert res.status_code == 201
+    booking_id = res.json()["id"]
+
+    # Unrelated farmer_eve attempts to inspect
+    res_inspect_eve = client.get(
+        f"/api/v1/rentals/bookings/{booking_id}",
+        headers=_make_auth_header("farmer_eve")
+    )
+    assert res_inspect_eve.status_code == 403
+    assert "Access denied" in res_inspect_eve.json()["detail"]
+
+    # Owner farmer_david can inspect
+    res_inspect_david = client.get(
+        f"/api/v1/rentals/bookings/{booking_id}",
+        headers=_make_auth_header("farmer_david")
+    )
+    assert res_inspect_david.status_code == 200
+
+
+def test_duplicate_review_and_cross_user_review_prevention():
+    """Verify duplicate reviews are blocked and non-booked users cannot review."""
+    # Create and complete a booking for farmer_frank
+    b_req = {
+        "listing_id": "LIST_TRAC_01",
+        "farmer_name": "Frank Farmer",
+        "farmer_phone": "+91 98000 44444",
+        "start_date": "2026-12-05",
+        "end_date": "2026-12-06",
+        "duration": 2.0,
+        "delivery_address": "Akola North"
+    }
+    res = client.post("/api/v1/rentals/bookings", json=b_req, headers=_make_auth_header("farmer_frank"))
+    assert res.status_code == 201
+    booking_id = res.json()["id"]
+    listing_id = res.json()["listing_id"]
+
+    # Confirm and complete
+    client.post(
+        f"/api/v1/rentals/owner/bookings/{booking_id}/respond",
+        json={"action": "confirm"},
+        headers=_make_auth_header("PROV_AKOLA_01")
+    )
+    client.post(
+        f"/api/v1/rentals/owner/bookings/{booking_id}/dispatch",
+        json={"dispatch_status": "completed"},
+        headers=_make_auth_header("PROV_AKOLA_01")
+    )
+
+    # 1. Non-booked farmer tries to review
+    rev_payload_fake = {
+        "booking_id": booking_id,
+        "listing_id": listing_id,
+        "farmer_name": "Imposter Farmer",
+        "rating": 5,
+        "review_text": "Fake review by stranger"
+    }
+    res_fake = client.post("/api/v1/rentals/reviews", json=rev_payload_fake, headers=_make_auth_header("farmer_imposter"))
+    assert res_fake.status_code == 403
+    assert "Access denied" in res_fake.json()["detail"]
+
+    # 2. Legitimate farmer reviews
+    rev_payload_legit = {
+        "booking_id": booking_id,
+        "listing_id": listing_id,
+        "farmer_name": "Frank Farmer",
+        "rating": 5,
+        "review_text": "Excellent machine, timely operator!"
+    }
+    res_legit = client.post("/api/v1/rentals/reviews", json=rev_payload_legit, headers=_make_auth_header("farmer_frank"))
+    assert res_legit.status_code == 201
+
+    # 3. Duplicate review on same booking
+    res_dup = client.post("/api/v1/rentals/reviews", json=rev_payload_legit, headers=_make_auth_header("farmer_frank"))
+    assert res_dup.status_code == 400
+    assert "already been submitted" in res_dup.json()["detail"]
+
+
+def test_duplicate_expense_and_cross_user_expense_prevention():
+    """Verify duplicate expense recording is blocked and non-owners cannot record."""
+    # Create and complete a booking for farmer_george
+    b_req = {
+        "listing_id": "LIST_TRAC_01",
+        "farmer_name": "George Farmer",
+        "farmer_phone": "+91 98000 55555",
+        "start_date": "2026-12-10",
+        "end_date": "2026-12-11",
+        "duration": 3.0,
+        "delivery_address": "Akola East"
+    }
+    res = client.post("/api/v1/rentals/bookings", json=b_req, headers=_make_auth_header("farmer_george"))
+    assert res.status_code == 201
+    booking_id = res.json()["id"]
+
+    client.post(
+        f"/api/v1/rentals/owner/bookings/{booking_id}/respond",
+        json={"action": "confirm"},
+        headers=_make_auth_header("PROV_AKOLA_01")
+    )
+    client.post(
+        f"/api/v1/rentals/owner/bookings/{booking_id}/dispatch",
+        json={"dispatch_status": "completed"},
+        headers=_make_auth_header("PROV_AKOLA_01")
+    )
+
+    exp_req = {
+        "farm_id": "farm-101",
+        "field_id": "FIELD-01",
+        "season": "Rabi 2026",
+        "crop": "Cotton",
+        "expense_category": "machinery_rental"
+    }
+
+    # 1. Imposter attempts to record expense
+    res_imposter = client.post(
+        f"/api/v1/rentals/bookings/{booking_id}/record-expense",
+        json=exp_req,
+        headers=_make_auth_header("farmer_stranger")
+    )
+    assert res_imposter.status_code == 403
+
+    # 2. Legitimate farmer records expense
+    res_rec = client.post(
+        f"/api/v1/rentals/bookings/{booking_id}/record-expense",
+        json=exp_req,
+        headers=_make_auth_header("farmer_george")
+    )
+    assert res_rec.status_code == 200
+    assert "expense_id" in res_rec.json()
+
+    # 3. Duplicate expense recording
+    res_dup = client.post(
+        f"/api/v1/rentals/bookings/{booking_id}/record-expense",
+        json=exp_req,
+        headers=_make_auth_header("farmer_george")
+    )
+    assert res_dup.status_code == 400
+    assert "already been recorded" in res_dup.json()["detail"]
+
+
+def test_pending_confirmation_blocks_concurrent_booking():
+    """Verify that a pending_confirmation booking protects against double booking."""
+    req1 = {
+        "listing_id": "LIST_TRAC_01",
+        "farmer_name": "Farmer One",
+        "farmer_phone": "+91 98000 66666",
+        "start_date": "2026-12-25",
+        "end_date": "2026-12-28",
+        "duration": 4.0,
+        "delivery_address": "Farm 9, Baramati"
+    }
+    # Create first booking -> status will be pending_confirmation
+    res1 = client.post("/api/v1/rentals/bookings", json=req1, headers=_make_auth_header("farmer_one"))
+    assert res1.status_code == 201
+    assert res1.json()["status"] == "pending_confirmation"
+
+    # Second booking overlapping with the pending booking
+    req2 = {
+        "listing_id": "LIST_TRAC_01",
+        "farmer_name": "Farmer Two",
+        "farmer_phone": "+91 98000 77777",
+        "start_date": "2026-12-26",
+        "end_date": "2026-12-27",
+        "duration": 2.0,
+        "delivery_address": "Farm 10, Baramati"
+    }
+    res2 = client.post("/api/v1/rentals/bookings", json=req2, headers=_make_auth_header("farmer_two"))
+    assert res2.status_code == 409
+    assert "already reserved" in res2.json()["detail"] or "conflict" in res2.json()["detail"]
