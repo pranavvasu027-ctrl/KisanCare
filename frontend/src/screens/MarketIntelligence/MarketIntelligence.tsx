@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { translateDynamic } from '../../i18n/translateHelper';
 import {
   TrendingUp, TrendingDown, MapPin, Search, Loader2, RefreshCw,
   AlertCircle, ArrowUpRight, SlidersHorizontal, RotateCcw, Calendar,
@@ -16,6 +18,8 @@ type SupportedMarket = 'Akola' | 'Amravati' | 'Akot';
 type SupportedTimeRange = '7D' | '14D' | '30D';
 
 export default function MarketIntelligence() {
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'en';
   // Active query state
   const [crop, setCrop] = useState<SupportedCrop>('Cotton');
   const [market, setMarket] = useState<SupportedMarket>('Akola');
@@ -195,10 +199,10 @@ export default function MarketIntelligence() {
               </span>
             </div>
             <h1 className="text-2xl lg:text-3xl font-serif font-bold text-[#103D2C] mt-2">
-              Market Intelligence
+              {t('market.title')}
             </h1>
             <p className="text-[#292B26]/75 text-sm mt-0.5 font-medium">
-              Understand market movement. Compare nearby prices. Make better selling decisions.
+              {t('market.subtitle')}
             </p>
           </div>
 
@@ -210,7 +214,7 @@ export default function MarketIntelligence() {
               title="Refresh latest market data"
             >
               <RefreshCw size={15} className={refreshing ? 'animate-spin text-[#17643E]' : ''} />
-              <span>{refreshing ? 'Updating...' : 'Refresh Data'}</span>
+              <span>{refreshing ? t('common.updating') : t('common.refresh')}</span>
             </button>
           </div>
         </div>
@@ -219,7 +223,7 @@ export default function MarketIntelligence() {
         <div className="pt-3 border-t border-[#E5DDCF]/80 flex flex-wrap items-center justify-between text-xs text-[#292B26]/70 gap-y-2">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
             <span className="flex items-center gap-1.5">
-              <span className="font-semibold text-[#103D2C]">Selected Farm:</span> Green Acres (Field 1)
+              <span className="font-semibold text-[#103D2C]">{t('nav.currentFarm')}</span> Green Acres (Field 1)
             </span>
             <span className="text-[#E5DDCF]">•</span>
             <span className="flex items-center gap-1.5">
@@ -233,7 +237,7 @@ export default function MarketIntelligence() {
           </div>
           <div className="flex items-center gap-2 text-right">
             <Clock size={13} className="text-[#17643E]" />
-            <span>Last Updated: <span className="font-medium text-[#103D2C]">{lastUpdated}</span></span>
+            <span>{t('market.lastUpdated')} <span className="font-medium text-[#103D2C]">{lastUpdated}</span></span>
             {refreshToast && (
               <span className="text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 animate-fade-in">
                 ✓ Updated just now
@@ -249,7 +253,7 @@ export default function MarketIntelligence() {
           <div className="flex items-center gap-2">
             <SlidersHorizontal size={16} className="text-[#17643E]" />
             <h2 className="text-sm font-bold uppercase tracking-wider text-[#103D2C]">
-              Market Control Panel
+              {t('market.title')}
             </h2>
           </div>
           <span className="text-xs text-[#292B26]/60">
@@ -261,7 +265,7 @@ export default function MarketIntelligence() {
           {/* CROP SELECTOR */}
           <div>
             <label className="block text-xs font-semibold text-[#292B26]/70 mb-1">
-              CROP
+              {t('market.crop')}
             </label>
             <div className="relative">
               <select
@@ -269,9 +273,9 @@ export default function MarketIntelligence() {
                 onChange={(e) => setStagedCrop(e.target.value as SupportedCrop)}
                 className="w-full bg-[#FBF7EF] border border-[#E5DDCF] rounded-xl px-3.5 py-2.5 text-sm font-bold text-[#103D2C] focus:outline-none focus:border-[#17643E] transition-colors cursor-pointer appearance-none"
               >
-                <option value="Cotton">Cotton (Kapas)</option>
-                <option value="Soyabean">Soyabean</option>
-                <option value="Tur">Tur (Pigeon Pea)</option>
+                <option value="Cotton">{t('market.crops.cotton')}</option>
+                <option value="Soyabean">{t('market.crops.soyabean')}</option>
+                <option value="Tur">{t('market.crops.tur')}</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#103D2C]">
                 ▼
@@ -282,7 +286,7 @@ export default function MarketIntelligence() {
           {/* MARKET REGION SELECTOR */}
           <div>
             <label className="block text-xs font-semibold text-[#292B26]/70 mb-1">
-              MARKET REGION
+              {t('market.market')}
             </label>
             <div className="relative">
               <select
@@ -290,9 +294,9 @@ export default function MarketIntelligence() {
                 onChange={(e) => setStagedMarket(e.target.value as SupportedMarket)}
                 className="w-full bg-[#FBF7EF] border border-[#E5DDCF] rounded-xl px-3.5 py-2.5 text-sm font-bold text-[#103D2C] focus:outline-none focus:border-[#17643E] transition-colors cursor-pointer appearance-none"
               >
-                <option value="Akola">Akola APMC</option>
-                <option value="Amravati">Amravati APMC</option>
-                <option value="Akot">Akot APMC</option>
+                <option value="Akola">{t('market.mandis.akola')} APMC</option>
+                <option value="Amravati">{t('market.mandis.amravati')} APMC</option>
+                <option value="Akot">{t('market.mandis.akot')} APMC</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#103D2C]">
                 ▼
@@ -303,7 +307,7 @@ export default function MarketIntelligence() {
           {/* TIME RANGE SELECTOR */}
           <div>
             <label className="block text-xs font-semibold text-[#292B26]/70 mb-1">
-              TIME RANGE
+              {t('market.timeRange')}
             </label>
             <div className="relative">
               <select
@@ -311,9 +315,9 @@ export default function MarketIntelligence() {
                 onChange={(e) => setStagedTimeRange(e.target.value as SupportedTimeRange)}
                 className="w-full bg-[#FBF7EF] border border-[#E5DDCF] rounded-xl px-3.5 py-2.5 text-sm font-bold text-[#103D2C] focus:outline-none focus:border-[#17643E] transition-colors cursor-pointer appearance-none"
               >
-                <option value="7D">7 Days Horizon</option>
-                <option value="14D">14 Days Horizon</option>
-                <option value="30D">30 Days Historical</option>
+                <option value="7D">{t('market.ranges.sevenDays')}</option>
+                <option value="14D">{t('market.ranges.fourteenDays')}</option>
+                <option value="30D">{t('market.ranges.thirtyDays')}</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#103D2C]">
                 ▼
@@ -329,7 +333,7 @@ export default function MarketIntelligence() {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search crop or mandi..."
+                placeholder={t('market.searchMandi')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-9 pr-7 py-2.5 bg-[#FBF7EF] border border-[#E5DDCF] rounded-xl text-sm focus:outline-none focus:border-[#17643E] transition-colors placeholder:text-gray-400"
@@ -353,7 +357,7 @@ export default function MarketIntelligence() {
               disabled={loading}
               className="flex-1 bg-[#17643E] hover:bg-[#103D2C] text-white py-2.5 px-3 rounded-xl text-sm font-semibold transition-colors shadow-sm disabled:opacity-50 text-center"
             >
-              Apply Filters
+              {t('market.applyFilters')}
             </button>
             <button
               onClick={handleResetFilters}
@@ -392,7 +396,7 @@ export default function MarketIntelligence() {
           <div>
             <div className="flex justify-between items-start">
               <span className="text-xs font-bold uppercase tracking-wider text-[#292B26]/60">
-                Current Market Price
+                {t('market.currentPrice')}
               </span>
               <span className="text-[10px] bg-[#17643E]/10 text-[#17643E] font-semibold px-2 py-0.5 rounded-full">
                 {crop} • {market}
@@ -461,7 +465,7 @@ export default function MarketIntelligence() {
           <div>
             <div className="flex justify-between items-start">
               <span className="text-xs font-bold uppercase tracking-wider text-[#292B26]/60">
-                Best Regional Mandi
+                {t('market.bestMandi')}
               </span>
               <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
                 TOP PRICE
@@ -495,7 +499,7 @@ export default function MarketIntelligence() {
           <div>
             <div className="flex justify-between items-start">
               <span className="text-xs font-bold uppercase tracking-wider text-[#103D2C]/70 flex items-center gap-1.5">
-                <Sparkles size={13} className="text-[#B6532A]" /> AI 7-Day Forecast
+                <Sparkles size={13} className="text-[#B6532A]" /> {t('market.aiForecast')}
               </span>
               <span className="text-[10px] font-semibold bg-white border border-[#E5DDCF] px-2 py-0.5 rounded-full text-[#103D2C]">
                 {data?.forecast?.confidence || 'Sample Model'}
@@ -531,7 +535,7 @@ export default function MarketIntelligence() {
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-lg font-serif font-bold text-[#103D2C]">
-                Price Trend & AI Projections
+                {t('market.priceHistory')}
               </h3>
               <span className="text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-full">
                 Demo dataset
@@ -757,8 +761,8 @@ export default function MarketIntelligence() {
                   RECOMMENDED ACTION
                 </span>
                 <p className="text-xs text-white/90 leading-relaxed">
-                  {data?.rule_based_insight?.recommended_action ||
-                    'Monitor Akot APMC for higher selling margins.'}
+                  {translateDynamic(data?.rule_based_insight?.recommended_action, currentLang) ||
+                    translateDynamic('Monitor Akot APMC for higher selling margins.', currentLang)}
                 </p>
               </div>
             </div>
@@ -776,7 +780,7 @@ export default function MarketIntelligence() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
             <h3 className="text-lg font-serif font-bold text-[#103D2C]">
-              Regional APMC Comparison Table
+              {t('market.nearbyMarkets')}
             </h3>
             <p className="text-xs text-[#292B26]/70 mt-0.5">
               Compare mandi prices, distances, and varieties. Click "View" to open full market dossiers.
@@ -809,14 +813,14 @@ export default function MarketIntelligence() {
           <table className="w-full text-left border-collapse min-w-[700px]">
             <thead>
               <tr className="text-xs uppercase text-[#292B26]/60 border-b border-[#E5DDCF] bg-[#FBF7EF]/50">
-                <th className="py-3 px-3 font-semibold">Market Name</th>
+                <th className="py-3 px-3 font-semibold">{t('market.mandiName')}</th>
                 <th className="py-3 px-3 font-semibold">Location</th>
-                <th className="py-3 px-3 font-semibold">Distance</th>
-                <th className="py-3 px-3 font-semibold">Current Price</th>
+                <th className="py-3 px-3 font-semibold">{t('market.distance')}</th>
+                <th className="py-3 px-3 font-semibold">{t('market.currentPrice')}</th>
                 <th className="py-3 px-3 font-semibold">24h Change</th>
                 <th className="py-3 px-3 font-semibold">Trend</th>
                 <th className="py-3 px-3 font-semibold">Data Status</th>
-                <th className="py-3 px-3 font-semibold text-right">Action</th>
+                <th className="py-3 px-3 font-semibold text-right">{t('market.action')}</th>
               </tr>
             </thead>
             <tbody>
@@ -899,7 +903,7 @@ export default function MarketIntelligence() {
                           onClick={() => setSelectedDetailMarket(m)}
                           className="px-3 py-1 bg-[#17643E] hover:bg-[#103D2C] text-white text-xs font-semibold rounded-lg transition-colors shadow-xs"
                         >
-                          View
+                          {t('market.viewDetails')}
                         </button>
                       </td>
                     </tr>

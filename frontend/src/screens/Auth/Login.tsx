@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Leaf, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../services/supabase';
 import { IS_DEMO_MODE } from '../../config/demo';
 
 export default function Login() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -55,8 +57,8 @@ export default function Login() {
       <div className="w-full lg:w-1/2 flex items-center justify-center bg-[#FBF7EF] p-8">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-serif font-bold text-[#103D2C] mb-2">Welcome Back</h2>
-            <p className="text-[#292B26]/60">Sign in to your KISANcare account</p>
+            <h2 className="text-3xl font-serif font-bold text-[#103D2C] mb-2">{t('auth.loginTitle')}</h2>
+            <p className="text-[#292B26]/60">{t('auth.loginSubtitle')}</p>
           </div>
 
           {IS_DEMO_MODE && (

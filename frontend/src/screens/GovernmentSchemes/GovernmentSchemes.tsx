@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from 'react';
 import {
   Landmark, Search, Filter, ExternalLink, CheckCircle,
@@ -220,6 +221,8 @@ const ELIGIBILITY_OPTIONS: EligibilityFilterType[] = [
 ];
 
 export default function GovernmentSchemes() {
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'en';
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedEligibility, setSelectedEligibility] = useState<EligibilityFilterType>('All');
@@ -311,14 +314,14 @@ export default function GovernmentSchemes() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-serif font-bold text-[#103D2C]">Government Schemes</h1>
+            <h1 className="text-3xl font-serif font-bold text-[#103D2C]">{t('schemes.title')}</h1>
             <span className="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-emerald-300 flex items-center gap-1">
               <BadgeCheck size={13} className="text-emerald-700" />
               Verified Official Directory
             </span>
           </div>
           <p className="text-[#292B26]/70 mt-1 text-sm">
-            Browse verified agricultural welfare schemes, subsidy programs, credit limits, and official portal links.
+            {t('schemes.subtitle')}
           </p>
         </div>
 

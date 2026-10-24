@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { translateDynamic } from '../../i18n/translateHelper';
 import { Droplets, CloudRain, Sun, Wind, AlertTriangle, Calendar, Loader2, AlertCircle, MapPin, RefreshCw, Compass } from 'lucide-react';
 import { api } from '../../services/api';
 
 export default function IrrigationClimate() {
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'en';
   const [crop, setCrop] = useState('Cotton');
   const [soilMoisture, setSoilMoisture] = useState<number>(24);
   const [daysSinceRain, setDaysSinceRain] = useState<number>(8);
@@ -97,18 +101,18 @@ export default function IrrigationClimate() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-serif font-bold text-[#103D2C]">Irrigation &amp; Climate</h1>
+            <h1 className="text-3xl font-serif font-bold text-[#103D2C]">{t('irrigation.title')}</h1>
             {isDemo ? (
               <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-amber-300">
-                Sample Advisory Data
+                {t('irrigation.sampleBadge')}
               </span>
             ) : (
               <span className="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-emerald-300">
-                Live Agro-Climate Integration
+                {t('irrigation.liveBadge')}
               </span>
             )}
           </div>
-          <p className="text-[#292B26]/70 mt-1">Multi-day agro-meteorological forecast and field irrigation decision support.</p>
+          <p className="text-[#292B26]/70 mt-1">{t('irrigation.subtitle')}</p>
         </div>
 
         {/* Location selector / GPS button */}
@@ -119,7 +123,7 @@ export default function IrrigationClimate() {
             className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F2E8D5] hover:bg-[#E5DDCF] text-[#103D2C] text-xs font-bold rounded-xl border border-[#E5DDCF] transition-colors"
           >
             {locating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Compass className="w-3.5 h-3.5" />}
-            <span>Use Field GPS</span>
+            <span>{t('irrigation.useGps')}</span>
           </button>
           <button
             onClick={fetchWeatherForecast}
@@ -127,7 +131,7 @@ export default function IrrigationClimate() {
             className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-[#FBF7EF] text-[#103D2C] text-xs font-bold rounded-xl border border-[#E5DDCF] transition-colors"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
+            <span>{t('irrigation.refresh')}</span>
           </button>
         </div>
       </div>
@@ -142,7 +146,7 @@ export default function IrrigationClimate() {
       {/* Field Conditions Simulator / Input Bar */}
       <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E5DDCF] grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
-          <label className="block text-xs font-semibold text-[#103D2C] mb-1">Target Crop</label>
+          <label className="block text-xs font-semibold text-[#103D2C] mb-1">{t('irrigation.targetCrop')}</label>
           <select
             value={crop}
             onChange={(e) => setCrop(e.target.value)}
@@ -156,7 +160,7 @@ export default function IrrigationClimate() {
           </select>
         </div>
         <div>
-          <label className="block text-xs font-semibold text-[#103D2C] mb-1">Soil Moisture ({soilMoisture}%)</label>
+          <label className="block text-xs font-semibold text-[#103D2C] mb-1">{t('irrigation.soilMoisture', { value: soilMoisture })}</label>
           <input
             type="range"
             min="5"
@@ -167,7 +171,7 @@ export default function IrrigationClimate() {
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-[#103D2C] mb-1">Days Since Rain ({daysSinceRain} days)</label>
+          <label className="block text-xs font-semibold text-[#103D2C] mb-1">{t('irrigation.daysSinceRain', { days: daysSinceRain })}</label>
           <input
             type="range"
             min="0"
@@ -184,13 +188,13 @@ export default function IrrigationClimate() {
           {/* WEATHER SOURCE DISCLOSURE */}
           <div className="bg-amber-50 border border-amber-300 rounded-2xl p-4 text-xs text-amber-900 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <strong>Meteorological Source:</strong> {curr.data_source || 'Open-Meteo Ensemble'}<br/>
-              <strong>Legal Attribution:</strong> {curr.attribution || weatherForecast?.attribution || 'Weather data by Open-Meteo.com (CC BY 4.0)'}<br/>
-              <strong>On-Farm Cumulative Rain:</strong> <em>Unavailable</em> (Requires automated rain gauge).
+              <strong>{t('irrigation.weatherSource')}</strong> {curr.data_source || 'Open-Meteo Ensemble'}<br/>
+              <strong>{t('irrigation.legalAttribution')}</strong> {curr.attribution || weatherForecast?.attribution || 'Weather data by Open-Meteo.com (CC BY 4.0)'}<br/>
+              <strong>{t('irrigation.onFarmRain')}</strong> <em>{t('irrigation.unavailableRain')}</em>
             </div>
             <div className="shrink-0 flex items-center gap-2">
               {curr.is_stale && (
-                <span className="bg-red-200 text-red-900 font-bold px-2 py-0.5 rounded text-[10px] uppercase">Stale Cache</span>
+                <span className="bg-red-200 text-red-900 font-bold px-2 py-0.5 rounded text-[10px] uppercase">{t('irrigation.staleCache')}</span>
               )}
               <span className="bg-emerald-200 text-emerald-900 font-bold px-2 py-0.5 rounded text-[10px] uppercase tracking-wider">
                 {curr.provider || 'Live'}
@@ -207,7 +211,7 @@ export default function IrrigationClimate() {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <Sun className="text-yellow-400" />
-                  <span className="text-xl font-medium text-[#FBF7EF]">{curr.weather_condition || 'Partly Cloudy'}</span>
+                  <span className="text-xl font-medium text-[#FBF7EF]">{translateDynamic(curr.weather_condition || 'Partly Cloudy', currentLang)}</span>
                 </div>
                 <div className="text-6xl font-bold font-serif mb-2">
                   {curr.temperature !== undefined && curr.temperature !== null ? `${curr.temperature}°C` : '33.1°C'}
@@ -219,11 +223,11 @@ export default function IrrigationClimate() {
               </div>
               <div className="grid grid-cols-2 gap-x-8 gap-y-4">
                 <div>
-                  <div className="text-[#A8C69A] text-xs">Humidity</div>
+                  <div className="text-[#A8C69A] text-xs">{t('irrigation.humidity')}</div>
                   <div className="font-bold text-lg">{curr.humidity !== undefined ? `${curr.humidity}%` : '35%'}</div>
                 </div>
                 <div>
-                  <div className="text-[#A8C69A] text-xs">Wind</div>
+                  <div className="text-[#A8C69A] text-xs">{t('irrigation.windSpeed')}</div>
                   <div className="font-bold text-lg">{curr.wind_speed_kmh !== undefined ? `${curr.wind_speed_kmh} km/h` : '5.7 km/h'}</div>
                 </div>
                 <div>
@@ -268,7 +272,7 @@ export default function IrrigationClimate() {
           {/* 7-Day Daily Forecast */}
           <div className="bg-white rounded-2xl shadow-sm border border-[#E5DDCF] p-6">
             <h3 className="font-bold text-[#103D2C] mb-4 flex items-center justify-between">
-              <span>7-Day Agro-Meteorological Forecast</span>
+              <span>{t('irrigation.sevenDayForecast')}</span>
               <span className="text-xs font-normal text-[#292B26]/60">Metric Units (°C, mm)</span>
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
@@ -324,7 +328,7 @@ export default function IrrigationClimate() {
         <div className="space-y-6">
           <div className="bg-[#FBF7EF] rounded-2xl shadow-sm border border-[#E5DDCF] p-6">
             <h3 className="font-bold text-[#103D2C] mb-4 flex items-center gap-2">
-              <Droplets className="text-[#17643E]" /> Irrigation Decision Engine
+              <Droplets className="text-[#17643E]" /> {t('irrigation.irrigationDecision')}
             </h3>
 
             {loading ? (

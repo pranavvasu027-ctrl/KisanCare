@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { translateDynamic } from '../../i18n/translateHelper';
 import { FlaskConical, Play, Save, RotateCcw, TrendingDown, TrendingUp, BarChart2, Loader2, CheckCircle2 } from 'lucide-react';
 import { api } from '../../services/api';
 
 export default function WhatIfSimulator() {
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'en';
   const [crop, setCrop] = useState('Cotton');
   const [irrigation, setIrrigation] = useState('Optimal (As recommended)');
   const [fertilizerStrategy, setFertilizerStrategy] = useState('Standard NPK');
@@ -59,18 +63,18 @@ export default function WhatIfSimulator() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-serif font-bold text-[#103D2C]">What-If Simulator</h1>
+            <h1 className="text-3xl font-serif font-bold text-[#103D2C]">{t('simulator.title')}</h1>
             {isDemo ? (
               <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-amber-300">
-                Sample Simulation
+                {t('simulator.sampleBadge')}
               </span>
             ) : (
               <span className="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-emerald-300">
-                Live Simulation Engine
+                {t('simulator.liveBadge')}
               </span>
             )}
           </div>
-          <p className="text-[#292B26]/70 mt-1">Simulate changes in farming practices and predict economic outcomes.</p>
+          <p className="text-[#292B26]/70 mt-1">{t('simulator.subtitle')}</p>
         </div>
         <div className="flex gap-2">
           <button
@@ -78,7 +82,7 @@ export default function WhatIfSimulator() {
             disabled={loading}
             className="bg-[#103D2C] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#17643E] transition-colors flex items-center gap-2 text-sm shadow-sm disabled:opacity-50"
           >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play size={16} />} Run Simulation
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play size={16} />} {t('simulator.runSimulation')}
           </button>
         </div>
       </div>
@@ -96,7 +100,7 @@ export default function WhatIfSimulator() {
 
           <div className="space-y-5 flex-1 overflow-y-auto pr-2 custom-scrollbar">
             <div>
-              <label className="block text-sm font-medium text-[#292B26] mb-1">Crop Selection</label>
+              <label className="block text-sm font-medium text-[#292B26] mb-1">{t('simulator.targetCrop')}</label>
               <select
                 value={crop}
                 onChange={(e) => setCrop(e.target.value)}
@@ -110,7 +114,7 @@ export default function WhatIfSimulator() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#292B26] mb-1">Irrigation Schedule</label>
+              <label className="block text-sm font-medium text-[#292B26] mb-1">{t('simulator.irrigationStrategy')}</label>
               <select
                 value={irrigation}
                 onChange={(e) => setIrrigation(e.target.value)}
@@ -123,7 +127,7 @@ export default function WhatIfSimulator() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#292B26] mb-1">Fertilizer Strategy</label>
+              <label className="block text-sm font-medium text-[#292B26] mb-1">{t('simulator.fertilizerStrategy')}</label>
               <select
                 value={fertilizerStrategy}
                 onChange={(e) => setFertilizerStrategy(e.target.value)}
@@ -136,7 +140,7 @@ export default function WhatIfSimulator() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#292B26] mb-1">Weather Assumption</label>
+              <label className="block text-sm font-medium text-[#292B26] mb-1">{t('simulator.weatherAssumption')}</label>
               <select
                 value={weatherAssumption}
                 onChange={(e) => setWeatherAssumption(e.target.value)}
@@ -149,7 +153,7 @@ export default function WhatIfSimulator() {
             </div>
 
             <div className="pt-4 mt-2 border-t border-[#E5DDCF]">
-              <label className="block text-sm font-medium text-[#292B26] mb-3">Expected Market Price</label>
+              <label className="block text-sm font-medium text-[#292B26] mb-3">{t('simulator.marketPrice')}</label>
               <input
                 type="range"
                 min="2000"

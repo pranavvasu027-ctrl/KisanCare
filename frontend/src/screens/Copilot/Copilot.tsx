@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { changeLanguage } from '../../i18n';
 import { Bot, Send, User, Sparkles, AlertCircle, Loader2, RefreshCw, CheckCircle2, ShieldAlert, Globe, ChevronDown, ChevronUp, Database } from 'lucide-react';
 import { api } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
@@ -25,8 +27,16 @@ interface Message {
 type LangOption = 'en' | 'mr' | 'hi';
 
 export default function Copilot() {
+  const { t, i18n } = useTranslation();
+  const currentAppLang = (['en', 'mr', 'hi'].includes(i18n.language) ? i18n.language : 'en') as LangOption;
   const { isDemoMode } = useAuth();
-  const [selectedLang, setSelectedLang] = useState<LangOption>('mr');
+  const [selectedLang, setSelectedLang] = useState<LangOption>(currentAppLang);
+
+  useEffect(() => {
+    if (['en', 'mr', 'hi'].includes(i18n.language)) {
+      setSelectedLang(i18n.language as LangOption);
+    }
+  }, [i18n.language]);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -194,7 +204,7 @@ export default function Copilot() {
         <div>
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#103D2C] flex items-center gap-2">
-              <Bot className="text-[#B6532A]" /> KisanCare AI Copilot
+              <Bot className="text-[#B6532A]" /> {t('copilot.title')}
             </h1>
             {isDemoMode ? (
               <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-amber-300">
@@ -245,7 +255,7 @@ export default function Copilot() {
             onClick={clearChat}
             className="text-xs text-[#292B26]/60 hover:text-[#103D2C] border border-[#E5DDCF] bg-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shadow-sm"
           >
-            <RefreshCw size={12} /> Clear Chat
+            <RefreshCw size={12} /> {t('common.clear', 'Clear Chat')}
           </button>
         </div>
       </div>
