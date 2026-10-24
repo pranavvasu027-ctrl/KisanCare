@@ -50,6 +50,10 @@ class ProviderSummary(BaseModel):
     rating: float = 0.0
     review_count: int = 0
     credentials: Optional[str] = None
+    upi_id: Optional[str] = "vidarbha-agro@oksbi"
+    upi_payee_name: Optional[str] = "Vidarbha Agro CHC"
+    subscription_tier: str = "free"
+    is_priority: bool = False
 
 
 class RentalListingCreate(BaseModel):
@@ -74,6 +78,11 @@ class RentalListingCreate(BaseModel):
     terms: Dict[str, Any] = Field(default_factory=dict)
     is_active: bool = True
     is_demo: bool = True
+    # Shopkeeper UPI & Subscription Priority
+    upi_id: Optional[str] = None
+    upi_payee_name: Optional[str] = None
+    subscription_tier: Optional[str] = "free"
+    is_priority: bool = False
 
 
 class RentalListing(RentalListingCreate):
@@ -84,6 +93,7 @@ class RentalListing(RentalListingCreate):
     updated_at: str
     rating: float = 0.0
     review_count: int = 0
+    distance_km: Optional[float] = None
 
 
 class PriceCalculationRequest(BaseModel):
@@ -213,6 +223,12 @@ class BookingRecord(BaseModel):
     status: BookingStatus
     dispatch_status: DispatchStatus
     
+    # UPI Settlement Details
+    upi_id: Optional[str] = None
+    upi_payee_name: Optional[str] = None
+    upi_transaction_ref: Optional[str] = None
+    upi_paid_at: Optional[str] = None
+    
     cancellation_reason: Optional[str] = None
     rejection_reason: Optional[str] = None
     cancelled_by: Optional[str] = None
@@ -273,3 +289,76 @@ class RecordExpenseRequest(BaseModel):
     season: str = "Kharif 2026"
     crop: str = "Cotton"
     expense_category: Literal["machinery_rental", "labour_hire", "transport"] = "machinery_rental"
+
+
+# -----------------------------------------------------------------------------
+# Google Maps Places & Nearby Equipment Discovery Schemas
+# -----------------------------------------------------------------------------
+class NearbyShopPlace(BaseModel):
+    place_id: str
+    name: str
+    address: str
+    latitude: float
+    longitude: float
+    distance_km: float
+    rating: float = 4.5
+    user_ratings_total: int = 12
+    phone: Optional[str] = None
+    maps_url: Optional[str] = None
+    open_now: bool = True
+    categories: List[str] = Field(default_factory=list)
+    rental_accessories: List[str] = Field(default_factory=list)
+    source: str = "verified_chc"
+
+
+class NearbyEquipmentDiscoveryResponse(BaseModel):
+    farmer_latitude: float
+    farmer_longitude: float
+    farmer_location_name: str
+    radius_km: float
+    total_nearby_shops: int
+    total_registered_listings: int
+    google_places_shops: List[NearbyShopPlace]
+    registered_listings: List[Dict[str, Any]]
+
+
+# -----------------------------------------------------------------------------
+# Shopkeeper Notifications & Subscription Models
+# -----------------------------------------------------------------------------
+class ShopNotification(BaseModel):
+    id: str
+    provider_id: str
+    booking_id: str
+    booking_reference: str
+    farmer_name: str
+    farmer_phone: str
+    listing_title: str
+    total_amount: float
+    scheduled_date: str
+    start_time: str
+    payment_method: str
+    status: Literal["unread", "read", "actioned"] = "unread"
+    created_at: str
+
+
+class ShopkeeperSubscriptionPlan(BaseModel):
+    plan_id: str
+    name: str
+    price_inr: float
+    billing_cycle: str
+    features: List[str]
+    priority_level: int
+    is_active: bool = False
+
+
+class SubscriptionUpgradeRequest(BaseModel):
+    provider_id: Optional[str] = None
+    plan_id: Literal["gold_merchant", "pro_partner"]
+    duration_months: int = Field(default=1, ge=1)
+    upi_transaction_ref: Optional[str] = None
+
+
+class BookingUPIPaymentSubmit(BaseModel):
+    upi_transaction_ref: str = Field(..., min_length=4, max_length=64, description="UPI UTR or Reference Number")
+    paid_amount: float = Field(..., gt=0)
+    payer_vpa: Optional[str] = None
