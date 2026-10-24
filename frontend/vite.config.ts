@@ -5,6 +5,9 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
+    watch: {
+      ignored: ['**/dist/**', '**/*.pdf', '**/node_modules/**', '**/.git/**'],
+    },
     proxy: {
       '/api/v1/disease-detection': {
         target: process.env.VITE_DISEASE_API_URL || 'http://localhost:8002',

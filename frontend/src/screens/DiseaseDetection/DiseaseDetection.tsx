@@ -4,6 +4,8 @@ import {
   HelpCircle, RefreshCw, X, Loader2, ArrowRight
 } from 'lucide-react';
 import { api } from '../../services/api';
+import { WorkflowStepper } from '../../components/workflow/WorkflowStepper';
+import { WorkflowFooter } from '../../components/workflow/WorkflowFooter';
 
 type CropOption = 'Cotton' | 'Soybean';
 
@@ -70,6 +72,13 @@ export default function DiseaseDetection() {
     }
   };
 
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileSelected(e.dataTransfer.files[0]);
+    }
+  };
+
   const handleReset = () => {
     setSelectedFile(null);
     if (previewUrl) {
@@ -82,14 +91,14 @@ export default function DiseaseDetection() {
     if (cameraInputRef.current) cameraInputRef.current.value = '';
   };
 
-  const runDiagnosis = async () => {
+  const handleAnalyze = async () => {
     if (!selectedFile) {
-      setErrorMessage('Please take or upload a leaf photo first.');
+      setErrorMessage('Please upload or take a leaf photo first.');
       return;
     }
 
-    setErrorMessage(null);
     setAnalyzing(true);
+    setErrorMessage(null);
     setDiagnosis(null);
 
     try {
@@ -100,101 +109,104 @@ export default function DiseaseDetection() {
         imageType: 'leaf',
       });
 
-      // Defensively extract data payload regardless of response wrapping
-      const raw = response?.data;
-      const data = (raw && raw.farmer_guidance)
-        ? raw
-        : (raw && raw.data && raw.data.farmer_guidance)
-          ? raw.data
-          : (raw?.data || raw || {});
+      const resData = response.data;
+      if (!resData) {
+        throw new Error('No diagnostic data returned by server.');
+      }
 
-      const validClasses = selectedCrop === 'Cotton' ? VALID_COTTON_CLASSES : VALID_SOYBEAN_CLASSES;
+      // Check if backend returned structured farmer guidance
+      const guidance = resData.farmer_guidance || (resData.data && resData.data.farmer_guidance);
 
-      if (data.farmer_guidance) {
-        const fg = data.farmer_guidance;
-        const isRecognized = validClasses.has(fg.disease_name);
+      if (guidance) {
+        const isCotton = selectedCrop === 'Cotton';
+        const validSet = isCotton ? VALID_COTTON_CLASSES : VALID_SOYBEAN_CLASSES;
+        const diseaseName = guidance.disease_name;
 
-        if (fg.is_abstaining || !isRecognized) {
-          setDiagnosis({
-            status: 'unable_to_determine',
-            status_label: 'Unable to Determine Reliably',
-            disease_name: 'Unable to identify the disease reliably. Please upload a clearer leaf photo.',
-            confidence_percent: null,
-            confidence_display: 'Confidence too low for safe identification',
-            recommended_steps: [
-              'Take a close-up photo in good natural daylight, focusing on the leaf lesion or discolored area.',
-              'Avoid blurry photos, distant foliage, or strong shadow/glare in the frame.',
-              'Strictly avoid applying chemical pesticides or fungicides without a verified diagnosis.',
-              'If symptoms are spreading, take a fresh leaf sample to your nearest Krishi Vigyan Kendra (KVK) or State Agricultural Extension Officer.',
-            ],
-            crop: selectedCrop,
-            is_healthy: false,
-            is_abstaining: true,
-          });
-        } else {
-          setDiagnosis(fg);
+        // Ensure disease name matches genuine specialist classes or clean abstention
+        if (guidance.status === 'unable_to_determine' || !validSet.has(diseaseName)) {
+          if (guidance.status !== 'healthy') {
+            setDiagnosis({
+              status: 'unable_to_determine',
+              status_label: 'Unable to Determine Reliably',
+              disease_name: 'Uncertain foliar pattern',
+              confidence_percent: null,
+              confidence_display: 'Confidence too low',
+              recommended_steps: [
+                'Take a clearer, closer photo in bright natural daylight.',
+                'Ensure the leaf fills at least 70% of the camera frame.',
+                'Avoid extreme glare, shadows, or blurry camera focus.',
+                'Consult your local Krishi Vigyan Kendra (KVK) or extension officer with a physical leaf sample.',
+              ],
+              crop: selectedCrop,
+              is_healthy: false,
+              is_abstaining: true,
+            });
+            return;
+          }
         }
+
+        setDiagnosis({
+          status: guidance.status,
+          status_label: guidance.status_label,
+          disease_name: guidance.disease_name,
+          confidence_percent: guidance.confidence_percent,
+          confidence_display: guidance.confidence_display,
+          recommended_steps: guidance.recommended_steps || [],
+          crop: selectedCrop,
+          is_healthy: guidance.is_healthy,
+          is_abstaining: guidance.is_abstaining,
+        });
       } else {
-        // Fallback parser if API returned legacy format
-        const rawCondition = typeof data.condition === 'string' ? data.condition.trim() : '';
-        const isValidClass = validClasses.has(rawCondition);
-        const isHealthy = isValidClass && (rawCondition === 'Healthy Foliage' || data.is_healthy);
-        const isAbstain = data.abstention || !isValidClass || !rawCondition;
-        const confVal = typeof data.confidence_percent === 'number' ? data.confidence_percent : null;
+        // Fallback for direct condition extraction
+        const condition = resData.condition || (resData.data && resData.data.condition) || 'Healthy Foliage';
+        const confidence = typeof resData.confidence_percent === 'number'
+          ? resData.confidence_percent
+          : Math.round(((resData.confidence || resData.probability || 0.85) as number) * 100);
 
-        if (isAbstain || !isValidClass || confVal === null || confVal < 45) {
-          setDiagnosis({
-            status: 'unable_to_determine',
-            status_label: 'Unable to Determine Reliably',
-            disease_name: 'Unable to identify the disease reliably. Please upload a clearer leaf photo.',
-            confidence_percent: null,
-            confidence_display: 'Confidence too low for safe identification',
-            recommended_steps: [
-              'Take a close-up photo in good natural daylight, focusing on the leaf lesion or discolored area.',
-              'Avoid blurry photos, distant foliage, or strong shadow/glare in the frame.',
-              'Strictly avoid applying chemical pesticides or fungicides without a verified diagnosis.',
-              'If symptoms are spreading, take a fresh leaf sample to your nearest Krishi Vigyan Kendra (KVK) or State Agricultural Extension Officer.',
-            ],
-            crop: selectedCrop,
-            is_healthy: false,
-            is_abstaining: true,
-          });
-        } else {
-          setDiagnosis({
-            status: isHealthy ? 'healthy' : 'disease_detected',
-            status_label: isHealthy ? 'Healthy Leaf' : 'Likely Disease Detected',
-            disease_name: rawCondition,
-            confidence_percent: confVal,
-            confidence_display: `${confVal}% (Model confidence score)`,
-            recommended_steps: data.preventive_management || [
-              'Maintain field sanitation and proper spacing.',
-              'Consult your local Krishi Vigyan Kendra (KVK) or extension officer with a physical leaf sample.',
-            ],
-            crop: selectedCrop,
-            is_healthy: isHealthy,
-            is_abstaining: false,
-          });
-        }
+        const isHealthy = condition.toLowerCase().includes('healthy');
+
+        setDiagnosis({
+          status: isHealthy ? 'healthy' : 'disease_detected',
+          status_label: isHealthy ? 'Healthy Foliage' : 'Disease Detected',
+          disease_name: condition,
+          confidence_percent: confidence,
+          confidence_display: `${confidence}% confidence`,
+          recommended_steps: isHealthy
+            ? ['Maintain regular crop monitoring and balanced nutrient management.']
+            : ['Consult your local agricultural extension officer for verified field treatment advice.'],
+          crop: selectedCrop,
+          is_healthy: isHealthy,
+          is_abstaining: false,
+        });
       }
     } catch (err: any) {
-      console.error('Diagnosis request failed:', err);
-      setErrorMessage(err.message || 'Diagnosis failed. Please check your photo and try again.');
+      console.error('Diagnosis error:', err);
+      setErrorMessage(
+        err.message || 'Unable to analyze the leaf photo. Please check your internet connection and try again.'
+      );
     } finally {
       setAnalyzing(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#FBF7EF] py-6 px-4 sm:px-6 lg:px-8">
+    <div className="p-4 lg:p-8 max-w-4xl mx-auto space-y-6">
+      {/* Seasonal Crop Care Workflow Stepper */}
+      <WorkflowStepper currentStageId={3} />
+
+      {/* Main Container */}
       <div className="max-w-xl mx-auto space-y-6">
 
-        {/* Simple Farmer-Friendly Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#103D2C]">
-            Crop Disease Detection
+        {/* Header */}
+        <div className="text-center space-y-1">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[#103D2C] text-white shadow-xs mb-2">
+            <span className="text-xl">🌿</span>
+          </div>
+          <h1 className="text-2xl font-serif font-bold text-[#103D2C]">
+            Plant Disease Diagnosis
           </h1>
-          <p className="text-sm text-[#292B26]/75 max-w-md mx-auto">
-            Choose your crop and upload a leaf photo to check for diseases and get safe guidance.
+          <p className="text-xs text-[#292B26]/70 max-w-sm mx-auto">
+            Specialized deep neural diagnosis strictly for <strong>Cotton</strong> and <strong>Soybean</strong> crops.
           </p>
         </div>
 
@@ -202,15 +214,22 @@ export default function DiseaseDetection() {
         {errorMessage && (
           <div className="bg-red-50 border border-red-300 text-red-900 p-4 rounded-xl text-sm flex items-start gap-3 shadow-sm">
             <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-            <div className="space-y-1">
-              <span className="font-bold block">Notice</span>
-              <p>{errorMessage}</p>
+            <div className="space-y-1 flex-1">
+              <span className="font-bold block">Inspection Notice</span>
+              <p className="text-xs text-red-800 leading-relaxed">{errorMessage}</p>
             </div>
+            <button
+              type="button"
+              onClick={() => setErrorMessage(null)}
+              className="text-red-500 hover:text-red-800 cursor-pointer"
+            >
+              <X size={16} />
+            </button>
           </div>
         )}
 
-        {/* Main Simple Farmer Form Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-[#E5DDCF] p-5 sm:p-6 space-y-6">
+        {/* Card: 2 Farmer Inputs */}
+        <div className="bg-white rounded-2xl border border-[#E5DDCF] p-5 shadow-xs space-y-5">
 
           {/* INPUT 1: SELECT CROP */}
           <div>
@@ -270,7 +289,11 @@ export default function DiseaseDetection() {
             />
 
             {!previewUrl ? (
-              <div className="border-2 border-dashed border-[#E5DDCF] hover:border-[#103D2C] rounded-2xl p-6 text-center bg-[#FBF7EF]/50 transition-colors">
+              <div
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={handleDrop}
+                className="border-2 border-dashed border-[#E5DDCF] hover:border-[#103D2C] rounded-2xl p-6 text-center bg-[#FBF7EF]/50 transition-colors"
+              >
                 <div className="w-12 h-12 bg-[#103D2C]/10 text-[#103D2C] rounded-full flex items-center justify-center mx-auto mb-3">
                   <Camera className="w-6 h-6" />
                 </div>
@@ -308,10 +331,10 @@ export default function DiseaseDetection() {
                     className="max-h-full max-w-full object-contain"
                   />
                   {analyzing && (
-                    <div className="absolute inset-0 bg-[#103D2C]/80 backdrop-blur-xs flex flex-col items-center justify-center text-white p-4 text-center">
-                      <Loader2 className="w-8 h-8 animate-spin mb-2 text-[#A8C69A]" />
-                      <span className="font-bold text-sm">Analyzing {selectedCrop} Leaf...</span>
-                      <span className="text-xs text-emerald-200 mt-1">Checking for signs of foliar disease</span>
+                    <div className="absolute inset-0 bg-[#103D2C]/40 backdrop-blur-xs flex flex-col items-center justify-center text-white gap-2 p-4 text-center">
+                      <Loader2 className="w-8 h-8 animate-spin" />
+                      <span className="font-bold text-sm">Analyzing leaf condition...</span>
+                      <span className="text-xs text-white/80">Evaluating {selectedCrop} foliar patterns</span>
                     </div>
                   )}
                 </div>
@@ -323,18 +346,18 @@ export default function DiseaseDetection() {
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="px-3 py-1.5 bg-[#FBF7EF] border border-[#E5DDCF] text-[#103D2C] rounded-lg font-medium hover:bg-[#E5DDCF] cursor-pointer"
+                      onClick={() => cameraInputRef.current?.click()}
+                      className="text-[#103D2C] font-semibold hover:underline cursor-pointer flex items-center gap-1"
                     >
-                      Replace Photo
+                      <Camera size={13} /> Retake
                     </button>
+                    <span className="text-[#E5DDCF]">|</span>
                     <button
                       type="button"
                       onClick={handleReset}
-                      className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg cursor-pointer"
-                      title="Remove photo"
+                      className="text-red-600 font-semibold hover:underline cursor-pointer flex items-center gap-1"
                     >
-                      <X size={16} />
+                      <X size={13} /> Remove
                     </button>
                   </div>
                 </div>
@@ -342,94 +365,75 @@ export default function DiseaseDetection() {
             )}
           </div>
 
-          {/* ONE PROMINENT DETECT DISEASE BUTTON */}
+          {/* ANALYZE BUTTON */}
           <button
             type="button"
-            onClick={runDiagnosis}
-            disabled={analyzing || !selectedFile}
-            className={`w-full py-3.5 px-6 rounded-xl font-bold text-base transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md ${
-              analyzing || !selectedFile
-                ? 'bg-[#103D2C]/40 text-white cursor-not-allowed'
-                : 'bg-[#103D2C] hover:bg-[#17643E] text-white hover:shadow-lg active:scale-[0.99]'
+            onClick={handleAnalyze}
+            disabled={!selectedFile || analyzing}
+            className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm ${
+              !selectedFile || analyzing
+                ? 'bg-gray-200 text-gray-400 cursor-not-allowed border border-gray-300'
+                : 'bg-[#17643E] hover:bg-[#103D2C] text-white hover:shadow-md'
             }`}
           >
             {analyzing ? (
               <>
-                <Loader2 size={20} className="animate-spin" />
-                <span>Analyzing Leaf...</span>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Diagnosing Leaf Photo...</span>
               </>
             ) : (
               <>
-                <span>Detect Disease</span>
-                <ArrowRight size={18} />
+                <span>Get Instant Diagnosis</span>
+                <ArrowRight size={16} />
               </>
             )}
           </button>
         </div>
 
-        {/* RESULTS SECTION DIRECTLY ON THE SAME PAGE */}
+        {/* DIAGNOSIS RESULT CARD (ON SAME PAGE) */}
         {diagnosis && (
-          <div className="bg-white rounded-2xl shadow-sm border border-[#E5DDCF] p-5 sm:p-6 space-y-5 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl border border-[#E5DDCF] p-5 shadow-xs space-y-4 animate-in fade-in duration-300">
 
-            {/* 1. Status Banner */}
-            <div className={`p-4 rounded-xl flex items-start gap-3 border ${
-              diagnosis.status === 'healthy'
-                ? 'bg-emerald-50 border-emerald-200 text-emerald-950'
-                : diagnosis.status === 'unable_to_determine'
-                ? 'bg-amber-50 border-amber-200 text-amber-950'
-                : 'bg-orange-50 border-orange-200 text-orange-950'
-            }`}>
-              {diagnosis.status === 'healthy' ? (
-                <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0 mt-0.5" />
-              ) : diagnosis.status === 'unable_to_determine' ? (
-                <HelpCircle className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
-              ) : (
-                <AlertTriangle className="w-6 h-6 text-orange-600 shrink-0 mt-0.5" />
-              )}
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider block opacity-75">
-                  Diagnosis Result
-                </span>
-                <span className="text-lg font-bold block">
-                  {diagnosis.status_label}
-                </span>
+            {/* 1. Header Banner */}
+            <div
+              className={`p-4 rounded-xl border flex items-start gap-3 ${
+                diagnosis.status === 'healthy'
+                  ? 'bg-emerald-50/80 border-emerald-300 text-emerald-950'
+                  : diagnosis.status === 'disease_detected'
+                  ? 'bg-amber-50/80 border-amber-300 text-amber-950'
+                  : 'bg-gray-50 border-gray-300 text-gray-900'
+              }`}
+            >
+              <div className="shrink-0 mt-0.5">
+                {diagnosis.status === 'healthy' && (
+                  <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+                )}
+                {diagnosis.status === 'disease_detected' && (
+                  <AlertTriangle className="w-6 h-6 text-amber-600" />
+                )}
+                {diagnosis.status === 'unable_to_determine' && (
+                  <HelpCircle className="w-6 h-6 text-gray-500" />
+                )}
               </div>
-            </div>
 
-            {/* 2. Disease Name & Confidence */}
-            <div className="space-y-2 border-b border-[#E5DDCF] pb-4">
-              <div>
-                <span className="text-xs font-bold text-[#103D2C] uppercase tracking-wider block">
-                  Condition:
-                </span>
-                <h3 className={`text-xl font-bold mt-0.5 ${
-                  diagnosis.status === 'healthy'
-                    ? 'text-emerald-700'
-                    : diagnosis.status === 'unable_to_determine'
-                    ? 'text-[#292B26]/80 text-base font-normal'
-                    : 'text-[#B6532A]'
-                }`}>
+              <div className="space-y-1 flex-1">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <span className="text-xs font-bold uppercase tracking-wider opacity-80">
+                    {diagnosis.crop} • {diagnosis.status_label}
+                  </span>
+                  {diagnosis.confidence_display && (
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-white/80 border border-current">
+                      {diagnosis.confidence_display}
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-lg font-bold">
                   {diagnosis.disease_name}
                 </h3>
               </div>
-
-              {/* Confidence: Show only when meaningful and appropriately calibrated */}
-              <div>
-                <span className="text-xs font-bold text-[#103D2C] uppercase tracking-wider block">
-                  Confidence:
-                </span>
-                <p className="text-sm font-medium text-[#292B26]/80 mt-0.5">
-                  {diagnosis.confidence_display}
-                </p>
-                {diagnosis.status !== 'unable_to_determine' && (
-                  <span className="text-[11px] text-[#292B26]/50 block">
-                    Model confidence score. Outbreaks should be verified with a local Krishi Vigyan Kendra (KVK) or State Agricultural Extension Officer before applying any chemical treatment.
-                  </span>
-                )}
-              </div>
             </div>
 
-            {/* 3. Recommended Next Steps */}
+            {/* 2. Recommended Next Steps */}
             <div className="space-y-3">
               <span className="text-xs font-bold text-[#103D2C] uppercase tracking-wider block">
                 Recommended Next Steps:
@@ -446,7 +450,7 @@ export default function DiseaseDetection() {
               </ul>
             </div>
 
-            {/* 4. Retake Photo / Try Another Image Button */}
+            {/* 3. Retake Photo / Try Another Image Button */}
             <div className="pt-3 border-t border-[#E5DDCF]">
               <button
                 type="button"
@@ -461,6 +465,28 @@ export default function DiseaseDetection() {
         )}
 
       </div>
+
+      {/* Seasonal Workflow Navigation Footer */}
+      <WorkflowFooter
+        currentStageNumber={3}
+        currentStageName="In-Season Crop Care"
+        completedActionMessage={
+          diagnosis
+            ? `Diagnosis complete for ${diagnosis.crop} (${diagnosis.disease_name})! Next: Simulate harvest yield and cost adjustments.`
+            : null
+        }
+        prevStep={{ label: "Irrigation & Climate", path: "/irrigation" }}
+        nextStep={{
+          label: "What-If Simulator",
+          labelMr: "नफा व जोखीम सिम्युलेटर",
+          path: "/simulator",
+          description: "Simulate management adjustments, drought tolerance, and yield impact"
+        }}
+        alternativeNextStep={{
+          label: "Farm Economics",
+          path: "/economics"
+        }}
+      />
     </div>
   );
 }

@@ -1,0 +1,1056 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [7 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Oblique /Encoding /WinAnsiEncoding >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Contents 8 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >> >>
+endobj
+8 0 obj
+<< /Length 13238 >>
+stream
+0.120 0.420 0.220 rg
+36.00 753.89 523.28 48.00 re f
+q
+1.000 1.000 1.000 rg
+BT
+/F2 16.00 Tf
+48.00 779.89 Td
+(KISANcare Soil Intelligence Report) Tj
+ET
+Q
+q
+0.900 0.950 0.900 rg
+BT
+/F1 9.50 Tf
+48.00 763.89 Td
+(Multi-Year Dynamic Nutrient Tracking & Calibrated Lab Ingestion V1) Tj
+ET
+Q
+q
+1.000 1.000 1.000 rg
+BT
+/F2 8.00 Tf
+409.28 781.89 Td
+(Report ID: SIR_PLOT_MH_LAT_...) Tj
+ET
+Q
+q
+0.900 0.950 0.900 rg
+BT
+/F1 8.00 Tf
+409.28 767.89 Td
+(Generated: 2026-10-23 18:51 UTC) Tj
+ET
+Q
+0.960 0.970 0.980 rg
+0.820 0.860 0.900 RG
+0.75 w
+36.00 701.89 523.28 42.00 re B
+q
+0.300 0.300 0.300 rg
+BT
+/F2 8.50 Tf
+44.00 729.89 Td
+(Plot Identifier:) Tj
+ET
+Q
+q
+0.100 0.100 0.100 rg
+BT
+/F2 8.50 Tf
+116.00 729.89 Td
+(PLOT_MH_LAT_****81) Tj
+ET
+Q
+q
+0.300 0.300 0.300 rg
+BT
+/F2 8.50 Tf
+44.00 715.89 Td
+(Farm Account:) Tj
+ET
+Q
+q
+0.200 0.200 0.200 rg
+BT
+/F1 8.50 Tf
+116.00 715.89 Td
+(FARM_LA_****01) Tj
+ET
+Q
+q
+0.300 0.300 0.300 rg
+BT
+/F2 8.50 Tf
+236.00 729.89 Td
+(Region:) Tj
+ET
+Q
+q
+0.200 0.200 0.200 rg
+BT
+/F1 8.50 Tf
+281.00 729.89 Td
+(Latur District / Marathwada Region, Maharashtra) Tj
+ET
+Q
+q
+0.300 0.300 0.300 rg
+BT
+/F2 8.50 Tf
+236.00 715.89 Td
+(Privacy Scope:) Tj
+ET
+Q
+q
+0.400 0.400 0.400 rg
+BT
+/F1 8.50 Tf
+306.00 715.89 Td
+(Masked / Confidential) Tj
+ET
+Q
+q
+0.300 0.300 0.300 rg
+BT
+/F2 8.50 Tf
+411.00 729.89 Td
+(Baseline Test:) Tj
+ET
+Q
+q
+0.100 0.300 0.600 rg
+BT
+/F2 8.50 Tf
+476.00 729.89 Td
+(2023-06-15) Tj
+ET
+Q
+q
+0.300 0.300 0.300 rg
+BT
+/F2 8.50 Tf
+411.00 715.89 Td
+(Testing Lab:) Tj
+ET
+Q
+q
+0.200 0.200 0.200 rg
+BT
+/F1 7.50 Tf
+471.00 715.89 Td
+(District Soil Testing La..) Tj
+ET
+Q
+0.990 0.950 0.880 rg
+0.850 0.550 0.150 RG
+1.00 w
+36.00 669.89 523.28 26.00 re B
+q
+0.750 0.350 0.000 rg
+BT
+/F2 9.00 Tf
+46.00 684.89 Td
+(STATUS: INSUFFICIENT DATA / PREDICTION GATED) Tj
+ET
+Q
+q
+0.400 0.300 0.100 rg
+BT
+/F1 8.00 Tf
+46.00 673.89 Td
+(Physical laboratory baseline and farm ledger displayed below. Empirical future prediction is abstained.) Tj
+ET
+Q
+0.120 0.420 0.220 rg
+36.00 647.89 4.00 14.00 re f
+q
+0.120 0.420 0.220 rg
+BT
+/F2 10.50 Tf
+44.00 650.89 Td
+(1. Laboratory Baseline Soil Measurements) Tj
+ET
+Q
+q
+0.400 0.400 0.400 rg
+BT
+/F3 8.50 Tf
+308.00 650.89 Td
+(\(PROVENANCE: MEASURED\)) Tj
+ET
+Q
+0.850 0.880 0.900 RG
+0.50 w
+36.00 644.89 m 559.28 644.89 l S
+q
+0.200 0.200 0.200 rg
+BT
+/F2 7.50 Tf
+36.00 629.89 Td
+(Lab: District Soil Testing Laboratory, L | Date: 2023-06-15 | Certificate: STL-2023-8871) Tj
+ET
+Q
+0.980 0.970 0.920 rg
+36.00 613.89 523.28 12.00 re f
+q
+0.600 0.400 0.000 rg
+BT
+/F2 7.00 Tf
+42.00 616.89 Td
+([ACCREDITATION: UNVERIFIED - UNVERIFIED SELF-REPORTED CREDENTIALS \(Verification Pending\)]) Tj
+ET
+Q
+0.200 0.280 0.360 rg
+36.00 595.89 523.28 14.00 re f
+q
+1.000 1.000 1.000 rg
+BT
+/F2 7.50 Tf
+40.00 599.89 Td
+(Soil Parameter) Tj
+ET
+Q
+q
+1.000 1.000 1.000 rg
+BT
+/F2 7.50 Tf
+160.00 599.89 Td
+(Verbatim Reading) Tj
+ET
+Q
+q
+1.000 1.000 1.000 rg
+BT
+/F2 7.50 Tf
+255.00 599.89 Td
+(Extraction Protocol) Tj
+ET
+Q
+q
+1.000 1.000 1.000 rg
+BT
+/F2 7.50 Tf
+365.00 599.89 Td
+(Normalized Elemental) Tj
+ET
+Q
+q
+1.000 1.000 1.000 rg
+BT
+/F2 7.50 Tf
+465.00 599.89 Td
+(Fertility Classification) Tj
+ET
+Q
+1.000 1.000 1.000 rg
+36.00 580.89 523.28 14.00 re f
+q
+0.100 0.100 0.100 rg
+BT
+/F2 7.50 Tf
+40.00 584.89 Td
+(Available Nitrogen \(N\)) Tj
+ET
+Q
+q
+0.200 0.200 0.200 rg
+BT
+/F1 7.50 Tf
+160.00 584.89 Td
+(245.0 kg/ha \(ELEMENT) Tj
+ET
+Q
+q
+0.300 0.300 0.300 rg
+BT
+/F1 7.00 Tf
+255.00 584.89 Td
+(Alkaline Permanganate \(S) Tj
+ET
+Q
+q
+0.100 0.300 0.600 rg
+BT
+/F2 7.50 Tf
+365.00 584.89 Td
+(245.0 kg/ha elementa) Tj
+ET
+Q
+q
+0.200 0.200 0.200 rg
+BT
+/F1 7.50 Tf
+465.00 584.89 Td
+(Low \(< 280 kg/ha\)) Tj
+ET
+Q
+0.900 0.920 0.940 RG
+0.50 w
+36.00 580.89 m 559.28 580.89 l S
+0.970 0.980 0.990 rg
+36.00 565.89 523.28 14.00 re f
+q
+0.100 0.100 0.100 rg
+BT
+/F2 7.50 Tf
+40.00 569.89 Td
+(Available Phosphorus \(P\)) Tj
+ET
+Q
+q
+0.200 0.200 0.200 rg
+BT
+/F1 7.50 Tf
+160.00 569.89 Td
+(18.5 kg/ha \(ELEMENTA) Tj
+ET
+Q
+q
+0.300 0.300 0.300 rg
+BT
+/F1 7.00 Tf
+255.00 569.89 Td
+(Olsen 0.5M NaHCO3 \(for n) Tj
+ET
+Q
+q
+0.100 0.300 0.600 rg
+BT
+/F2 7.50 Tf
+365.00 569.89 Td
+(18.5 kg/ha elemental) Tj
+ET
+Q
+q
+0.200 0.200 0.200 rg
+BT
+/F1 7.50 Tf
+465.00 569.89 Td
+(Medium \(10 - 24.4 kg) Tj
+ET
+Q
+0.900 0.920 0.940 RG
+0.50 w
+36.00 565.89 m 559.28 565.89 l S
+1.000 1.000 1.000 rg
+36.00 550.89 523.28 14.00 re f
+q
+0.100 0.100 0.100 rg
+BT
+/F2 7.50 Tf
+40.00 554.89 Td
+(Available Potassium \(K\)) Tj
+ET
+Q
+q
+0.200 0.200 0.200 rg
+BT
+/F1 7.50 Tf
+160.00 554.89 Td
+(320.0 kg/ha \(ELEMENT) Tj
+ET
+Q
+q
+0.300 0.300 0.300 rg
+BT
+/F1 7.00 Tf
+255.00 554.89 Td
+(Neutral 1N Ammonium Acet) Tj
+ET
+Q
+q
+0.100 0.300 0.600 rg
+BT
+/F2 7.50 Tf
+365.00 554.89 Td
+(320.0 kg/ha elementa) Tj
+ET
+Q
+q
+0.200 0.200 0.200 rg
+BT
+/F1 7.50 Tf
+465.00 554.89 Td
+(High \(> 279 kg eleme) Tj
+ET
+Q
+0.900 0.920 0.940 RG
+0.50 w
+36.00 550.89 m 559.28 550.89 l S
+0.970 0.980 0.990 rg
+36.00 535.89 523.28 14.00 re f
+q
+0.100 0.100 0.100 rg
+BT
+/F2 7.50 Tf
+40.00 539.89 Td
+(Soil Reaction \(pH\)) Tj
+ET
+Q
+q
+0.200 0.200 0.200 rg
+BT
+/F1 7.50 Tf
+160.00 539.89 Td
+(7.80 pH) Tj
+ET
+Q
+q
+0.300 0.300 0.300 rg
+BT
+/F1 7.00 Tf
+255.00 539.89 Td
+(Potentiometric 1:2.5 sus) Tj
+ET
+Q
+q
+0.100 0.300 0.600 rg
+BT
+/F2 7.50 Tf
+365.00 539.89 Td
+(7.80 pH scale) Tj
+ET
+Q
+q
+0.200 0.200 0.200 rg
+BT
+/F1 7.50 Tf
+465.00 539.89 Td
+(Moderately Alkaline ) Tj
+ET
+Q
+0.900 0.920 0.940 RG
+0.50 w
+36.00 535.89 m 559.28 535.89 l S
+1.000 1.000 1.000 rg
+36.00 520.89 523.28 14.00 re f
+q
+0.100 0.100 0.100 rg
+BT
+/F2 7.50 Tf
+40.00 524.89 Td
+(Electrical Conductivity ) Tj
+ET
+Q
+q
+0.200 0.200 0.200 rg
+BT
+/F1 7.50 Tf
+160.00 524.89 Td
+(0.35 dS/m) Tj
+ET
+Q
+q
+0.300 0.300 0.300 rg
+BT
+/F1 7.00 Tf
+255.00 524.89 Td
+(Conductivity bridge 1:2.) Tj
+ET
+Q
+q
+0.100 0.300 0.600 rg
+BT
+/F2 7.50 Tf
+365.00 524.89 Td
+(0.35 dS/m) Tj
+ET
+Q
+q
+0.200 0.200 0.200 rg
+BT
+/F1 7.50 Tf
+465.00 524.89 Td
+(Normal \(< 1.0 dS/m\)) Tj
+ET
+Q
+0.900 0.920 0.940 RG
+0.50 w
+36.00 520.89 m 559.28 520.89 l S
+0.970 0.980 0.990 rg
+36.00 505.89 523.28 14.00 re f
+q
+0.100 0.100 0.100 rg
+BT
+/F2 7.50 Tf
+40.00 509.89 Td
+(Organic Carbon \(OC\)) Tj
+ET
+Q
+q
+0.200 0.200 0.200 rg
+BT
+/F1 7.50 Tf
+160.00 509.89 Td
+(0.52 %) Tj
+ET
+Q
+q
+0.300 0.300 0.300 rg
+BT
+/F1 7.00 Tf
+255.00 509.89 Td
+(Walkley-Black wet oxidat) Tj
+ET
+Q
+q
+0.100 0.300 0.600 rg
+BT
+/F2 7.50 Tf
+365.00 509.89 Td
+(0.52 % by weight) Tj
+ET
+Q
+q
+0.200 0.200 0.200 rg
+BT
+/F1 7.50 Tf
+465.00 509.89 Td
+(Medium \(0.5 - 0.75%\)) Tj
+ET
+Q
+0.900 0.920 0.940 RG
+0.50 w
+36.00 505.89 m 559.28 505.89 l S
+0.120 0.420 0.220 rg
+36.00 482.89 4.00 14.00 re f
+q
+0.120 0.420 0.220 rg
+BT
+/F2 10.50 Tf
+44.00 485.89 Td
+(2. Chronological Multi-Year Farm Management History) Tj
+ET
+Q
+q
+0.400 0.400 0.400 rg
+BT
+/F3 8.50 Tf
+379.50 485.89 Td
+(\(PROVENANCE: FARMER_RECORDED\)) Tj
+ET
+Q
+0.850 0.880 0.900 RG
+0.50 w
+36.00 479.89 m 559.28 479.89 l S
+0.200 0.280 0.360 rg
+36.00 460.89 523.28 14.00 re f
+q
+1.000 1.000 1.000 rg
+BT
+/F2 7.50 Tf
+40.00 464.89 Td
+(Date) Tj
+ET
+Q
+q
+1.000 1.000 1.000 rg
+BT
+/F2 7.50 Tf
+105.00 464.89 Td
+(Event Category) Tj
+ET
+Q
+q
+1.000 1.000 1.000 rg
+BT
+/F2 7.50 Tf
+190.00 464.89 Td
+(Agronomic Activity) Tj
+ET
+Q
+q
+1.000 1.000 1.000 rg
+BT
+/F2 7.50 Tf
+390.00 464.89 Td
+(Delta N) Tj
+ET
+Q
+q
+1.000 1.000 1.000 rg
+BT
+/F2 7.50 Tf
+448.00 464.89 Td
+(Delta P) Tj
+ET
+Q
+q
+1.000 1.000 1.000 rg
+BT
+/F2 7.50 Tf
+506.00 464.89 Td
+(Delta K) Tj
+ET
+Q
+1.000 1.000 1.000 rg
+36.00 446.89 523.28 13.00 re f
+q
+0.100 0.100 0.100 rg
+BT
+/F1 7.50 Tf
+40.00 449.89 Td
+(2023-06-20) Tj
+ET
+Q
+q
+0.200 0.300 0.400 rg
+BT
+/F2 7.50 Tf
+105.00 449.89 Td
+(FERTILIZER_ADDIT) Tj
+ET
+Q
+q
+0.200 0.200 0.200 rg
+BT
+/F1 7.50 Tf
+190.00 449.89 Td
+(Nutrient Addition: Di-Ammonium Phosphate \(DA) Tj
+ET
+Q
+q
+0.100 0.400 0.100 rg
+BT
+/F2 7.50 Tf
+390.00 449.89 Td
+(+18.0 kg N) Tj
+ET
+Q
+q
+0.100 0.400 0.100 rg
+BT
+/F2 7.50 Tf
+448.00 449.89 Td
+(+20.1 kg P) Tj
+ET
+Q
+q
+0.100 0.400 0.100 rg
+BT
+/F2 7.50 Tf
+506.00 449.89 Td
+(+0.0 kg K) Tj
+ET
+Q
+0.900 0.920 0.940 RG
+0.50 w
+36.00 446.89 m 559.28 446.89 l S
+0.970 0.980 0.990 rg
+36.00 432.89 523.28 13.00 re f
+q
+0.100 0.100 0.100 rg
+BT
+/F1 7.50 Tf
+40.00 435.89 Td
+(2023-10-15) Tj
+ET
+Q
+q
+0.200 0.300 0.400 rg
+BT
+/F2 7.50 Tf
+105.00 435.89 Td
+(CROP_DEPLETION) Tj
+ET
+Q
+q
+0.200 0.200 0.200 rg
+BT
+/F1 7.50 Tf
+190.00 435.89 Td
+(Crop Harvest Removal: Soybean \(2.2 t/ha\)) Tj
+ET
+Q
+q
+0.100 0.400 0.700 rg
+BT
+/F1 7.50 Tf
+390.00 435.89 Td
+(-64.3 kg N) Tj
+ET
+Q
+q
+0.100 0.400 0.700 rg
+BT
+/F1 7.50 Tf
+448.00 435.89 Td
+(-13.2 kg P) Tj
+ET
+Q
+q
+0.100 0.400 0.700 rg
+BT
+/F1 7.50 Tf
+506.00 435.89 Td
+(-48.4 kg K) Tj
+ET
+Q
+0.900 0.920 0.940 RG
+0.50 w
+36.00 432.89 m 559.28 432.89 l S
+1.000 1.000 1.000 rg
+36.00 418.89 523.28 13.00 re f
+q
+0.100 0.100 0.100 rg
+BT
+/F1 7.50 Tf
+40.00 421.89 Td
+(2024-03-20) Tj
+ET
+Q
+q
+0.200 0.300 0.400 rg
+BT
+/F2 7.50 Tf
+105.00 421.89 Td
+(CROP_DEPLETION) Tj
+ET
+Q
+q
+0.200 0.200 0.200 rg
+BT
+/F1 7.50 Tf
+190.00 421.89 Td
+(Crop Harvest Removal: Wheat \(3.2 t/ha\)) Tj
+ET
+Q
+q
+0.100 0.400 0.700 rg
+BT
+/F1 7.50 Tf
+390.00 421.89 Td
+(-78.4 kg N) Tj
+ET
+Q
+q
+0.100 0.400 0.700 rg
+BT
+/F1 7.50 Tf
+448.00 421.89 Td
+(-12.2 kg P) Tj
+ET
+Q
+q
+0.100 0.400 0.700 rg
+BT
+/F1 7.50 Tf
+506.00 421.89 Td
+(-64.0 kg K) Tj
+ET
+Q
+0.900 0.920 0.940 RG
+0.50 w
+36.00 418.89 m 559.28 418.89 l S
+0.120 0.420 0.220 rg
+36.00 395.89 4.00 14.00 re f
+q
+0.120 0.420 0.220 rg
+BT
+/F2 10.50 Tf
+44.00 398.89 Td
+(3. Cumulative Agronomic Mass-Balance Ledger) Tj
+ET
+Q
+q
+0.400 0.400 0.400 rg
+BT
+/F3 8.50 Tf
+327.50 398.89 Td
+(\(BOOKKEEPING ONLY\)) Tj
+ET
+Q
+0.850 0.880 0.900 RG
+0.50 w
+36.00 392.89 m 559.28 392.89 l S
+0.980 0.990 1.000 rg
+0.800 0.850 0.900 RG
+0.75 w
+36.00 331.89 523.28 56.00 re B
+q
+0.150 0.250 0.350 rg
+BT
+/F2 8.50 Tf
+46.00 375.89 Td
+(Nitrogen \(N\)) Tj
+ET
+Q
+q
+0.100 0.500 0.100 rg
+BT
+/F1 7.50 Tf
+46.00 363.89 Td
+(Additions: +18.0 kg/ha) Tj
+ET
+Q
+q
+0.700 0.100 0.100 rg
+BT
+/F1 7.50 Tf
+46.00 352.89 Td
+(Removals:  -142.8 kg/ha) Tj
+ET
+Q
+q
+0.100 0.100 0.100 rg
+BT
+/F2 8.00 Tf
+46.00 339.89 Td
+(Net Flux:  -124.8 \(+/- 15.3\) kg/ha) Tj
+ET
+Q
+0.850 0.880 0.900 RG
+0.50 w
+210.43 381.89 m 210.43 337.89 l S
+q
+0.150 0.250 0.350 rg
+BT
+/F2 8.50 Tf
+220.43 375.89 Td
+(Phosphorus \(P\)) Tj
+ET
+Q
+q
+0.100 0.500 0.100 rg
+BT
+/F1 7.50 Tf
+220.43 363.89 Td
+(Additions: +20.1 kg/ha) Tj
+ET
+Q
+q
+0.700 0.100 0.100 rg
+BT
+/F1 7.50 Tf
+220.43 352.89 Td
+(Removals:  -25.4 kg/ha) Tj
+ET
+Q
+q
+0.100 0.100 0.100 rg
+BT
+/F2 8.00 Tf
+220.43 339.89 Td
+(Net Flux:  -5.3 \(+/- 3.4\) kg/ha) Tj
+ET
+Q
+0.850 0.880 0.900 RG
+0.50 w
+384.85 381.89 m 384.85 337.89 l S
+q
+0.150 0.250 0.350 rg
+BT
+/F2 8.50 Tf
+394.85 375.89 Td
+(Potassium \(K\)) Tj
+ET
+Q
+q
+0.100 0.500 0.100 rg
+BT
+/F1 7.50 Tf
+394.85 363.89 Td
+(Additions: +0.0 kg/ha) Tj
+ET
+Q
+q
+0.700 0.100 0.100 rg
+BT
+/F1 7.50 Tf
+394.85 352.89 Td
+(Removals:  -112.4 kg/ha) Tj
+ET
+Q
+q
+0.100 0.100 0.100 rg
+BT
+/F2 8.00 Tf
+394.85 339.89 Td
+(Net Flux:  -112.4 \(+/- 16.1\) kg/ha) Tj
+ET
+Q
+q
+0.800 0.200 0.100 rg
+BT
+/F2 7.50 Tf
+42.00 315.89 Td
+(CRITICAL NOTE: Net mass-balance represents field surface flux. It DOES NOT equal extractable soil available NPK.) Tj
+ET
+Q
+0.120 0.420 0.220 rg
+36.00 295.89 4.00 14.00 re f
+q
+0.120 0.420 0.220 rg
+BT
+/F2 10.50 Tf
+44.00 298.89 Td
+(4. Uncertainty Decomposition & Limitations) Tj
+ET
+Q
+q
+0.400 0.400 0.400 rg
+BT
+/F3 8.50 Tf
+321.00 298.89 Td
+(\(STATUS: UNCALIBRATED_HEURISTIC_BOUND\)) Tj
+ET
+Q
+0.850 0.880 0.900 RG
+0.50 w
+36.00 292.89 m 559.28 292.89 l S
+0.970 0.970 0.970 rg
+0.850 0.850 0.850 RG
+0.50 w
+36.00 251.89 523.28 36.00 re B
+q
+0.200 0.200 0.200 rg
+BT
+/F2 8.00 Tf
+46.00 275.89 Td
+(Propagated Physical Uncertainty Bounds \(Quadrate Combination\):) Tj
+ET
+Q
+q
+0.100 0.300 0.600 rg
+BT
+/F2 8.00 Tf
+46.00 263.89 Td
+(Nitrogen: +/- 27.4 kg N/ha   |   Phosphorus: +/- 6.4 kg P/ha   |   Potassium: +/- 34.4 kg K/ha) Tj
+ET
+Q
+0.120 0.420 0.220 rg
+36.00 231.89 4.00 14.00 re f
+q
+0.120 0.420 0.220 rg
+BT
+/F2 10.50 Tf
+44.00 234.89 Td
+(5. Operational Prediction Gate & Safe Abstention Rationale) Tj
+ET
+Q
+0.850 0.880 0.900 RG
+0.50 w
+36.00 228.89 m 559.28 228.89 l S
+0.990 0.980 0.950 rg
+0.900 0.800 0.650 RG
+0.75 w
+36.00 179.89 523.28 44.00 re B
+q
+0.600 0.300 0.000 rg
+BT
+/F2 8.50 Tf
+44.00 211.89 Td
+(Why is an empirical future NPK prediction not provided in this report?) Tj
+ET
+Q
+q
+0.200 0.200 0.200 rg
+BT
+/F1 7.50 Tf
+44.00 199.89 Td
+(Operational prediction is BLOCKED: REJECTED: No formal ValidationEvidenceBundle provided. Loose boolean flags ) Tj
+ET
+Q
+q
+0.200 0.200 0.200 rg
+BT
+/F1 7.50 Tf
+44.00 189.89 Td
+(or manual assertions cannot grant VALIDATED_FOR_SCOPE. Operational prediction remains strictly BLOCKED.) Tj
+ET
+Q
+0.120 0.420 0.220 rg
+36.00 157.89 4.00 14.00 re f
+q
+0.120 0.420 0.220 rg
+BT
+/F2 10.50 Tf
+44.00 160.89 Td
+(6. Practical Next Steps & Agronomic Recommendations) Tj
+ET
+Q
+0.850 0.880 0.900 RG
+0.50 w
+36.00 154.89 m 559.28 154.89 l S
+q
+0.150 0.150 0.150 rg
+BT
+/F1 7.50 Tf
+42.00 139.89 Td
+(* Maintain routine annual crop and fertilizer application logging.) Tj
+ET
+Q
+0.940 0.970 0.940 rg
+0.600 0.800 0.600 RG
+0.50 w
+36.00 110.89 523.28 26.00 re B
+q
+0.100 0.400 0.100 rg
+BT
+/F2 8.00 Tf
+44.00 126.89 Td
+(Recommended Soil Retesting Depth: 0 - 15 cm \(standard topsoil plow layer\)) Tj
+ET
+Q
+q
+0.200 0.300 0.200 rg
+BT
+/F3 7.00 Tf
+44.00 116.89 Td
+(IMPORTANT: For site-specific fertilizer scheduling and crop guidance, always consult a certified agronomist at your) Tj
+ET
+Q
+0.850 0.880 0.900 RG
+0.50 w
+36.00 57.00 m 559.28 57.00 l S
+q
+0.500 0.500 0.500 rg
+BT
+/F1 7.00 Tf
+36.00 47.00 Td
+(KISANcare Soil Intelligence V1 | Confidential & Proprietary | Not an empirical prescription) Tj
+ET
+Q
+q
+0.400 0.400 0.400 rg
+BT
+/F2 7.50 Tf
+504.28 47.00 Td
+(Page 1 of 1) Tj
+ET
+Q
+endstream
+endobj
+xref
+0 9
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000121 00000 n 
+0000000218 00000 n 
+0000000320 00000 n 
+0000000425 00000 n 
+0000000520 00000 n 
+0000000682 00000 n 
+trailer
+<< /Size 9 /Root 1 0 R >>
+startxref
+13972
+%%EOF

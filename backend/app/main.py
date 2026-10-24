@@ -1,16 +1,19 @@
 import os
 from pathlib import Path
-from dotenv import load_dotenv
-
-_repo_root = Path(__file__).resolve().parent.parent.parent
-_env_file = _repo_root / ".env"
-if _env_file.exists():
-    load_dotenv(dotenv_path=_env_file)
-else:
-    load_dotenv()
+try:
+    from dotenv import load_dotenv
+    _repo_root = Path(__file__).resolve().parent.parent.parent
+    _env_file = _repo_root / ".env"
+    if _env_file.exists():
+        load_dotenv(dotenv_path=_env_file)
+    else:
+        load_dotenv()
+except ImportError:
+    pass
 
 from fastapi import FastAPI
 from .api.endpoints import router as api_router
+from .api.rentals import router as rentals_router
 from .copilot.router import router as copilot_router
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -71,9 +74,14 @@ class SecurityMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(SecurityMiddleware)
 
+from .api.soil import soil_router
+
 # Routes mounted under /api/v1 (primary) and /api (convenience aliases)
 app.include_router(api_router, prefix="/api/v1")
+app.include_router(soil_router, prefix="/api/v1")
 app.include_router(copilot_router, prefix="/api")
+app.include_router(rentals_router, prefix="/api/v1")
+app.include_router(rentals_router, prefix="/api")
 
 @app.get("/health")
 def health_check():

@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { changeLanguage } from '../../i18n';
 import { Bot, Send, User, Sparkles, AlertCircle, Loader2, RefreshCw, CheckCircle2, ShieldAlert, Globe, ChevronDown, ChevronUp, Database } from 'lucide-react';
 import { api } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
@@ -25,8 +27,16 @@ interface Message {
 type LangOption = 'en' | 'mr' | 'hi';
 
 export default function Copilot() {
+  const { t, i18n } = useTranslation();
+  const currentAppLang = (['en', 'mr', 'hi'].includes(i18n.language) ? i18n.language : 'en') as LangOption;
   const { isDemoMode } = useAuth();
-  const [selectedLang, setSelectedLang] = useState<LangOption>('mr');
+  const [selectedLang, setSelectedLang] = useState<LangOption>(currentAppLang);
+
+  useEffect(() => {
+    if (['en', 'mr', 'hi'].includes(i18n.language)) {
+      setSelectedLang(i18n.language as LangOption);
+    }
+  }, [i18n.language]);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -112,8 +122,8 @@ export default function Copilot() {
       const friendlyMsg = isBackendDown
         ? 'Cannot connect to the KisanCare backend server (http://localhost:8000). Please ensure the backend service is running.'
         : msg.includes('503')
-        ? 'Copilot service is currently unavailable. Please verify backend AI configuration.'
-        : msg;
+          ? 'Copilot service is currently unavailable. Please verify backend AI configuration.'
+          : msg;
       setError(friendlyMsg);
       // Append an error notice in chat with retry action
       setMessages(prev => [
@@ -147,8 +157,8 @@ export default function Copilot() {
     const defaultGreeting = selectedLang === 'mr'
       ? `संवाद रीसेट केला आहे. मी तुम्हाला शेती, पिके किंवा माती नियोजनात कशी मदत करू शकतो?`
       : selectedLang === 'hi'
-      ? `बातचीत रीसेट कर दी गई है। मैं आपकी फसलों या कृषि निर्णयों में कैसे सहायता करूँ?`
-      : `Chat history cleared. How can I assist you with your crops or farm decisions today?`;
+        ? `बातचीत रीसेट कर दी गई है। मैं आपकी फसलों या कृषि निर्णयों में कैसे सहायता करूँ?`
+        : `Chat history cleared. How can I assist you with your crops or farm decisions today?`;
 
     setMessages([
       {
@@ -194,7 +204,7 @@ export default function Copilot() {
         <div>
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#103D2C] flex items-center gap-2">
-              <Bot className="text-[#B6532A]" /> KisanCare AI Copilot
+              <Bot className="text-[#B6532A]" /> {t('copilot.title')}
             </h1>
             {isDemoMode ? (
               <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-amber-300">
@@ -245,7 +255,7 @@ export default function Copilot() {
             onClick={clearChat}
             className="text-xs text-[#292B26]/60 hover:text-[#103D2C] border border-[#E5DDCF] bg-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors shadow-sm"
           >
-            <RefreshCw size={12} /> Clear Chat
+            <RefreshCw size={12} /> {t('common.clear', 'Clear Chat')}
           </button>
         </div>
       </div>
@@ -289,22 +299,20 @@ export default function Copilot() {
           {messages.map((msg, i) => (
             <div key={i} className={`flex gap-3 max-w-[90%] sm:max-w-[85%] ${msg.role === 'user' ? 'ml-auto flex-row-reverse' : ''}`}>
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm ${
-                  msg.role === 'user' ? 'bg-[#103D2C] text-white' : 'bg-[#17643E]/10 text-[#17643E]'
-                }`}
+                className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm ${msg.role === 'user' ? 'bg-[#103D2C] text-white' : 'bg-[#17643E]/10 text-[#17643E]'
+                  }`}
               >
                 {msg.role === 'user' ? <User size={16} /> : <Sparkles size={16} />}
               </div>
 
               <div className="flex flex-col flex-1 min-w-0">
                 <div
-                  className={`p-4 rounded-2xl text-sm leading-relaxed ${
-                    msg.role === 'user'
+                  className={`p-4 rounded-2xl text-sm leading-relaxed ${msg.role === 'user'
                       ? 'bg-[#103D2C] text-white rounded-tr-none'
                       : msg.failed
-                      ? 'bg-red-50 text-red-900 rounded-tl-none border border-red-200'
-                      : 'bg-[#FBF7EF] text-[#292B26] rounded-tl-none border border-[#E5DDCF]'
-                  }`}
+                        ? 'bg-red-50 text-red-900 rounded-tl-none border border-red-200'
+                        : 'bg-[#FBF7EF] text-[#292B26] rounded-tl-none border border-[#E5DDCF]'
+                    }`}
                 >
                   <p className="whitespace-pre-wrap">{msg.content}</p>
 
@@ -424,8 +432,8 @@ export default function Copilot() {
                 selectedLang === 'mr'
                   ? 'तुमची पिके, माती, कीड, सिंचन किंवा बाजाराबाबत विचारा...'
                   : selectedLang === 'hi'
-                  ? 'अपनी फसल, मिट्टी, कीट, सिंचाई या मंडी भाव के बारे में पूछें...'
-                  : 'Ask anything about your crops, soil, pests, or farm practices...'
+                    ? 'अपनी फसल, मिट्टी, कीट, सिंचाई या मंडी भाव के बारे में पूछें...'
+                    : 'Ask anything about your crops, soil, pests, or farm practices...'
               }
               className="w-full bg-white border border-[#E5DDCF] rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:border-[#17643E] shadow-sm"
               disabled={loading}

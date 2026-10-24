@@ -1,9 +1,20 @@
+from __future__ import annotations
 import os
 import re
 from pathlib import Path
-import xgboost as xgb
-import numpy as np
-import pandas as pd
+try:
+    import xgboost as xgb
+except ImportError:
+    xgb = None
+try:
+    import numpy as np
+except ImportError:
+    np = None
+
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
 from typing import Dict, Any
 from datetime import datetime, timedelta
 
