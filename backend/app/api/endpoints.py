@@ -903,3 +903,55 @@ def estimate_post_harvest_loss(data: PostHarvestRequest):
     }
     _persist_model_prediction("post_harvest_loss", "1.0.0", data.model_dump(), result, provenance="EMPIRICAL_STORAGE_HEURISTIC", farm_id=data.farm_id)
     return result
+
+
+# ==============================================================================
+# REAL ML FERTILIZER ADVISORY & STORE DISCOVERY
+# ==============================================================================
+from ..fertilizer.schemas import FertilizerInput, FertilizerAdvisoryResponse
+from ..fertilizer.service import fertilizer_service
+from ..fertilizer.store_service import find_matching_stores
+
+
+@router.post("/fertilizer-advisory", response_model=FertilizerAdvisoryResponse)
+def get_fertilizer_advisory(data: FertilizerInput):
+    """Execute real ML fertilizer application recommendation and local store discovery."""
+    try:
+        return fertilizer_service.generate_advisory(data)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Fertilizer advisory calculation failed: {exc}") from exc
+
+
+@router.get("/fertilizer-stores")
+def list_fertilizer_stores(
+    locality: Optional[str] = None,
+    pin_code: Optional[str] = None,
+    district: Optional[str] = None,
+    product: Optional[str] = None,
+):
+    """Discover local demonstration fertilizer retailers ranked by locality."""
+    prods = [product] if product else None
+    stores = find_matching_stores(locality=locality, pin_code=pin_code, district=district, recommended_fertilizers=prods)
+    return {"status": "success", "total": len(stores), "stores": [s.model_dump() for s in stores]}
+
+
+@router.get("/fertilizer-models")
+def get_fertilizer_model_info():
+    """Metadata inspection for DNgigi/FertiliserApplication multi-output random forest."""
+    from ..fertilizer.model_adapter import (
+        HF_REPO_ID,
+        PINNED_REVISION,
+        NUMERICAL_TARGETS,
+        SUPPORTED_TRAINING_CROPS,
+        fertilizer_model_adapter,
+    )
+    return {
+        "model_identifier": HF_REPO_ID,
+        "pinned_revision": PINNED_REVISION,
+        "is_available": fertilizer_model_adapter.is_available(),
+        "numerical_targets": NUMERICAL_TARGETS,
+        "supported_training_crops": list(SUPPORTED_TRAINING_CROPS.keys()),
+        "architecture": "MultiOutput Random Forest Regressor and Classifier",
+        "license": "MIT",
+        "limitations": "Trained on East Africa Agricultural Soil Survey data; unvalidated for Indian vertisols without local calibration.",
+    }

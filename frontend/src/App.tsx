@@ -15,6 +15,7 @@ import CropComparison from './screens/CropComparison/CropComparison';
 import WhatIfSimulator from './screens/WhatIfSimulator/WhatIfSimulator';
 import AiRecommendation from './screens/AiRecommendation/AiRecommendation';
 import SoilIntelligence from './screens/SoilIntelligence/SoilIntelligence';
+import FertilizerAdvisory from './screens/FertilizerAdvisory/FertilizerAdvisory';
 import DiseaseDetection from './screens/DiseaseDetection/DiseaseDetection';
 import IrrigationClimate from './screens/IrrigationClimate/IrrigationClimate';
 import FarmEconomics from './screens/FarmEconomics/FarmEconomics';
@@ -64,6 +65,8 @@ function App() {
             <Route path="soil" element={<SoilIntelligence />} />
             <Route path="soil-intelligence" element={<SoilIntelligence />} />
             <Route path="disease" element={<DiseaseDetection />} />
+            <Route path="fertilizer" element={<FertilizerAdvisory />} />
+            <Route path="fertilizer-advisory" element={<FertilizerAdvisory />} />
             <Route path="irrigation" element={<IrrigationClimate />} />
             <Route path="economics" element={<FarmEconomics />} />
             <Route path="market" element={<MarketIntelligence />} />

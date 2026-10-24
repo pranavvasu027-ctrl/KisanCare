@@ -14,6 +14,7 @@ const Sidebar = () => {
     { name: 'Crop Intelligence', path: '/crop-recommendation', icon: <Sprout size={20} /> },
     { name: 'Soil Intelligence', path: '/soil', icon: <TestTube size={20} /> },
     { name: 'Disease & Pest', path: '/disease', icon: <Bug size={20} /> },
+    { name: 'Fertilizer & Soil Advisory', path: '/fertilizer', icon: <FlaskConical size={20} /> },
     { name: 'Irrigation & Climate', path: '/irrigation', icon: <Droplets size={20} /> },
     { name: 'Farm Economics', path: '/economics', icon: <LineChart size={20} /> },
     { name: 'Market Intelligence', path: '/market', icon: <TrendingUp size={20} /> },

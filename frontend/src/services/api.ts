@@ -62,6 +62,87 @@ async function fetchAPI(endpoint: string, options?: RequestInit) {
   }
 }
 
+
+export interface FertilizerAdvisoryInput {
+  crop_name: string;
+  target_yield?: number;
+  field_size?: number;
+  ph: number;
+  organic_carbon: number;
+  total_nitrogen: number;
+  available_phosphorus: number;
+  exchangeable_potassium: number;
+  soil_moisture?: number;
+  locality?: string;
+  pin_code?: string;
+  district?: string;
+  disease_context?: string;
+}
+
+export interface NutrientRequirementItem {
+  nutrient: string;
+  quantity: number;
+  unit: string;
+  application_stage?: string;
+  description: string;
+}
+
+export interface CommercialRecommendationItem {
+  fertilizer_name: string;
+  grade: string;
+  dose_kg_ha: number;
+  bags_50kg_per_ha: number;
+  application_timing: string;
+}
+
+export interface FertilizerStoreItem {
+  store_id: string;
+  store_name: string;
+  address: string;
+  village: string;
+  district: string;
+  pin_code: string;
+  contact_phone: string;
+  distance_km?: number | null;
+  locality_match_level: string;
+  is_demo_inventory: boolean;
+  available_products: Array<{
+    product_name: string;
+    nutrient_grade: string;
+    mock_price_inr: number;
+    unit: string;
+    mock_stock_bags: number;
+    in_stock: boolean;
+  }>;
+  disclaimer: string;
+}
+
+export interface AmazonProductLinkItem {
+  product_name: string;
+  search_query: string;
+  amazon_search_url: string;
+  attribution: string;
+  disclaimer: string;
+}
+
+export interface FertilizerAdvisoryResult {
+  status: string;
+  crop: string;
+  field_size_ha: number;
+  target_yield_kg_ha: number;
+  model_identifier: string;
+  model_revision: string;
+  is_experimental: boolean;
+  validation_notice: string;
+  disease_context_notice?: string | null;
+  inputs_used: Record<string, any>;
+  nutrient_requirements: NutrientRequirementItem[];
+  commercial_recommendations: CommercialRecommendationItem[];
+  matching_local_stores: FertilizerStoreItem[];
+  amazon_discovery: AmazonProductLinkItem[];
+  warnings: string[];
+}
+
 export const api = {
   // Weather Service (Live Open-Meteo with Supabase fallback)
   getCurrentWeather: async (lat: number = 20.7002, lon: number = 77.0082, farmId?: string) => {
@@ -613,5 +694,30 @@ export const api = {
         message: err.message || 'Copilot service unreachable on http://localhost:8000'
       };
     }
-  }
+  },
+
+  // 14. Real ML Fertilizer & Soil Nutrient Advisory API
+  getFertilizerAdvisory: async (input: FertilizerAdvisoryInput) => {
+    const data = await fetchAPI('/api/v1/fertilizer-advisory', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input)
+    });
+    return { data: data as FertilizerAdvisoryResult, isDemo: false };
+  },
+
+  getFertilizerStores: async (params?: { locality?: string; pin_code?: string; district?: string; product?: string }) => {
+    const query = new URLSearchParams();
+    if (params?.locality) query.set('locality', params.locality);
+    if (params?.pin_code) query.set('pin_code', params.pin_code);
+    if (params?.district) query.set('district', params.district);
+    if (params?.product) query.set('product', params.product);
+    const data = await fetchAPI(`/api/v1/fertilizer-stores?${query.toString()}`);
+    return data;
+  },
+
+  getFertilizerModelInfo: async () => {
+    const data = await fetchAPI('/api/v1/fertilizer-models');
+    return data;
+  },
 };
