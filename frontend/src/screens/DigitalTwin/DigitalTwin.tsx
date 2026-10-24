@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { translateDynamic } from '../../i18n/translateHelper';
 import { useNavigate } from 'react-router-dom';
 import {
   Map as MapIcon, Leaf, Droplets, Thermometer, Wind, AlertTriangle, Layers,
@@ -10,6 +12,8 @@ import { api } from '../../services/api';
 import BoundaryEditorModal from '../../components/map/BoundaryEditorModal';
 import { WorkflowStepper } from '../../components/workflow/WorkflowStepper';
 import { WorkflowFooter } from '../../components/workflow/WorkflowFooter';
+import GpsBoundaryModal from '../../components/map/GpsBoundaryModal';
+import { Footprints } from 'lucide-react';
 
 // Create SVG-based custom Leaflet icons to eliminate broken default asset paths in Vite
 const createFarmMarkerIcon = (isApprox: boolean = false) => {
@@ -55,6 +59,8 @@ function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }
 }
 
 export default function DigitalTwin() {
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'en';
   const navigate = useNavigate();
   const [farmsList, setFarmsList] = useState<any[]>([]);
   const [selectedFarmId, setSelectedFarmId] = useState<string>('');
@@ -64,6 +70,7 @@ export default function DigitalTwin() {
   const [selectedFieldId, setSelectedFieldId] = useState<string>('all');
   const [activeBaseLayer, setActiveBaseLayer] = useState<'osm' | 'satellite'>('osm');
   const [isBoundaryModalOpen, setIsBoundaryModalOpen] = useState(false);
+  const [isGpsModalOpen, setIsGpsModalOpen] = useState(false);
 
   // Initial load: Fetch farms list
   useEffect(() => {
@@ -155,7 +162,7 @@ export default function DigitalTwin() {
         </div>
         <h2 className="text-2xl font-serif font-bold text-[#103D2C]">No Farm Profile Found</h2>
         <p className="text-[#292B26]/70 text-sm max-w-md">
-          To explore the interactive Digital Twin map and agro-climatic profile, create your first farm parcel in My Farms.
+          To explore the interactive {t('digitalTwin.title', 'Digital Twin')} map and agro-climatic profile, create your first farm parcel in My Farms.
         </p>
         <button
           onClick={() => navigate('/farm-setup')}
@@ -175,7 +182,7 @@ export default function DigitalTwin() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-serif font-bold text-[#103D2C]">Farm Digital Twin</h1>
+            <h1 className="text-3xl font-serif font-bold text-[#103D2C]">Farm {t('digitalTwin.title')}</h1>
             {farmData?.is_mock ? (
               <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-amber-300">
                 Sample Farm Profile
@@ -210,15 +217,27 @@ export default function DigitalTwin() {
             </div>
           )}
 
-          {/* Map Farm Boundary Action Button */}
+          {/* Boundary Action Buttons */}
           {farmData && (
-            <button
-              onClick={() => setIsBoundaryModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-2 bg-[#103D2C] hover:bg-[#17643E] text-white rounded-lg text-xs font-semibold shadow-xs cursor-pointer transition-colors"
-            >
-              <Compass size={14} />
-              <span>Map Farm Boundary</span>
-            </button>
+            <>
+              <button
+                onClick={() => setIsBoundaryModalOpen(true)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#F2E8D5] hover:bg-[#E5DDCF] text-[#103D2C] border border-[#E5DDCF] rounded-lg text-xs font-semibold shadow-xs cursor-pointer transition-colors"
+                title="Draw parcel boundaries manually on the interactive map"
+              >
+                <Compass size={14} />
+                <span>Map Boundary</span>
+              </button>
+
+              <button
+                onClick={() => setIsGpsModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#17643E] hover:bg-[#103D2C] text-white rounded-lg text-xs font-semibold shadow-xs cursor-pointer transition-colors"
+                title="Walk the field perimeter with your mobile GPS"
+              >
+                <Footprints size={14} />
+                <span>Walk Farm Boundary</span>
+              </button>
+            </>
           )}
 
           <select
@@ -260,7 +279,7 @@ export default function DigitalTwin() {
           {loading ? (
             <div className="absolute inset-0 z-20 bg-white/80 backdrop-blur-xs flex flex-col items-center justify-center">
               <Loader2 className="w-8 h-8 animate-spin text-[#103D2C] mb-2" />
-              <span className="text-xs font-medium text-[#292B26]/70">Loading Farm Digital Twin Map...</span>
+              <span className="text-xs font-medium text-[#292B26]/70">Loading Farm {t('digitalTwin.title')} Map...</span>
             </div>
           ) : null}
 
@@ -498,6 +517,30 @@ export default function DigitalTwin() {
           </div>
         </div>
       </div>
+
+      {/* GPS Boundary Walking Modal */}
+      {farmData && (
+        <GpsBoundaryModal
+          isOpen={isGpsModalOpen}
+          onClose={() => setIsGpsModalOpen(false)}
+          farmId={farmData.farm_id}
+          farmName={farmData.name}
+          initialCenter={[mapCenterLat, mapCenterLon]}
+          isApproximateCenter={isApproximate}
+          fields={fields.map((f: any) => ({
+            id: f.id,
+            name: f.name,
+            area: f.area,
+            area_unit: f.area_unit,
+            crop: f.crop,
+            geojson_geometry: f.geojson_geometry,
+            boundaries_mapped: f.boundaries_mapped
+          }))}
+          onSaveSuccess={(updatedField: any) => {
+            fetchFarmDetails(farmData.farm_id);
+          }}
+        />
+      )}
 
       {/* Boundary Mapping Modal */}
       {farmData && (

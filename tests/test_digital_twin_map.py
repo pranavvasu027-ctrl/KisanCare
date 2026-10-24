@@ -212,3 +212,111 @@ def test_field_boundary_unauthorized_cross_farm_access(client):
     })
     assert res.status_code == 404
 
+
+
+def test_gps_walked_boundary_persistence_and_reload(client):
+    """
+    Tests that a polygon captured via GPS walking (with mapping_method='GPS_WALKING'
+    and high precision coordinate stream) persists to the database and reloads on Digital Twin.
+    """
+    farm_id = "52120432-c948-4026-87c4-7e2c481a7bf5"
+    field_id = "e5d69ac6-bfe4-4015-a3cd-7cab06c476a6"
+
+    # Real field walk polygon around parcel perimeter
+    walked_polygon = {
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [76.98215, 20.91825],
+                [76.98350, 20.91820],
+                [76.98380, 20.91940],
+                [76.98240, 20.91945],
+                [76.98215, 20.91825]
+            ]
+        ]
+    }
+
+    metadata = {
+        "mapping_method": "GPS_WALKING",
+        "point_count": 5,
+        "gps_accuracy_avg_meters": 3.8
+    }
+
+    # 1. Save boundary via PUT endpoint
+    res = client.put(f"/api/v1/farms/{farm_id}/boundaries", json={
+        "field_id": field_id,
+        "field_name": "Field A (GPS Walked)",
+        "area": 3.15,
+        "area_unit": "acre",
+        "geometry": walked_polygon,
+        "metadata": metadata
+    })
+    assert res.status_code == 200
+    save_data = res.json()
+    assert save_data["status"] == "updated"
+    assert save_data["boundaries_mapped"] is True
+
+    # 2. Reload via Digital Twin endpoint
+    dt_res = client.get(f"/api/v1/digital-twin/{farm_id}")
+    assert dt_res.status_code == 200
+    dt_data = dt_res.json()
+    assert dt_data["boundaries_mapped"] is True
+
+    # Locate the saved field
+    target_field = next((f for f in dt_data["fields"] if f["id"] == field_id), None)
+    assert target_field is not None
+    assert target_field["boundaries_mapped"] is True
+    assert target_field["geojson_geometry"] is not None
+    assert target_field["geojson_geometry"]["type"] == "Polygon"
+    assert len(target_field["geojson_geometry"]["coordinates"][0]) == 5
+
+    # Confirm coordinates order is [lon, lat]
+    p1 = target_field["geojson_geometry"]["coordinates"][0][0]
+    assert 76.0 <= p1[0] <= 78.0  # longitude
+    assert 20.0 <= p1[1] <= 22.0  # latitude
+
+
+def test_multiple_parcels_boundary_integrity(client):
+    """
+    Tests that multiple field parcels on the same farm maintain their own independent boundaries
+    without overwriting each other.
+    """
+    farm_id = "52120432-c948-4026-87c4-7e2c481a7bf5"
+    field_a = "e5d69ac6-bfe4-4015-a3cd-7cab06c476a6"
+    field_b = "571f6eac-de30-41d2-a2c3-0355937b9d58"
+
+    # Parcel B boundary
+    poly_b = {
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [76.9840, 20.9180],
+                [76.9860, 20.9180],
+                [76.9860, 20.9195],
+                [76.9840, 20.9195],
+                [76.9840, 20.9180]
+            ]
+        ]
+    }
+
+    res_b = client.put(f"/api/v1/farms/{farm_id}/boundaries", json={
+        "field_id": field_b,
+        "field_name": "Field B (South Parcel)",
+        "area": 2.1,
+        "area_unit": "acre",
+        "geometry": poly_b,
+        "metadata": {"mapping_method": "GPS_WALKING"}
+    })
+    assert res_b.status_code == 200
+
+    # Verify both fields now exist on Digital Twin simultaneously
+    dt_res = client.get(f"/api/v1/digital-twin/{farm_id}")
+    assert dt_res.status_code == 200
+    fields_list = dt_res.json()["fields"]
+
+    f_a = next((f for f in fields_list if f["id"] == field_a), None)
+    f_b = next((f for f in fields_list if f["id"] == field_b), None)
+
+    assert f_a is not None and f_a["boundaries_mapped"] is True
+    assert f_b is not None and f_b["boundaries_mapped"] is True
+    assert f_a["id"] != f_b["id"]

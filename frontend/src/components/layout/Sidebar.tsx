@@ -1,79 +1,87 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   LayoutDashboard, Map, Sprout, TestTube, Bug, Droplets,
   LineChart, TrendingUp, FlaskConical, Lightbulb, History,
-  Bot, Landmark, FileText, Settings, Leaf, Package, Compass
+  Bot, Landmark, FileText, Settings, Leaf, Package, Compass, Tractor
 } from 'lucide-react';
+
+interface NavItem {
+  name: string;
+  nameKey?: string;
+  path: string;
+  icon: React.ReactNode;
+  badge?: string;
+}
 
 interface NavGroup {
   stage?: string;
   stageMr?: string;
-  items: {
-    name: string;
-    path: string;
-    icon: React.ReactNode;
-    badge?: string;
-  }[];
+  items: NavItem[];
 }
 
 const Sidebar = () => {
+  const { t } = useTranslation();
+
   const navGroups: NavGroup[] = [
     {
       items: [
-        { name: 'Overview', path: '/', icon: <LayoutDashboard size={18} /> },
+        { nameKey: 'nav.overview', name: 'Overview', path: '/', icon: <LayoutDashboard size={18} /> },
       ]
     },
     {
       stage: '1. Farm & Soil',
       stageMr: 'शेत व माती',
       items: [
-        { name: 'My Farms', path: '/farm-setup', icon: <Map size={18} /> },
-        { name: 'Digital Twin', path: '/digital-twin', icon: <Leaf size={18} /> },
-        { name: 'Soil Intelligence', path: '/soil', icon: <TestTube size={18} /> },
+        { nameKey: 'nav.myFarms', name: 'My Farms', path: '/farm-setup', icon: <Map size={18} /> },
+        { nameKey: 'nav.digitalTwin', name: 'Digital Twin', path: '/digital-twin', icon: <Leaf size={18} /> },
+        { nameKey: 'nav.soilIntelligence', name: 'Soil Intelligence', path: '/soil', icon: <TestTube size={18} /> },
       ]
     },
     {
       stage: '2. Crop Planning',
       stageMr: 'पीक नियोजन',
       items: [
-        { name: 'Crop Intelligence', path: '/crop-recommendation', icon: <Sprout size={18} /> },
-        { name: 'Crop Comparison', path: '/crop-comparison', icon: <Compass size={18} /> },
+        { nameKey: 'nav.cropIntelligence', name: 'Crop Intelligence', path: '/crop-recommendation', icon: <Sprout size={18} /> },
+        { nameKey: 'nav.cropComparison', name: 'Crop Comparison', path: '/crop-comparison', icon: <Compass size={18} /> },
       ]
     },
     {
       stage: '3. Crop Care',
       stageMr: 'हंगामी निगा',
       items: [
-        { name: 'Irrigation & Climate', path: '/irrigation', icon: <Droplets size={18} /> },
-        { name: 'Disease & Pest', path: '/disease', icon: <Bug size={18} /> },
-        { name: 'Recommendations', path: '/recommendations', icon: <Lightbulb size={18} /> },
+        { nameKey: 'nav.irrigationClimate', name: 'Irrigation & Climate', path: '/irrigation', icon: <Droplets size={18} /> },
+        { nameKey: 'nav.diseasePest', name: 'Disease & Pest', path: '/disease', icon: <Bug size={18} /> },
+        { nameKey: 'nav.fertilizerAdvisory', name: 'Fertilizer Advisory', path: '/fertilizer', icon: <FlaskConical size={18} /> },
+        { nameKey: 'nav.recommendations', name: 'Recommendations', path: '/recommendations', icon: <Lightbulb size={18} /> },
       ]
     },
     {
       stage: '4. Simulation & ROI',
       stageMr: 'नफा व जोखीम',
       items: [
-        { name: 'What-If Simulator', path: '/simulator', icon: <FlaskConical size={18} /> },
-        { name: 'Farm Economics', path: '/economics', icon: <LineChart size={18} /> },
+        { nameKey: 'nav.whatIfSimulator', name: 'What-If Simulator', path: '/simulator', icon: <FlaskConical size={18} /> },
+        { nameKey: 'nav.farmEconomics', name: 'Farm Economics', path: '/economics', icon: <LineChart size={18} /> },
       ]
     },
     {
-      stage: '5. Market & Storage',
-      stageMr: 'बाजार व साठवणूक',
+      stage: '5. Market & Machinery',
+      stageMr: 'बाजार व अवजारे',
       items: [
-        { name: 'Market Intelligence', path: '/market', icon: <TrendingUp size={18} /> },
-        { name: 'Post-Harvest Loss', path: '/post-harvest', icon: <Package size={18} /> },
+        { nameKey: 'nav.rentals', name: 'Farm Equipment Rentals', path: '/rentals', icon: <Tractor size={18} /> },
+        { nameKey: 'nav.marketIntelligence', name: 'Market Intelligence', path: '/market', icon: <TrendingUp size={18} /> },
+        { nameKey: 'nav.postHarvest', name: 'Post-Harvest Loss', path: '/post-harvest', icon: <Package size={18} /> },
       ]
     },
     {
       stage: 'Support & Records',
       stageMr: 'मदत व नोंदी',
       items: [
-        { name: 'KisanCare AI', path: '/copilot', icon: <Bot size={18} /> },
-        { name: 'Government Schemes', path: '/schemes', icon: <Landmark size={18} /> },
-        { name: 'Farm Memory', path: '/memory', icon: <History size={18} /> },
-        { name: 'Documents', path: '/documents', icon: <FileText size={18} /> },
+        { nameKey: 'nav.kisanCareAi', name: 'KisanCare AI', path: '/copilot', icon: <Bot size={18} /> },
+        { nameKey: 'nav.governmentSchemes', name: 'Government Schemes', path: '/schemes', icon: <Landmark size={18} /> },
+        { nameKey: 'nav.farmMemory', name: 'Farm Memory', path: '/memory', icon: <History size={18} /> },
+        { nameKey: 'nav.documents', name: 'Documents', path: '/documents', icon: <FileText size={18} /> },
       ]
     }
   ];
@@ -122,7 +130,7 @@ const Sidebar = () => {
                     }
                   >
                     <span className="shrink-0">{item.icon}</span>
-                    <span className="truncate">{item.name}</span>
+                    <span className="truncate">{item.nameKey ? t(item.nameKey, item.name) : item.name}</span>
                   </NavLink>
                 </li>
               ))}
@@ -156,8 +164,8 @@ const Sidebar = () => {
             }`
           }
         >
-          <Settings size={16} />
-          <span>Settings &amp; Preferences</span>
+          <Settings size={18} />
+          <span>{t('nav.settings', 'Settings & Preferences')}</span>
         </NavLink>
       </div>
     </aside>

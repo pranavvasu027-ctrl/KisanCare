@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
 import { api } from '../../services/api';
+import { translateDynamic } from '../../i18n/translateHelper';
 import { WorkflowStepper } from '../../components/workflow/WorkflowStepper';
 import {
   Leaf, Activity, Sprout, Bug, Droplets, TrendingUp, ShieldCheck,
@@ -11,55 +13,66 @@ import {
   Calendar, Layers, CheckCircle2
 } from 'lucide-react';
 
-const StatCard = ({ title, value, change, isPositive, icon: Icon, suffix = '', subtitle = '' }: any) => (
-  <div className="agri-card p-5 agri-card-hover flex items-center justify-between">
-    <div className="flex items-center gap-4">
-      <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-800 shrink-0 shadow-2xs">
-        <Icon className="w-6 h-6" />
-      </div>
-      <div>
-        <p className="text-xs font-semibold text-[#19241B]/60 uppercase tracking-wider mb-1">{title}</p>
-        <div className="flex items-baseline gap-2">
-          <span className="text-2xl font-heading font-extrabold text-[#103D2C]">{value}</span>
-          {suffix && <span className="text-xs font-semibold text-[#19241B]/60">{suffix}</span>}
+const StatCard = ({ title, value, change, isPositive, icon: Icon, suffix = '', subtitle = '' }: any) => {
+  const { t } = useTranslation();
+  return (
+    <div className="agri-card p-5 agri-card-hover flex items-center justify-between">
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-800 shrink-0 shadow-2xs">
+          <Icon className="w-6 h-6" />
         </div>
-        {subtitle && <p className="text-[11px] text-emerald-700 font-medium mt-0.5">{subtitle}</p>}
+        <div>
+          <p className="text-xs font-semibold text-[#19241B]/60 uppercase tracking-wider mb-1">{title}</p>
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl font-heading font-extrabold text-[#103D2C]">{value}</span>
+            {suffix && <span className="text-xs font-semibold text-[#19241B]/60">{suffix}</span>}
+          </div>
+          {subtitle && <p className="text-[11px] text-emerald-700 font-medium mt-0.5">{subtitle}</p>}
+        </div>
       </div>
+      {change !== undefined && change !== 0 && (
+        <div className="flex flex-col items-end">
+          <span className={`text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5 ${isPositive ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+            {isPositive ? '↑' : '↓'} {Math.abs(change)}%
+          </span>
+          <span className="text-[10px] text-[#19241B]/40 mt-1">{t('common.vsLastSeason', 'vs last season')}</span>
+        </div>
+      )}
     </div>
-    {change !== undefined && change !== 0 && (
-      <div className="flex flex-col items-end">
-        <span className={`text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5 ${isPositive ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
-          {isPositive ? '↑' : '↓'} {Math.abs(change)}%
-        </span>
-        <span className="text-[10px] text-[#19241B]/40 mt-1">vs last season</span>
-      </div>
-    )}
-  </div>
-);
+  );
+};
 
-const AlertRow = ({ title, desc, severity, onClick }: { title: string, desc: string, severity: 'High' | 'Medium' | 'Low', onClick?: () => void }) => (
-  <div onClick={onClick} className="flex items-start justify-between p-4 border-b border-[#E6ECE3] last:border-0 hover:bg-emerald-50/40 transition-colors cursor-pointer group">
-    <div className="flex items-start gap-3">
-      <div className={`mt-0.5 p-2 rounded-xl shrink-0 ${severity === 'High' ? 'bg-red-50 text-red-600 border border-red-100' : severity === 'Medium' ? 'bg-amber-50 text-amber-600 border border-amber-100' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}>
-        {severity === 'High' ? <Droplets className="w-4 h-4" /> : severity === 'Medium' ? <CloudRain className="w-4 h-4" /> : <Bug className="w-4 h-4" />}
+const AlertRow = ({ title, desc, severity, onClick }: { title: string, desc: string, severity: 'High' | 'Medium' | 'Low', onClick?: () => void }) => {
+  const { t } = useTranslation();
+  const severityKey = severity === 'High' ? 'common.high' : severity === 'Medium' ? 'common.moderate' : 'common.low';
+
+  return (
+    <div onClick={onClick} className="flex items-start justify-between p-4 border-b border-[#E6ECE3] last:border-0 hover:bg-emerald-50/40 transition-colors cursor-pointer group">
+      <div className="flex items-start gap-3">
+        <div className={`mt-0.5 p-2 rounded-xl shrink-0 ${severity === 'High' ? 'bg-red-50 text-red-600 border border-red-100' : severity === 'Medium' ? 'bg-amber-50 text-amber-600 border border-amber-100' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}>
+          {severity === 'High' ? <Droplets className="w-4 h-4" /> : severity === 'Medium' ? <CloudRain className="w-4 h-4" /> : <Bug className="w-4 h-4" />}
+        </div>
+        <div>
+          <h4 className="text-xs font-bold text-[#19241B] group-hover:text-emerald-800 transition-colors">{title}</h4>
+          <p className="text-[11px] text-[#19241B]/70 mt-0.5 leading-relaxed">{desc}</p>
+        </div>
       </div>
-      <div>
-        <h4 className="text-xs font-bold text-[#19241B] group-hover:text-emerald-800 transition-colors">{title}</h4>
-        <p className="text-[11px] text-[#19241B]/70 mt-0.5 leading-relaxed">{desc}</p>
+      <div className="flex items-center gap-2 pl-3">
+        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${severity === 'High' ? 'bg-red-100 text-red-800' : severity === 'Medium' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}`}>
+          {t(severityKey, severity)}
+        </span>
+        <ChevronRight className="w-4 h-4 text-[#19241B]/30 group-hover:translate-x-0.5 transition-transform" />
       </div>
     </div>
-    <div className="flex items-center gap-2 pl-3">
-      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${severity === 'High' ? 'bg-red-100 text-red-800' : severity === 'Medium' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}`}>
-        {severity}
-      </span>
-      <ChevronRight className="w-4 h-4 text-[#19241B]/30 group-hover:translate-x-0.5 transition-transform" />
-    </div>
-  </div>
-);
+  );
+};
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'en';
+
   const farmerName = user?.user_metadata?.name || 'Pranav Vasu';
   const [selectedField, setSelectedField] = useState('Field A (Cotton - 3.0 ac)');
   const [weather, setWeather] = useState<any>(null);
@@ -120,13 +133,13 @@ export default function Dashboard() {
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <button
                 onClick={() => navigate('/digital-twin')}
-                className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-[#05261B] text-xs font-bold transition-all shadow-md shadow-emerald-950/30 flex items-center gap-2"
+                className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-[#05261B] text-xs font-bold transition-all shadow-md shadow-emerald-950/30 flex items-center gap-2 cursor-pointer"
               >
                 <Leaf className="w-4 h-4" /> Open Digital Farm Twin
               </button>
               <button
                 onClick={() => navigate('/copilot')}
-                className="px-5 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/25 text-white text-xs font-bold transition-all flex items-center gap-2"
+                className="px-5 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/25 text-white text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
               >
                 <MessageSquare className="w-4 h-4 text-emerald-300" /> Ask KisanCare AI
               </button>
@@ -187,7 +200,7 @@ export default function Dashboard() {
               </span>
               <button
                 onClick={() => navigate('/farm-setup')}
-                className="text-emerald-800 font-bold hover:underline flex items-center gap-0.5"
+                className="text-emerald-800 font-bold hover:underline flex items-center gap-0.5 cursor-pointer"
               >
                 Inspect 7/12 Records <ChevronRight className="w-3 h-3" />
               </button>
@@ -253,9 +266,9 @@ export default function Dashboard() {
                 <span className="text-[9px] text-amber-700 block font-semibold mt-0.5">Moderate</span>
               </div>
               <div className="p-2.5 rounded-xl bg-[#F8FAF7] border border-[#E6ECE3]">
-                <span className="text-[10px] text-[#19241B]/50 block font-medium">Soil Health</span>
+                <span className="text-[10px] text-[#19241B]/50 block font-medium">{t('dashboard.soilHealth', 'Soil Health')}</span>
                 <span className="text-sm font-bold text-emerald-700">78 / 100</span>
-                <span className="text-[9px] text-emerald-700 block font-semibold mt-0.5">Good</span>
+                <span className="text-[9px] text-emerald-700 block font-semibold mt-0.5">{t('common.good', 'Good')}</span>
               </div>
             </div>
 
@@ -265,7 +278,7 @@ export default function Dashboard() {
               </span>
               <button
                 onClick={() => navigate('/soil')}
-                className="px-4 py-2 rounded-xl bg-[#103D2C] hover:bg-emerald-800 text-white text-xs font-bold transition-colors flex items-center gap-1.5 shrink-0"
+                className="px-4 py-2 rounded-xl bg-[#103D2C] hover:bg-emerald-800 text-white text-xs font-bold transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer"
               >
                 Inspect Soil <ArrowRight className="w-3.5 h-3.5" />
               </button>
@@ -298,18 +311,18 @@ export default function Dashboard() {
           <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
             <div className="grid grid-cols-3 gap-3 text-center">
               <div className="p-2.5 rounded-xl bg-[#F8FAF7] border border-[#E6ECE3]">
-                <span className="text-[10px] text-[#19241B]/50 block font-medium">Target Yield</span>
+                <span className="text-[10px] text-[#19241B]/50 block font-medium">{t('dashboard.expectedYield', 'Target Yield')}</span>
                 <span className="text-sm font-bold text-[#103D2C]">10.0 qtl/ac</span>
-                <span className="text-[9px] text-emerald-700 block font-semibold mt-0.5">Benchmark</span>
+                <span className="text-[9px] text-emerald-700 block font-semibold mt-0.5">{t('dashboard.benchmark', 'Benchmark')}</span>
               </div>
               <div className="p-2.5 rounded-xl bg-[#F8FAF7] border border-[#E6ECE3]">
-                <span className="text-[10px] text-[#19241B]/50 block font-medium">Est. Revenue</span>
+                <span className="text-[10px] text-[#19241B]/50 block font-medium">{t('dashboard.expectedRevenue', 'Est. Revenue')}</span>
                 <span className="text-sm font-bold text-emerald-800">₹4,00,000</span>
                 <span className="text-[9px] text-emerald-700 block font-semibold mt-0.5">@ ₹8,000/qtl</span>
               </div>
               <div className="p-2.5 rounded-xl bg-[#F8FAF7] border border-[#E6ECE3]">
                 <span className="text-[10px] text-[#19241B]/50 block font-medium">Water Stress</span>
-                <span className="text-sm font-bold text-amber-700">Moderate</span>
+                <span className="text-sm font-bold text-amber-700">{t('common.moderate', 'Moderate')}</span>
                 <span className="text-[9px] text-amber-700 block font-semibold mt-0.5">Need Irrig.</span>
               </div>
             </div>
@@ -320,9 +333,9 @@ export default function Dashboard() {
               </span>
               <button
                 onClick={() => navigate('/crop-comparison')}
-                className="px-4 py-2 rounded-xl bg-[#103D2C] hover:bg-emerald-800 text-white text-xs font-bold transition-colors flex items-center gap-1.5 shrink-0"
+                className="px-4 py-2 rounded-xl bg-[#103D2C] hover:bg-emerald-800 text-white text-xs font-bold transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer"
               >
-                Compare Crops <ArrowRight className="w-3.5 h-3.5" />
+                {t('dashboard.compareCrops', 'Compare Crops')} <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
@@ -332,16 +345,16 @@ export default function Dashboard() {
       {/* 4. METRICS & REAL-TIME WEATHER OBSERVATION */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="Farm Health Score"
+          title={t('dashboard.farmHealthScore', 'Farm Health Score')}
           value="78"
           suffix="/ 100"
           change={6}
           isPositive={true}
           icon={Activity}
-          subtitle="Good crop condition"
+          subtitle={t('dashboard.cropCondition', 'Good crop condition')}
         />
         <StatCard
-          title="Projected Yield"
+          title={t('dashboard.expectedYield', 'Projected Yield')}
           value="10.0"
           suffix="qtl/ac"
           change={0}
@@ -363,7 +376,7 @@ export default function Dashboard() {
         <div className="agri-card p-5 bg-gradient-to-br from-emerald-50/50 to-white flex flex-col justify-between">
           <div className="flex justify-between items-start">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block">Weather Observation</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block">{t('dashboard.weatherClimate', 'Weather Observation')}</span>
               <span className="text-xs text-[#19241B]/60 flex items-center gap-1 mt-0.5">
                 <MapPin className="w-3 h-3 text-emerald-700" /> Takli Bu, Akola
               </span>
@@ -376,21 +389,21 @@ export default function Dashboard() {
               {weather?.temperature ? `${weather.temperature}°C` : '33.1°C'}
             </span>
             <span className="text-xs font-medium text-[#19241B]/70">
-              {weather?.weather_condition || 'Partly Cloudy'}
+              {translateDynamic(weather?.weather_condition || 'Partly Cloudy', currentLang)}
             </span>
           </div>
 
           <div className="grid grid-cols-3 gap-1 pt-2 border-t border-[#E6ECE3] text-center text-[10px]">
             <div>
-              <span className="text-[#19241B]/50 block">Humidity</span>
+              <span className="text-[#19241B]/50 block">{t('dashboard.humidity', 'Humidity')}</span>
               <span className="font-bold text-[#103D2C]">{weather?.humidity ? `${weather.humidity}%` : '35%'}</span>
             </div>
             <div className="border-x border-[#E6ECE3]">
-              <span className="text-[#19241B]/50 block">Wind</span>
+              <span className="text-[#19241B]/50 block">{t('dashboard.wind', 'Wind')}</span>
               <span className="font-bold text-[#103D2C]">{weather?.wind_speed_kmh ? `${weather.wind_speed_kmh}k` : '5.7k'}</span>
             </div>
             <div>
-              <span className="text-[#19241B]/50 block">Rain Prob.</span>
+              <span className="text-[#19241B]/50 block">{t('dashboard.rainProb', 'Rain Prob.')}</span>
               <span className="font-bold text-emerald-700">{weather?.rainfall_probability || '15%'}</span>
             </div>
           </div>
@@ -405,7 +418,7 @@ export default function Dashboard() {
           <div className="p-5 border-b border-[#E6ECE3] flex justify-between items-center bg-[#F8FAF7] rounded-t-2xl">
             <div className="flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-amber-600" />
-              <h3 className="font-heading font-bold text-sm text-[#103D2C]">Priority Alerts &amp; Advisories</h3>
+              <h3 className="font-heading font-bold text-sm text-[#103D2C]">{t('dashboard.priorityAlerts', 'Priority Alerts & Advisories')}</h3>
             </div>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
               3 Active
@@ -414,20 +427,20 @@ export default function Dashboard() {
           <div className="divide-y divide-[#E6ECE3] flex-1">
             <AlertRow
               onClick={() => navigate('/irrigation')}
-              title="Water Stress in Field A"
-              desc="Critical drought stress at boll development stage in rainfed Cotton parcel"
+              title={t('dashboard.waterStressAlertTitle', 'Water Stress in Field A')}
+              desc={t('dashboard.waterStressAlertDesc', 'Critical drought stress at boll development stage in rainfed Cotton parcel')}
               severity="High"
             />
             <AlertRow
               onClick={() => navigate('/irrigation')}
-              title="Supplementary Irrigation Window"
-              desc="100–500m water source available for occasional protective irrigation"
+              title={t('dashboard.suppIrrigationAlertTitle', 'Supplementary Irrigation Window')}
+              desc={t('dashboard.suppIrrigationAlertDesc', '100–500m water source available for occasional protective irrigation')}
               severity="Medium"
             />
             <AlertRow
               onClick={() => navigate('/soil')}
-              title="Soil Lab Report Pending"
-              desc="Reported pH 7.6–8.5 (black cotton soil); NPK lab report pending upload"
+              title={t('dashboard.soilLabPendingTitle', 'Soil Lab Report Pending')}
+              desc={t('dashboard.soilLabPendingDesc', 'Reported pH 7.6–8.5 (black cotton soil); NPK lab report pending upload')}
               severity="Low"
             />
           </div>
@@ -442,7 +455,7 @@ export default function Dashboard() {
             </div>
             <button
               onClick={() => navigate('/schemes')}
-              className="text-xs font-bold text-emerald-800 hover:underline flex items-center gap-0.5"
+              className="text-xs font-bold text-emerald-800 hover:underline flex items-center gap-0.5 cursor-pointer"
             >
               All Schemes <ChevronRight className="w-3.5 h-3.5" />
             </button>
@@ -495,7 +508,7 @@ export default function Dashboard() {
               <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
                 <Settings className="w-4 h-4" />
               </div>
-              <h4 className="text-xs font-bold text-[#103D2C] group-hover:text-emerald-900">What-If Shock</h4>
+              <h4 className="text-xs font-bold text-[#103D2C] group-hover:text-emerald-900">{t('dashboard.runWhatIf', 'What-If Shock')}</h4>
               <p className="text-[10px] text-[#19241B]/60 mt-0.5">Drought / excess rain ROI</p>
             </div>
 
@@ -528,14 +541,14 @@ export default function Dashboard() {
               <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
                 <MessageSquare className="w-4 h-4" />
               </div>
-              <h4 className="text-xs font-bold text-[#103D2C] group-hover:text-emerald-900">KisanCare AI</h4>
+              <h4 className="text-xs font-bold text-[#103D2C] group-hover:text-emerald-900">{t('dashboard.askAi', 'KisanCare AI')}</h4>
               <p className="text-[10px] text-[#19241B]/60 mt-0.5">Voice &amp; regional chat</p>
             </div>
           </div>
 
           <button
             onClick={() => navigate('/economics')}
-            className="w-full py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-bold text-xs transition-colors flex items-center justify-center gap-1.5"
+            className="w-full py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
           >
             Review Farm Cost &amp; Profit Ledger <ArrowRight className="w-3.5 h-3.5" />
           </button>
