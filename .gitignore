@@ -84,3 +84,5 @@ data/processed/*
 !models/crop_recommendation/preprocessing_mvp_v2.pkl
 !services/irrigation_yield_api/models/crop_yield/*.pkl
 !services/irrigation_yield_api/models/irrigation/eto/*.pkl
+
+backend/data/
