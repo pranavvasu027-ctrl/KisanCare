@@ -26,6 +26,7 @@ import GovernmentSchemes from './screens/GovernmentSchemes/GovernmentSchemes';
 import Documents from './screens/Documents/Documents';
 import Settings from './screens/Settings/Settings';
 import PostHarvestLoss from './screens/PostHarvestLoss/PostHarvestLoss';
+import RentalMarketplace from './screens/Rentals/RentalMarketplace';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { session, loading, isDemoMode } = useAuth();
@@ -75,6 +76,10 @@ function App() {
             <Route path="schemes" element={<GovernmentSchemes />} />
             <Route path="documents" element={<Documents />} />
             <Route path="settings" element={<Settings />} />
+
+            {/* Agricultural Equipment, Vehicle & Labour Rental Marketplace */}
+            <Route path="rentals" element={<RentalMarketplace />} />
+            <Route path="rentals/:section" element={<RentalMarketplace />} />
           </Route>
         </Routes>
       </Router>

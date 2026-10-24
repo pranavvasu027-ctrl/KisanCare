@@ -13,6 +13,7 @@ except ImportError:
 
 from fastapi import FastAPI
 from .api.endpoints import router as api_router
+from .api.rentals import router as rentals_router
 from .copilot.router import router as copilot_router
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -79,6 +80,8 @@ from .api.soil import soil_router
 app.include_router(api_router, prefix="/api/v1")
 app.include_router(soil_router, prefix="/api/v1")
 app.include_router(copilot_router, prefix="/api")
+app.include_router(rentals_router, prefix="/api/v1")
+app.include_router(rentals_router, prefix="/api")
 
 @app.get("/health")
 def health_check():
