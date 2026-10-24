@@ -15,6 +15,7 @@ import CropComparison from './screens/CropComparison/CropComparison';
 import WhatIfSimulator from './screens/WhatIfSimulator/WhatIfSimulator';
 import AiRecommendation from './screens/AiRecommendation/AiRecommendation';
 import SoilIntelligence from './screens/SoilIntelligence/SoilIntelligence';
+import FertilizerAdvisory from './screens/FertilizerAdvisory/FertilizerAdvisory';
 import DiseaseDetection from './screens/DiseaseDetection/DiseaseDetection';
 import IrrigationClimate from './screens/IrrigationClimate/IrrigationClimate';
 import FarmEconomics from './screens/FarmEconomics/FarmEconomics';
@@ -25,6 +26,7 @@ import GovernmentSchemes from './screens/GovernmentSchemes/GovernmentSchemes';
 import Documents from './screens/Documents/Documents';
 import Settings from './screens/Settings/Settings';
 import PostHarvestLoss from './screens/PostHarvestLoss/PostHarvestLoss';
+import RentalMarketplace from './screens/Rentals/RentalMarketplace';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { session, loading, isDemoMode } = useAuth();
@@ -64,6 +66,8 @@ function App() {
             <Route path="soil" element={<SoilIntelligence />} />
             <Route path="soil-intelligence" element={<SoilIntelligence />} />
             <Route path="disease" element={<DiseaseDetection />} />
+            <Route path="fertilizer" element={<FertilizerAdvisory />} />
+            <Route path="fertilizer-advisory" element={<FertilizerAdvisory />} />
             <Route path="irrigation" element={<IrrigationClimate />} />
             <Route path="economics" element={<FarmEconomics />} />
             <Route path="market" element={<MarketIntelligence />} />
@@ -72,6 +76,10 @@ function App() {
             <Route path="schemes" element={<GovernmentSchemes />} />
             <Route path="documents" element={<Documents />} />
             <Route path="settings" element={<Settings />} />
+
+            {/* Agricultural Equipment, Vehicle & Labour Rental Marketplace */}
+            <Route path="rentals" element={<RentalMarketplace />} />
+            <Route path="rentals/:section" element={<RentalMarketplace />} />
           </Route>
         </Routes>
       </Router>

@@ -1,10 +1,11 @@
 import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { translateDynamic } from '../../i18n/translateHelper';
 import {
   Bug, Camera, Upload, ShieldAlert, CheckCircle, Loader2,
   RotateCcw, AlertCircle, ShieldCheck, Sprout, Info, Leaf,
-  ExternalLink, BarChart3, AlertTriangle, Cpu
+  ExternalLink, BarChart3, AlertTriangle, Cpu, FlaskConical
 } from 'lucide-react';
 import { api } from '../../services/api';
 
@@ -71,6 +72,7 @@ interface DiagnosisResult {
 }
 
 export default function DiseaseDetection() {
+  const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language || 'en';
   const [diagnosisMode, setDiagnosisMode] = useState<'disease' | 'pest'>('disease');
@@ -619,6 +621,34 @@ export default function DiseaseDetection() {
                       <li key={i}>{prev}</li>
                     ))}
                   </ul>
+                </div>
+
+                {/* Fertilizer & Soil Nutrition Advisory Action Banner */}
+                <div className="bg-[#103D2C] text-white p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+                  <div className="space-y-0.5">
+                    <span className="font-bold text-xs uppercase tracking-wider text-[#A8C69A] flex items-center gap-1.5">
+                      <FlaskConical size={14} /> Soil Nutrition & Balanced Fertilization
+                    </span>
+                    <span className="font-bold text-sm text-[#FBF7EF] block">
+                      Optimize Fertilizer & Soil Health for {crop}
+                    </span>
+                    <p className="text-[11px] text-[#A8C69A] leading-tight">
+                      Run real ML nutrient forecasting with local store & Amazon discovery (independent of foliar disease).
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/fertilizer', {
+                      state: {
+                        crop,
+                        disease: result.condition,
+                        location: 'Maharashtra',
+                      }
+                    })}
+                    className="bg-[#FBF7EF] text-[#103D2C] px-3.5 py-2 rounded-lg text-xs font-bold hover:bg-[#E5DDCF] transition-colors shrink-0 cursor-pointer shadow-xs"
+                  >
+                    Get Fertilizer & Soil Advice →
+                  </button>
                 </div>
 
                 {/* Scientific Disclaimer */}

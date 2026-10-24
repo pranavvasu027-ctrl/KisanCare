@@ -322,9 +322,9 @@ class SoilIntelligenceService:
     # 2. Baseline Laboratory Record Confirmation
     # -----------------------------------------------------------------------
 
-    def confirm_baseline_report(self, req: ConfirmBaselineReportRequest) -> GenericMessageResponse:
+    def confirm_baseline_report(self, req: ConfirmBaselineReportRequest, owner_id: Optional[str] = None) -> GenericMessageResponse:
         """Directly confirms or inputs a verified laboratory baseline for a plot."""
-        timeline = self.store.get_or_create_timeline(plot_id=req.plot_id, farm_id=req.farm_id)
+        timeline = self.store.get_or_create_timeline(plot_id=req.plot_id, farm_id=req.farm_id, owner_id=owner_id)
 
         report_id = req.report_id or f"LAB_{req.plot_id}_{req.sample_date.replace('-', '')}"
         lab_report = MeasuredLaboratoryReport(
@@ -374,6 +374,7 @@ class SoilIntelligenceService:
         )
 
         timeline.add_lab_report(lab_report)
+        self.store.save()
         return GenericMessageResponse(
             status="confirmed",
             message=f"Laboratory baseline {report_id} registered for plot {req.plot_id}.",
@@ -384,8 +385,8 @@ class SoilIntelligenceService:
     # 3. Agronomic Management Events
     # -----------------------------------------------------------------------
 
-    def record_fertilizer_event(self, plot_id: str, req: FertilizerEventRequest) -> AgronomicEventResponse:
-        timeline = self.store.get_timeline(plot_id)
+    def record_fertilizer_event(self, plot_id: str, req: FertilizerEventRequest, user_id: Optional[str] = None) -> AgronomicEventResponse:
+        timeline = self.store.get_timeline(plot_id, user_id=user_id)
         if not timeline:
             raise KeyError(f"Plot '{plot_id}' not found. Please establish a baseline first.")
 
@@ -395,6 +396,7 @@ class SoilIntelligenceService:
             application_date=req.application_date,
             event_id=req.event_id
         )
+        self.store.save()
 
         return AgronomicEventResponse(
             event_id=flux.event_id,
@@ -407,8 +409,8 @@ class SoilIntelligenceService:
             source_citation=flux.source_citation
         )
 
-    def record_harvest_event(self, plot_id: str, req: HarvestEventRequest) -> AgronomicEventResponse:
-        timeline = self.store.get_timeline(plot_id)
+    def record_harvest_event(self, plot_id: str, req: HarvestEventRequest, user_id: Optional[str] = None) -> AgronomicEventResponse:
+        timeline = self.store.get_timeline(plot_id, user_id=user_id)
         if not timeline:
             raise KeyError(f"Plot '{plot_id}' not found. Please establish a baseline first.")
 
@@ -419,6 +421,7 @@ class SoilIntelligenceService:
             residue_retained=req.residue_retained,
             event_id=req.event_id
         )
+        self.store.save()
 
         return AgronomicEventResponse(
             event_id=flux.event_id,
@@ -431,8 +434,8 @@ class SoilIntelligenceService:
             source_citation=flux.source_citation
         )
 
-    def list_plot_events(self, plot_id: str) -> List[AgronomicEventResponse]:
-        timeline = self.store.get_timeline(plot_id)
+    def list_plot_events(self, plot_id: str, user_id: Optional[str] = None) -> List[AgronomicEventResponse]:
+        timeline = self.store.get_timeline(plot_id, user_id=user_id)
         if not timeline:
             raise KeyError(f"Plot '{plot_id}' not found.")
 
@@ -454,8 +457,8 @@ class SoilIntelligenceService:
     # 4. Status, Balance & Advisory
     # -----------------------------------------------------------------------
 
-    def get_plot_status(self, plot_id: str, as_of_date: Optional[str] = None) -> PlotStatusResponse:
-        timeline = self.store.get_timeline(plot_id)
+    def get_plot_status(self, plot_id: str, as_of_date: Optional[str] = None, user_id: Optional[str] = None) -> PlotStatusResponse:
+        timeline = self.store.get_timeline(plot_id, user_id=user_id)
         if not timeline:
             raise KeyError(f"Plot '{plot_id}' not found.")
 
@@ -565,8 +568,8 @@ class SoilIntelligenceService:
     # 5. PDF Report Generation
     # -----------------------------------------------------------------------
 
-    def generate_pdf_report(self, plot_id: str, target_date: Optional[str] = None) -> bytes:
-        timeline = self.store.get_timeline(plot_id)
+    def generate_pdf_report(self, plot_id: str, target_date: Optional[str] = None, user_id: Optional[str] = None) -> bytes:
+        timeline = self.store.get_timeline(plot_id, user_id=user_id)
         if not timeline:
             raise KeyError(f"Plot '{plot_id}' not found. Cannot generate report without a registered timeline.")
 
@@ -579,8 +582,8 @@ class SoilIntelligenceService:
     # 6. Continuous Comparison Engine
     # -----------------------------------------------------------------------
 
-    def compare_retest(self, plot_id: str, req: CompareRetestRequest) -> ComparisonResponse:
-        timeline = self.store.get_timeline(plot_id)
+    def compare_retest(self, plot_id: str, req: CompareRetestRequest, user_id: Optional[str] = None) -> ComparisonResponse:
+        timeline = self.store.get_timeline(plot_id, user_id=user_id)
         if not timeline:
             raise KeyError(f"Plot '{plot_id}' not found.")
 
@@ -663,6 +666,7 @@ class SoilIntelligenceService:
                 directional_bias=bias
             )
 
+        self.store.save()
         return ComparisonResponse(
             comparison_id=comp_rec.comparison_id,
             plot_id=comp_rec.plot_id,

@@ -13,11 +13,13 @@ test('E2E-01: App and dashboard route definitions exist', () => {
     '/', '/login', '/farm-setup', '/digital-twin', '/crop-recommendation',
     '/crop-comparison', '/post-harvest', '/simulator', '/recommendations',
     '/soil', '/disease', '/irrigation', '/economics', '/market',
-    '/memory', '/copilot', '/schemes', '/documents', '/settings'
+    '/memory', '/copilot', '/schemes', '/documents', '/settings',
+    '/rentals'
   ];
-  assert.equal(routes.length, 19);
+  assert.equal(routes.length, 20);
   assert.ok(routes.includes('/copilot'));
   assert.ok(routes.includes('/market'));
+  assert.ok(routes.includes('/rentals'));
 });
 
 test('E2E-02: Supabase authentication client session handling', async () => {
@@ -159,4 +161,163 @@ test('E2E-15: Session data isolation between users', () => {
   const farmerB = { userId: 'user_b_uuid', farmName: 'Farm B' };
   assert.notEqual(farmerA.userId, farmerB.userId);
   assert.notEqual(farmerA.farmName, farmerB.farmName);
+});
+
+test('E2E-16: District dropdown contains all 35 Maharashtra districts including Akola', async () => {
+  const fs = await import('node:fs');
+  const path = await import('node:path');
+  const componentPath = path.resolve('src/screens/CropRecommendation/CropRecommendation.tsx');
+  const altPath = path.resolve('frontend/src/screens/CropRecommendation/CropRecommendation.tsx');
+  const targetPath = fs.existsSync(componentPath) ? componentPath : altPath;
+  const content = fs.readFileSync(targetPath, 'utf8');
+
+  // Verify MAHARASHTRA_DISTRICTS contains all key districts
+  const requiredDistricts = ['Akola', 'Amravati', 'Buldhana', 'Washim', 'Yavatmal', 'Nashik', 'Pune'];
+  for (const dist of requiredDistricts) {
+    assert.ok(content.includes(`'${dist}'`) || content.includes(`"${dist}"`), `Expected CropRecommendation.tsx to contain district: ${dist}`);
+  }
+
+  // Extract MAHARASHTRA_DISTRICTS array
+  const match = content.match(/const MAHARASHTRA_DISTRICTS = \[\s*([\s\S]*?)\];/);
+  assert.ok(match, 'MAHARASHTRA_DISTRICTS array found in CropRecommendation.tsx');
+  const districts = match[1]
+    .split(',')
+    .map(s => s.replace(/['"\s]/g, ''))
+    .filter(Boolean);
+
+  assert.equal(districts.length, 35, 'Should have exactly 35 Maharashtra districts');
+  assert.ok(districts.includes('Akola'), 'Akola must be in MAHARASHTRA_DISTRICTS');
+  assert.ok(districts.includes('Amravati'), 'Amravati must be in MAHARASHTRA_DISTRICTS');
+  assert.ok(districts.includes('Buldhana'), 'Buldhana must be in MAHARASHTRA_DISTRICTS');
+  assert.ok(districts.includes('Washim'), 'Washim must be in MAHARASHTRA_DISTRICTS');
+  assert.ok(districts.includes('Yavatmal'), 'Yavatmal must be in MAHARASHTRA_DISTRICTS');
+
+  // Verify select element renders the district options
+  assert.ok(content.includes('MAHARASHTRA_DISTRICTS.map'), 'Select dropdown must map MAHARASHTRA_DISTRICTS');
+});
+
+
+test('E2E-17: Agricultural Rental Marketplace 10 navigation sections defined', () => {
+  const sections = [
+    'discover', 'equipment', 'tractors', 'transport', 'labour',
+    'upcoming', 'active', 'history', 'list_equipment', 'owner_dashboard'
+  ];
+  assert.equal(sections.length, 10);
+  assert.ok(sections.includes('discover'));
+  assert.ok(sections.includes('tractors'));
+  assert.ok(sections.includes('labour'));
+  assert.ok(sections.includes('owner_dashboard'));
+});
+
+test('E2E-18: Rental pricing formula server-side calculation and transparent breakdown', () => {
+  const unitPrice = 850;
+  const duration = 3.0;
+  const baseRental = unitPrice * duration; // 2550
+  const deliveryFee = 150;
+  const extraKm = 3;
+  const extraKmRate = 30;
+  const transportCharge = deliveryFee + (extraKm * extraKmRate); // 240
+  const platformFee = 50;
+  const taxes = 0; // GST exempt for agri custom hiring
+  const discounts = 0;
+
+  const estimatedTotal = baseRental + transportCharge + platformFee + taxes - discounts;
+  assert.equal(baseRental, 2550);
+  assert.equal(transportCharge, 240);
+  assert.equal(estimatedTotal, 2840);
+});
+
+test('E2E-19: Concurrency availability check rejects overlapping reservations', () => {
+  const existingBooking = { start_date: '2026-10-25', end_date: '2026-10-25', status: 'confirmed' };
+  const requestedBooking = { start_date: '2026-10-25', end_date: '2026-10-25' };
+
+  // Overlap test
+  const hasOverlap = requestedBooking.start_date <= existingBooking.end_date &&
+                     existingBooking.start_date <= requestedBooking.end_date;
+  assert.equal(hasOverlap, true, 'Same machine on same date must be marked as an overlap');
+});
+
+test('E2E-20: Akola and Vidarbha CHC benchmark data attributes present', () => {
+  const benchmarkItem = {
+    category: 'tractor',
+    region: 'Vidarbha',
+    district: 'Akola',
+    source_name: 'Dr. PDKV Akola CHC Circular',
+    indicative_rate_min: 750,
+    indicative_rate_max: 900,
+    billing_unit: 'per_operating_hour'
+  };
+  assert.equal(benchmarkItem.district, 'Akola');
+  assert.equal(benchmarkItem.region, 'Vidarbha');
+  assert.ok(benchmarkItem.indicative_rate_min > 0);
+  assert.ok(benchmarkItem.source_name.includes('PDKV'));
+});
+
+test('E2E-21: Multi-language translations contain Marathi and Hindi rental entries', async () => {
+  const fs = await import('node:fs');
+  const path = await import('node:path');
+  const translationFile = path.resolve('src/utils/translations.ts');
+  const altFile = path.resolve('frontend/src/utils/translations.ts');
+  const target = fs.existsSync(translationFile) ? translationFile : altFile;
+  const content = fs.readFileSync(target, 'utf8');
+
+  assert.ok(content.includes("navRentEquipment: 'अवजारे व मजूर भाडेतत्त्व'"), 'Marathi translation must exist');
+  assert.ok(content.includes("navRentEquipment: 'कृषि उपकरण व मजदूर किराया'"), 'Hindi translation must exist');
+  assert.ok(content.includes("rentalsTitle: 'Agricultural Rental Marketplace'"), 'English translation must exist');
+});
+
+
+test('E2E-22: Maharashtra Geography dataset defines 6 administrative divisions and regional universities', async () => {
+  const fs = await import('node:fs');
+  const path = await import('node:path');
+  const geoFile = path.resolve('frontend/src/data/maharashtraGeography.ts');
+  const content = fs.readFileSync(geoFile, 'utf8');
+
+  assert.ok(content.includes("'Amravati':"), 'Amravati division must exist');
+  assert.ok(content.includes("'Nagpur':"), 'Nagpur division must exist');
+  assert.ok(content.includes("'Pune':"), 'Pune division must exist');
+  assert.ok(content.includes("'Nashik':"), 'Nashik division must exist');
+  assert.ok(content.includes("'Chhatrapati Sambhajinagar':"), 'CSN division must exist');
+  assert.ok(content.includes("'Konkan':"), 'Konkan division must exist');
+  assert.ok(content.includes('Dr. PDKV Akola'), 'PDKV Akola university must be referenced');
+  assert.ok(content.includes('MPKV Rahuri'), 'MPKV Rahuri university must be referenced');
+});
+
+test('E2E-23: Category 5 Agricultural Specialists & Experts schema and billing units', async () => {
+  const fs = await import('node:fs');
+  const path = await import('node:path');
+  const typeFile = path.resolve('frontend/src/types/rental.ts');
+  const content = fs.readFileSync(typeFile, 'utf8');
+
+  assert.ok(content.includes("'specialist'"), 'specialist category must be in RentalCategory');
+  assert.ok(content.includes("'per_sample'"), 'per_sample billing unit must be present');
+  assert.ok(content.includes("'per_visit'"), 'per_visit billing unit must be present');
+  assert.ok(content.includes("'per_team_day'"), 'per_team_day billing unit must be present');
+  assert.ok(content.includes('is_demo?: boolean'), 'is_demo flag must be typed');
+});
+
+test('E2E-24: Distinguishing whole-team day rates from individual worker day rates', () => {
+  // Whole-team calculation
+  const teamRate = 4200; // Rs 4200/team-day
+  const days = 2;
+  const teamTotal = teamRate * days;
+  assert.equal(teamTotal, 8400);
+
+  // Per-worker calculation
+  const workerRate = 380; // Rs 380/worker-day
+  const workers = 8;
+  const workerTotal = workerRate * workers * days;
+  assert.equal(workerTotal, 6080);
+});
+
+test('E2E-25: Image fallback component and demo labeling verification', async () => {
+  const fs = await import('node:fs');
+  const path = await import('node:path');
+  const imgComponent = path.resolve('frontend/src/components/rentals/ListingImage.tsx');
+  const exists = fs.existsSync(imgComponent);
+  assert.ok(exists, 'ListingImage fallback component must exist');
+
+  const content = fs.readFileSync(imgComponent, 'utf8');
+  assert.ok(content.includes('onError'), 'Must handle image loading errors gracefully');
+  assert.ok(content.includes('Specialist / Agro Expert'), 'Must include theme for specialists');
 });

@@ -7,7 +7,7 @@ import { translateDynamic } from '../../i18n/translateHelper';
 import {
   Leaf, Activity, Sprout, Bug, Droplets, TrendingUp, ShieldCheck,
   BarChart2, Lightbulb, History, Settings, Sun, CloudRain, Check,
-  Wind, MapPin, Plus, ArrowRight, AlertTriangle, ChevronRight, Map, FileText, MessageSquare
+  Wind, MapPin, Plus, ArrowRight, AlertTriangle, ChevronRight, Map, FileText, MessageSquare, FlaskConical
 } from 'lucide-react';
 
 const StatCard = ({ title, value, change, isPositive, icon: Icon, suffix = '' }: any) => {
@@ -441,7 +441,7 @@ export default function Dashboard() {
               <Activity className="w-5 h-5 text-[#B6532A]" />
               <h3 className="font-bold text-[#103D2C]">{t('dashboard.quickActions')}</h3>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 h-36">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 h-36">
               <QuickActionCard
                 onClick={() => navigate('/digital-twin')}
                 icon={FileText}
@@ -455,6 +455,12 @@ export default function Dashboard() {
                 desc={t('dashboard.findBestCropDesc')}
               />
               <QuickActionCard
+                onClick={() => navigate('/fertilizer')}
+                icon={FlaskConical}
+                title={t('dashboard.fertilizerAi', 'Fertilizer AI')}
+                desc={t('dashboard.fertilizerAiDesc', 'Real ML soil nutrition & stores.')}
+              />
+              <QuickActionCard
                 onClick={() => navigate('/simulator')}
                 icon={Settings}
                 title={t('dashboard.runWhatIf')}
@@ -466,6 +472,7 @@ export default function Dashboard() {
                 title={t('dashboard.askAi')}
                 desc={t('dashboard.getAiAnswersDesc')}
               />
+            </div>
             </div>
           </div>
 

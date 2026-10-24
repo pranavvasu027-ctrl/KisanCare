@@ -1,9 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from 'react';
-import { Map, Plus, Trash2, Save, CheckCircle2, AlertCircle, Loader2, Navigation, Crosshair, MapPin, Compass } from 'lucide-react';
+import { Map, Plus, Trash2, Save, CheckCircle2, AlertCircle, Loader2, Navigation, Crosshair, MapPin, Compass, Footprints } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../services/supabase';
 import BoundaryEditorModal from '../../components/map/BoundaryEditorModal';
+import GpsBoundaryModal from '../../components/map/GpsBoundaryModal';
 
 interface FieldItem {
   id: string;
@@ -43,6 +44,7 @@ export default function FarmSetup() {
   const [isCapturingGps, setIsCapturingGps] = useState(false);
   const [gpsSuccessMsg, setGpsSuccessMsg] = useState<string | null>(null);
   const [isBoundaryModalOpen, setIsBoundaryModalOpen] = useState(false);
+  const [isGpsModalOpen, setIsGpsModalOpen] = useState(false);
 
   const [fields, setFields] = useState<FieldItem[]>([
     { id: 'field-1', name: 'Field 1 (North Parcel)', size: '6.5', crop: 'Soybean', isNew: true },
@@ -441,14 +443,25 @@ export default function FarmSetup() {
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
           {farmId && (
-            <button
-              type="button"
-              onClick={() => setIsBoundaryModalOpen(true)}
-              className="bg-[#F2E8D5] hover:bg-[#E5DDCF] text-[#103D2C] border border-[#E5DDCF] px-4 py-2.5 rounded-lg flex items-center gap-2 text-sm font-semibold transition-colors cursor-pointer"
-            >
-              <Compass size={17} className="text-[#103D2C]" />
-              <span>Map Farm Boundary</span>
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => setIsBoundaryModalOpen(true)}
+                className="bg-[#F2E8D5] hover:bg-[#E5DDCF] text-[#103D2C] border border-[#E5DDCF] px-3.5 py-2 rounded-lg flex items-center gap-2 text-xs font-semibold transition-colors cursor-pointer"
+              >
+                <Compass size={16} className="text-[#103D2C]" />
+                <span>Map Boundary</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsGpsModalOpen(true)}
+                className="bg-[#17643E] hover:bg-[#103D2C] text-white px-3.5 py-2 rounded-lg flex items-center gap-2 text-xs font-semibold transition-colors cursor-pointer shadow-xs"
+              >
+                <Footprints size={16} />
+                <span>Walk Farm Boundary</span>
+              </button>
+            </>
           )}
 
           <button
@@ -706,6 +719,38 @@ export default function FarmSetup() {
           </div>
         </div>
       </div>
+
+      {/* GPS Walking Boundary Modal */}
+      {farmId && (
+        <GpsBoundaryModal
+          isOpen={isGpsModalOpen}
+          onClose={() => setIsGpsModalOpen(false)}
+          farmId={farmId}
+          farmName={farmName}
+          initialCenter={[
+            latitude ? parseFloat(latitude) : 20.918912,
+            longitude ? parseFloat(longitude) : 76.982846
+          ]}
+          isApproximateCenter={!latitude || !longitude}
+          fields={fields.filter(f => !f.isNew).map(f => ({
+            id: f.id,
+            name: f.name,
+            area: parseFloat(f.size) || 0,
+            area_unit: 'acre',
+            crop: f.crop,
+            geojson_geometry: f.geojson_geometry,
+            boundaries_mapped: f.boundaries_mapped
+          }))}
+          onSaveSuccess={(updatedField) => {
+            setFields(prev => prev.map(f => f.id === updatedField.id ? {
+              ...f,
+              size: String(updatedField.area),
+              geojson_geometry: updatedField.geojson_geometry,
+              boundaries_mapped: true
+            } : f));
+          }}
+        />
+      )}
 
       {/* Boundary Editor Modal */}
       {farmId && (

@@ -61,6 +61,80 @@ export function convertM2ToUnit(m2: number, unit: string = 'acre'): number {
 }
 
 /**
+ * Computes the haversine distance in meters between two [lon, lat] points.
+ */
+export function haversineDistanceMeters(p1: [number, number], p2: [number, number]): number {
+  const lon1 = (p1[0] * Math.PI) / 180;
+  const lat1 = (p1[1] * Math.PI) / 180;
+  const lon2 = (p2[0] * Math.PI) / 180;
+  const lat2 = (p2[1] * Math.PI) / 180;
+
+  const dLat = lat2 - lat1;
+  const dLon = lon2 - lon1;
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return EARTH_RADIUS * c;
+}
+
+/**
+ * Validates whether an incoming GPS fix is suitable for recording.
+ * Rejects fixes with accuracy > maxAccuracyMeters or suspicious physical jumps > maxSpeedMps.
+ */
+export function filterGpsFix(
+  newCoord: [number, number],
+  accuracy: number,
+  lastCoord?: [number, number],
+  timeDeltaSec?: number,
+  maxAccuracyMeters: number = 30,
+  minDistanceMeters: number = 2.0,
+  maxJumpSpeedMps: number = 20 // 72 km/h - filters teleports/multipath jumps
+): { accept: boolean; reason?: string; isDuplicate?: boolean; isSuspiciousJump?: boolean } {
+  const [lon, lat] = newCoord;
+
+  if (typeof lon !== 'number' || typeof lat !== 'number' || isNaN(lon) || isNaN(lat)) {
+    return { accept: false, reason: 'Invalid GPS numbers.' };
+  }
+  if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+    return { accept: false, reason: 'Coordinates out of geographic range.' };
+  }
+
+  // Reject fixes with poor GPS dilution of precision / high inaccuracy
+  if (accuracy > maxAccuracyMeters) {
+    return {
+      accept: false,
+      reason: `Accuracy too low (${Math.round(accuracy)}m > ${maxAccuracyMeters}m limit). Walk with clear sky view.`
+    };
+  }
+
+  if (lastCoord) {
+    const dist = haversineDistanceMeters(lastCoord, newCoord);
+
+    // Filter duplicate / stationary jitter (< 2m)
+    if (dist < minDistanceMeters) {
+      return { accept: false, reason: 'Stationary position jitter (< 2m).', isDuplicate: true };
+    }
+
+    // Filter physical teleport jumps
+    if (timeDeltaSec && timeDeltaSec > 0) {
+      const speed = dist / timeDeltaSec;
+      if (speed > maxJumpSpeedMps) {
+        return {
+          accept: false,
+          reason: `Suspicious GPS jump: ${Math.round(dist)}m in ${timeDeltaSec.toFixed(1)}s (${Math.round(speed * 3.6)} km/h).`,
+          isSuspiciousJump: true
+        };
+      }
+    }
+  }
+
+  return { accept: true };
+}
+
+/**
  * Validates GeoJSON coordinates for range and basic non-degeneracy.
  */
 export function validatePolygonCoordinates(coords: Array<[number, number]>): { valid: boolean; reason?: string } {

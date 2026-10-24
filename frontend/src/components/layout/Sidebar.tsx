@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import {
   LayoutDashboard, Map, Sprout, TestTube, Bug, Droplets,
   LineChart, TrendingUp, FlaskConical, Lightbulb, History,
-  Bot, Landmark, FileText, Settings, Leaf, Package
+  Bot, Landmark, FileText, Settings, Leaf, Package, Tractor
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -17,8 +17,10 @@ const Sidebar = () => {
     { nameKey: 'nav.cropIntelligence', path: '/crop-recommendation', icon: <Sprout size={20} /> },
     { nameKey: 'nav.soilIntelligence', path: '/soil', icon: <TestTube size={20} /> },
     { nameKey: 'nav.diseasePest', path: '/disease', icon: <Bug size={20} /> },
+    { nameKey: 'nav.fertilizerAdvisory', path: '/fertilizer', icon: <FlaskConical size={20} /> },
     { nameKey: 'nav.irrigationClimate', path: '/irrigation', icon: <Droplets size={20} /> },
     { nameKey: 'nav.farmEconomics', path: '/economics', icon: <LineChart size={20} /> },
+    { nameKey: 'nav.rentals', path: '/rentals', icon: <Tractor size={20} /> },
     { nameKey: 'nav.marketIntelligence', path: '/market', icon: <TrendingUp size={20} /> },
     { nameKey: 'nav.postHarvest', path: '/post-harvest', icon: <Package size={20} /> },
     { nameKey: 'nav.whatIfSimulator', path: '/simulator', icon: <FlaskConical size={20} /> },
