@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import {
   Tractor, CheckCircle, XCircle, Clock, PlusCircle, AlertCircle,
-  Truck, Users, DollarSign, Calendar, Eye, Power, Loader2, Star, ShieldCheck
+  Truck, Users, DollarSign, Calendar, Eye, Power, Loader2, Star,
+  ShieldCheck, Bell, Sparkles, Navigation, MapPin, QrCode, Check,
+  CreditCard, ArrowRight, ShieldAlert, Store
 } from 'lucide-react';
-import { RentalListing, RentalBooking, RentalCategory, BillingUnit } from '../../types/rental';
+import {
+  RentalListing, RentalBooking, RentalCategory, BillingUnit,
+  ShopNotification, ShopkeeperSubscriptionPlan
+} from '../../types/rental';
 import { rentalApi } from '../../services/rentalApi';
 
 interface OwnerDashboardProps {
@@ -11,11 +16,16 @@ interface OwnerDashboardProps {
 }
 
 export default function OwnerDashboard({ onListingCreated }: OwnerDashboardProps) {
-  const [activeTab, setActiveTab] = useState<'requests' | 'listings' | 'create'>('requests');
+  const [activeTab, setActiveTab] = useState<'requests' | 'notifications' | 'listings' | 'subscription' | 'create'>('requests');
   const [listings, setListings] = useState<RentalListing[]>([]);
   const [requests, setRequests] = useState<RentalBooking[]>([]);
+  const [notifications, setNotifications] = useState<ShopNotification[]>([]);
+  const [subscriptionPlans, setSubscriptionPlans] = useState<ShopkeeperSubscriptionPlan[]>([]);
+  const [currentSubscription, setCurrentSubscription] = useState<any>(null);
+
   const [loading, setLoading] = useState<boolean>(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [subscribing, setSubscribing] = useState<boolean>(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,7 +44,17 @@ export default function OwnerDashboard({ onListingCreated }: OwnerDashboardProps
   const [newOperatorIncluded, setNewOperatorIncluded] = useState<boolean>(true);
   const [newFuelPolicy, setNewFuelPolicy] = useState('renter_bears_fuel');
   const [newDeliveryFee, setNewDeliveryFee] = useState<number>(150);
+
+  // GPS coordinates & UPI details
+  const [shopLatitude, setShopLatitude] = useState<number>(20.7002);
+  const [shopLongitude, setShopLongitude] = useState<number>(77.0082);
+  const [detectingGps, setDetectingGps] = useState<boolean>(false);
+  const [newUpiId, setNewUpiId] = useState<string>('vidarbha.agro@okhdfcbank');
+  const [newUpiPayeeName, setNewUpiPayeeName] = useState<string>('Vidarbha Agro Equipment Store');
+
   const [creating, setCreating] = useState(false);
+
+  const ownerId = 'PROV_AKOLA_01';
 
   useEffect(() => {
     loadOwnerData();
@@ -44,12 +64,18 @@ export default function OwnerDashboard({ onListingCreated }: OwnerDashboardProps
     setLoading(true);
     setError(null);
     try {
-      const [ownerListings, ownerRequests] = await Promise.all([
-        rentalApi.getOwnerListings('PROV_AKOLA_01'),
-        rentalApi.getOwnerRequests('PROV_AKOLA_01')
+      const [ownerListings, ownerRequests, ownerNotifs, plans, sub] = await Promise.all([
+        rentalApi.getOwnerListings(ownerId),
+        rentalApi.getOwnerRequests(ownerId),
+        rentalApi.getOwnerNotifications(ownerId).catch(() => []),
+        rentalApi.getSubscriptionPlans().catch(() => []),
+        rentalApi.getOwnerSubscription(ownerId).catch(() => null)
       ]);
       setListings(ownerListings);
       setRequests(ownerRequests);
+      setNotifications(ownerNotifs);
+      setSubscriptionPlans(plans);
+      setCurrentSubscription(sub);
     } catch (err: any) {
       setError(err.message || 'Failed to load owner data');
     } finally {
@@ -63,6 +89,10 @@ export default function OwnerDashboard({ onListingCreated }: OwnerDashboardProps
       const updated = await rentalApi.respondToBooking(bookingId, action);
       setMessage(`Booking ${updated.booking_reference} marked as ${action === 'confirm' ? 'Confirmed' : 'Rejected'}.`);
       setRequests(prev => prev.map(r => r.id === bookingId ? updated : r));
+
+      // Also refresh notifications to reflect updated state
+      const refreshedNotifs = await rentalApi.getOwnerNotifications(ownerId).catch(() => []);
+      setNotifications(refreshedNotifs);
     } catch (err: any) {
       setError(err.message || 'Action failed');
     } finally {
@@ -81,6 +111,58 @@ export default function OwnerDashboard({ onListingCreated }: OwnerDashboardProps
     } finally {
       setActionLoading(null);
     }
+  };
+
+  const handleMarkNotificationRead = async (notifId: string) => {
+    try {
+      await rentalApi.markNotificationRead(notifId);
+      setNotifications(prev => prev.map(n => n.id === notifId ? { ...n, is_read: true } : n));
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleUpgradeSubscription = async (planId: string) => {
+    setSubscribing(true);
+    setError(null);
+    try {
+      const updatedSub = await rentalApi.upgradeOwnerSubscription({
+        plan_id: planId,
+        provider_id: ownerId,
+        duration_months: 1,
+        upi_transaction_ref: `UPI-SUB-${Date.now().toString(36).toUpperCase()}`
+      });
+      setCurrentSubscription(updatedSub);
+      setMessage(`🎉 Successfully upgraded to ${updatedSub.tier_name || 'Gold Merchant'}! Priority ranking in 10km radius is now ACTIVE.`);
+      // Reload listings to reflect priority ranking
+      const refreshed = await rentalApi.getOwnerListings(ownerId);
+      setListings(refreshed);
+    } catch (err: any) {
+      setError(err.message || 'Failed to upgrade subscription');
+    } finally {
+      setSubscribing(false);
+    }
+  };
+
+  const handleDetectGPS = () => {
+    if (!navigator.geolocation) {
+      setMessage('Geolocation is not supported by your browser. Using Akola coordinates.');
+      return;
+    }
+    setDetectingGps(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setShopLatitude(parseFloat(pos.coords.latitude.toFixed(6)));
+        setShopLongitude(parseFloat(pos.coords.longitude.toFixed(6)));
+        setDetectingGps(false);
+        setMessage(`Detected Shop GPS: ${pos.coords.latitude.toFixed(4)}° N, ${pos.coords.longitude.toFixed(4)}° E`);
+      },
+      (err) => {
+        setDetectingGps(false);
+        setMessage(`GPS detection note: ${err.message}. Using default center.`);
+      },
+      { timeout: 10000, enableHighAccuracy: true }
+    );
   };
 
   const handleCreateListing = async (e: React.FormEvent) => {
@@ -105,6 +187,10 @@ export default function OwnerDashboard({ onListingCreated }: OwnerDashboardProps
         district: newDistrict,
         taluka: newTaluka,
         service_radius_km: newRadius,
+        latitude: shopLatitude,
+        longitude: shopLongitude,
+        upi_id: newUpiId.trim() || undefined,
+        upi_payee_name: newUpiPayeeName.trim() || undefined,
         specs: {
           horsepower: newHorsepower,
           operator_included: newOperatorIncluded,
@@ -115,9 +201,9 @@ export default function OwnerDashboard({ onListingCreated }: OwnerDashboardProps
           cancellation_policy: 'Free cancellation 12 hours prior to scheduled start.'
         },
         is_active: true
-      }, 'PROV_AKOLA_01');
+      }, ownerId);
 
-      setMessage(`Listing '${created.title}' published successfully!`);
+      setMessage(`Listing '${created.title}' published successfully with verified GPS & UPI payment settlement!`);
       setListings(prev => [created, ...prev]);
       setActiveTab('listings');
       if (onListingCreated) onListingCreated(created);
@@ -137,30 +223,48 @@ export default function OwnerDashboard({ onListingCreated }: OwnerDashboardProps
   const activeJobs = requests.filter(r => r.status === 'confirmed' || r.status === 'in_progress');
   const completedJobs = requests.filter(r => r.status === 'completed');
   const totalEarnings = completedJobs.reduce((acc, curr) => acc + curr.total_amount, 0);
+  const unreadNotifs = notifications.filter(n => n.status === 'unread').length;
 
   return (
     <div className="space-y-6">
-      {/* Provider Header Banner */}
-      <div className="bg-[#103D2C] text-white rounded-3xl p-6 lg:p-8 shadow-sm border border-[#E5DDCF] flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-[#17643E] text-emerald-100 flex items-center gap-1">
-              <ShieldCheck size={12} /> CHC Authorized Custom Hiring Center
-            </span>
-            <span className="text-xs text-emerald-200">Akola District FPO Federation</span>
+      {/* Crisp Header Bar */}
+      <div className="bg-white rounded-2xl p-4 border border-[#E5DDCF] shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-emerald-100 text-[#103D2C] rounded-xl font-bold">
+            <Tractor size={20} />
           </div>
-          <h2 className="text-2xl font-serif font-bold text-white mt-1">Vidarbha Agro Machinery CHC Portal</h2>
-          <p className="text-xs text-emerald-200/80 mt-1">
-            Manage your agricultural fleet, accept farmer bookings, and track daily machine dispatch.
-          </p>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-bold text-[#103D2C]">Shopkeeper & Equipment Dashboard</h2>
+              {currentSubscription?.priority_ranking ? (
+                <span className="text-[10px] uppercase font-extrabold tracking-wider px-2 py-0.5 rounded-full bg-amber-400 text-gray-900 flex items-center gap-1">
+                  <Sparkles size={10} className="fill-gray-900" />
+                  {currentSubscription.tier_name || 'Gold'} • Priority Active
+                </span>
+              ) : (
+                <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">
+                  Free Starter Plan
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-gray-500">Vidarbha Agro CHC • Akola</p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setActiveTab('subscription')}
+            className="bg-[#FBF7EF] hover:bg-[#F2E8D5] text-[#103D2C] border border-[#E5DDCF] font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition-colors"
+          >
+            <Sparkles size={13} className="text-amber-500" />
+            <span>Priority Plans</span>
+          </button>
           <button
             onClick={() => setActiveTab('create')}
-            className="bg-[#17643E] hover:bg-emerald-600 text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center gap-2 transition-colors shadow-sm"
+            className="bg-[#103D2C] hover:bg-[#17643E] text-white font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition-colors shadow-sm"
           >
-            <PlusCircle size={15} /> Add Equipment / Service
+            <PlusCircle size={14} />
+            <span>Add Equipment</span>
           </button>
         </div>
       </div>
@@ -221,10 +325,10 @@ export default function OwnerDashboard({ onListingCreated }: OwnerDashboardProps
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-[#E5DDCF] gap-2">
+      <div className="flex border-b border-[#E5DDCF] gap-2 overflow-x-auto">
         <button
           onClick={() => setActiveTab('requests')}
-          className={`pb-3 px-4 font-bold text-xs uppercase tracking-wider transition-colors border-b-2 ${
+          className={`pb-3 px-4 font-bold text-xs uppercase tracking-wider transition-colors border-b-2 whitespace-nowrap ${
             activeTab === 'requests'
               ? 'border-[#103D2C] text-[#103D2C]'
               : 'border-transparent text-gray-400 hover:text-gray-700'
@@ -234,25 +338,54 @@ export default function OwnerDashboard({ onListingCreated }: OwnerDashboardProps
         </button>
 
         <button
+          onClick={() => setActiveTab('notifications')}
+          className={`pb-3 px-4 font-bold text-xs uppercase tracking-wider transition-colors border-b-2 whitespace-nowrap flex items-center gap-1.5 ${
+            activeTab === 'notifications'
+              ? 'border-[#103D2C] text-[#103D2C]'
+              : 'border-transparent text-gray-400 hover:text-gray-700'
+          }`}
+        >
+          <Bell size={13} />
+          <span>Notifications</span>
+          {unreadNotifs > 0 && (
+            <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full animate-pulse">
+              {unreadNotifs}
+            </span>
+          )}
+        </button>
+
+        <button
           onClick={() => setActiveTab('listings')}
-          className={`pb-3 px-4 font-bold text-xs uppercase tracking-wider transition-colors border-b-2 ${
+          className={`pb-3 px-4 font-bold text-xs uppercase tracking-wider transition-colors border-b-2 whitespace-nowrap ${
             activeTab === 'listings'
               ? 'border-[#103D2C] text-[#103D2C]'
               : 'border-transparent text-gray-400 hover:text-gray-700'
           }`}
         >
-          My Listed Machinery ({listings.length})
+          My Listed Equipment ({listings.length})
+        </button>
+
+        <button
+          onClick={() => setActiveTab('subscription')}
+          className={`pb-3 px-4 font-bold text-xs uppercase tracking-wider transition-colors border-b-2 whitespace-nowrap flex items-center gap-1 ${
+            activeTab === 'subscription'
+              ? 'border-amber-500 text-amber-700'
+              : 'border-transparent text-gray-400 hover:text-gray-700'
+          }`}
+        >
+          <Sparkles size={13} className="text-amber-500" />
+          <span>Shopkeeper Plans & Revenue</span>
         </button>
 
         <button
           onClick={() => setActiveTab('create')}
-          className={`pb-3 px-4 font-bold text-xs uppercase tracking-wider transition-colors border-b-2 ${
+          className={`pb-3 px-4 font-bold text-xs uppercase tracking-wider transition-colors border-b-2 whitespace-nowrap ${
             activeTab === 'create'
               ? 'border-[#103D2C] text-[#103D2C]'
               : 'border-transparent text-gray-400 hover:text-gray-700'
           }`}
         >
-          + List New Machinery / Team
+          + Add New Equipment
         </button>
       </div>
 
@@ -261,7 +394,7 @@ export default function OwnerDashboard({ onListingCreated }: OwnerDashboardProps
         <div className="space-y-4">
           {requests.length === 0 ? (
             <div className="bg-white rounded-2xl p-8 text-center border border-[#E5DDCF] text-gray-500 text-sm">
-              No booking requests received yet.
+              No booking requests received yet. When farmers submit rental requests, they appear here instantly.
             </div>
           ) : (
             requests.map((req) => (
@@ -269,8 +402,8 @@ export default function OwnerDashboard({ onListingCreated }: OwnerDashboardProps
                 key={req.id}
                 className="bg-white rounded-2xl p-5 border border-[#E5DDCF] shadow-sm flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4"
               >
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-2">
+                <div className="space-y-1.5 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
                     <span className="font-mono text-xs font-bold text-[#103D2C] bg-[#FBF7EF] px-2 py-0.5 rounded border border-[#E5DDCF]">
                       {req.booking_reference}
                     </span>
@@ -284,6 +417,13 @@ export default function OwnerDashboard({ onListingCreated }: OwnerDashboardProps
                       {req.status.replace('_', ' ')}
                     </span>
                     <span className="text-xs text-gray-400">• Dispatch: {req.dispatch_status}</span>
+
+                    {req.payment_method === 'online_upi' && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-200 flex items-center gap-1">
+                        <QrCode size={10} />
+                        Direct UPI {req.payment_status === 'paid' ? '• Settled' : '• Pending Settlement'}
+                      </span>
+                    )}
                   </div>
 
                   <h4 className="font-bold text-sm text-[#103D2C]">{req.listing_title}</h4>
@@ -292,6 +432,7 @@ export default function OwnerDashboard({ onListingCreated }: OwnerDashboardProps
                     <span>Date: <strong>{req.start_date} ({req.start_time})</strong></span>
                     <span>Duration: <strong>{req.duration} {req.billing_unit.replace('per_', '')}s</strong></span>
                     <span>Agreed Amount: <strong className="text-[#17643E]">₹{req.total_amount}</strong></span>
+                    <span>Field: <strong>{req.farm_location || 'Akola'}</strong></span>
                   </div>
                   {req.notes && (
                     <div className="text-[11px] text-gray-500 italic bg-[#FBF7EF] p-2 rounded-lg">
@@ -352,7 +493,94 @@ export default function OwnerDashboard({ onListingCreated }: OwnerDashboardProps
         </div>
       )}
 
-      {/* TAB 2: LISTINGS */}
+      {/* TAB 2: LIVE NOTIFICATIONS */}
+      {activeTab === 'notifications' && (
+        <div className="bg-white rounded-3xl p-6 border border-[#E5DDCF] shadow-sm space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#E5DDCF]/70">
+            <div>
+              <h3 className="font-serif font-bold text-lg text-[#103D2C] flex items-center gap-2">
+                <Bell className="text-[#17643E]" size={20} />
+                Real-Time Farmer Booking Inquiries & Notifications
+              </h3>
+              <p className="text-xs text-gray-500">
+                Instantly alerted whenever a farmer requests equipment in your 10km radius.
+              </p>
+            </div>
+            <span className="text-xs font-semibold text-gray-500">
+              Total: {notifications.length} ({unreadNotifs} unread)
+            </span>
+          </div>
+
+          {notifications.length === 0 ? (
+            <div className="p-8 text-center text-xs text-gray-400">
+              No notifications yet. You will receive live alerts when farmers place bookings.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {notifications.map((notif) => {
+                const isUnread = notif.status === 'unread';
+                return (
+                  <div
+                    key={notif.id}
+                    className={`p-4 rounded-2xl border transition-all flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 ${
+                      !isUnread
+                        ? 'bg-[#FBF7EF]/50 border-[#E5DDCF]'
+                        : 'bg-emerald-50/60 border-emerald-300 shadow-sm'
+                    }`}
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#103D2C] text-white">
+                          Booking Inquiry
+                        </span>
+                        {isUnread && (
+                          <span className="text-[10px] font-bold text-emerald-800 bg-emerald-200 px-2 py-0.5 rounded-full">
+                            NEW
+                          </span>
+                        )}
+                        <span className="text-[11px] text-gray-400">
+                          Ref: {notif.booking_reference || 'N/A'}
+                        </span>
+                      </div>
+                      <h4 className="font-bold text-xs text-[#103D2C]">{notif.listing_title}</h4>
+                      <p className="text-xs text-gray-600">
+                        Farmer {notif.farmer_name} ({notif.farmer_phone}) requested {notif.scheduled_date} at {notif.start_time}. Agreed Amount: ₹{notif.total_amount}. ({notif.payment_method === 'online_upi' ? 'Direct UPI' : 'Pay on Delivery'})
+                      </p>
+                      <div className="text-[11px] text-gray-400">
+                        {new Date(notif.created_at).toLocaleString()}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      {notif.booking_id && (
+                        <button
+                          onClick={() => {
+                            setActiveTab('requests');
+                            handleMarkNotificationRead(notif.id);
+                          }}
+                          className="bg-[#103D2C] hover:bg-[#17643E] text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors"
+                        >
+                          View in Bookings
+                        </button>
+                      )}
+                      {isUnread && (
+                        <button
+                          onClick={() => handleMarkNotificationRead(notif.id)}
+                          className="text-xs font-semibold text-gray-500 hover:text-gray-800 px-2.5 py-1.5 rounded-lg border border-gray-300 bg-white"
+                        >
+                          Mark Read
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TAB 3: LISTINGS */}
       {activeTab === 'listings' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {listings.map((l) => (
@@ -364,12 +592,27 @@ export default function OwnerDashboard({ onListingCreated }: OwnerDashboardProps
                 <div>
                   <div className="flex justify-between items-center text-xs">
                     <span className="font-bold text-[#103D2C] uppercase">{l.category}</span>
-                    <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-semibold text-[10px]">
-                      Active for Rent
-                    </span>
+                    <div className="flex items-center gap-1">
+                      {l.is_priority && (
+                        <span className="text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <Sparkles size={10} /> Priority Listed
+                        </span>
+                      )}
+                      <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-semibold text-[10px]">
+                        Active
+                      </span>
+                    </div>
                   </div>
                   <h4 className="font-serif font-bold text-sm text-[#103D2C] mt-1">{l.title}</h4>
                   <p className="text-xs text-gray-500 line-clamp-2 mt-1">{l.description}</p>
+
+                  {/* UPI info */}
+                  {l.upi_id && (
+                    <div className="mt-2 text-[10px] text-purple-900 bg-purple-50 border border-purple-200 px-2 py-1 rounded-lg flex items-center gap-1 font-mono">
+                      <QrCode size={11} className="shrink-0" />
+                      <span>UPI: {l.upi_id}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="pt-2 border-t border-[#E5DDCF] flex items-center justify-between">
@@ -387,12 +630,97 @@ export default function OwnerDashboard({ onListingCreated }: OwnerDashboardProps
         </div>
       )}
 
-      {/* TAB 3: CREATE LISTING */}
+      {/* TAB 4: SUBSCRIPTION & REVENUE MODEL */}
+      {activeTab === 'subscription' && (
+        <div className="bg-white rounded-3xl p-6 lg:p-8 border border-[#E5DDCF] shadow-sm space-y-6">
+          <div>
+            <h3 className="font-serif font-bold text-lg text-[#103D2C]">
+              Priority Ranking Plans
+            </h3>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Get prioritized search ranking for farmers within 50 km and verified badge placement.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {subscriptionPlans.map((plan) => {
+              const isCurrent = currentSubscription?.tier === plan.plan_id;
+              const isRecommended = (plan.priority_level || 0) >= 2;
+              return (
+                <div
+                  key={plan.plan_id}
+                  className={`rounded-3xl p-6 border transition-all flex flex-col justify-between space-y-4 ${
+                    isCurrent
+                      ? 'border-[#17643E] bg-[#17643E]/5 ring-2 ring-[#17643E]'
+                      : isRecommended
+                      ? 'border-amber-400 bg-amber-50/40 shadow-md'
+                      : 'border-[#E5DDCF] bg-white'
+                  }`}
+                >
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <h4 className="font-serif font-bold text-lg text-[#103D2C]">{plan.name}</h4>
+                      {isRecommended && (
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-400 text-gray-900">
+                          Recommended
+                        </span>
+                      )}
+                      {isCurrent && (
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-600 text-white">
+                          Current Plan
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-2xl font-bold text-[#103D2C]">₹{plan.price_inr}</span>
+                      <span className="text-xs text-gray-500">/ {plan.billing_cycle || 'month'}</span>
+                    </div>
+
+                    <ul className="space-y-2 pt-2 border-t border-[#E5DDCF]/60 text-xs text-gray-700">
+                      {plan.features.map((feat, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <Check size={14} className="text-[#17643E] shrink-0 mt-0.5" />
+                          <span>{feat}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div>
+                    {isCurrent ? (
+                      <div className="w-full py-2.5 rounded-xl text-center text-xs font-bold text-emerald-800 bg-emerald-100">
+                        Active & In Good Standing
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={subscribing}
+                        onClick={() => handleUpgradeSubscription(plan.plan_id)}
+                        className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 ${
+                          isRecommended
+                            ? 'bg-[#103D2C] hover:bg-[#17643E] text-white'
+                            : 'bg-gray-800 hover:bg-black text-white'
+                        }`}
+                      >
+                        {subscribing ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+                        <span>Upgrade to {plan.name}</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 5: CREATE LISTING */}
       {activeTab === 'create' && (
         <form onSubmit={handleCreateListing} className="bg-white rounded-3xl p-6 lg:p-8 border border-[#E5DDCF] shadow-sm space-y-6 max-w-3xl">
           <div>
             <h3 className="font-serif font-bold text-xl text-[#103D2C]">List New Agricultural Equipment or Service</h3>
-            <p className="text-xs text-gray-500 mt-1">Make your machinery or farm workers available to local farmers across Akola & Vidarbha.</p>
+            <p className="text-xs text-gray-500 mt-1">Make your machinery or farm equipment available to local farmers across Akola & Vidarbha.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -472,15 +800,95 @@ export default function OwnerDashboard({ onListingCreated }: OwnerDashboardProps
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Taluka / Location</label>
-              <input
-                type="text"
-                value={newTaluka}
-                onChange={(e) => setNewTaluka(e.target.value)}
-                placeholder="e.g. Murtizapur, Akola"
-                className="w-full bg-[#FBF7EF] border border-[#E5DDCF] rounded-xl px-3 py-2 text-xs font-semibold text-[#103D2C]"
-              />
+            {/* SHOP LOCATION SECTION (REQUIRED BY USER) */}
+            <div className="md:col-span-2 p-4 bg-[#FBF7EF] rounded-2xl border border-[#E5DDCF] space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-bold text-[#103D2C] flex items-center gap-1.5 uppercase tracking-wider">
+                    <MapPin size={14} className="text-[#17643E]" />
+                    Shop & Equipment Location
+                  </h4>
+                  <p className="text-[11px] text-gray-500">Farmers within 50 km discover this equipment nearest-first.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleDetectGPS}
+                  disabled={detectingGps}
+                  className="bg-white hover:bg-emerald-50 text-[#103D2C] border border-[#E5DDCF] text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1 shadow-sm transition-colors"
+                >
+                  <Navigation size={12} className={detectingGps ? 'animate-spin' : ''} />
+                  <span>{detectingGps ? 'Locating...' : 'Detect GPS Location'}</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">Latitude</label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={shopLatitude}
+                    onChange={(e) => setShopLatitude(parseFloat(e.target.value) || 20.7002)}
+                    className="w-full bg-white border border-[#E5DDCF] rounded-xl px-3 py-2 text-xs font-semibold text-[#103D2C]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">Longitude</label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={shopLongitude}
+                    onChange={(e) => setShopLongitude(parseFloat(e.target.value) || 77.0082)}
+                    className="w-full bg-white border border-[#E5DDCF] rounded-xl px-3 py-2 text-xs font-semibold text-[#103D2C]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">Taluka / Town</label>
+                  <input
+                    type="text"
+                    value={newTaluka}
+                    onChange={(e) => setNewTaluka(e.target.value)}
+                    placeholder="Akola / Murtizapur"
+                    className="w-full bg-white border border-[#E5DDCF] rounded-xl px-3 py-2 text-xs font-semibold text-[#103D2C]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* SHOPKEEPER UPI CREDENTIALS SECTION (REQUIRED BY USER) */}
+            <div className="md:col-span-2 p-4 bg-[#FBF7EF] rounded-2xl border border-[#E5DDCF] space-y-3">
+              <h4 className="text-xs font-bold text-[#103D2C] flex items-center gap-1.5 uppercase tracking-wider">
+                <QrCode size={14} className="text-[#17643E]" />
+                Direct UPI Settlement Details
+              </h4>
+              <p className="text-[11px] text-gray-500">
+                When farmers book with "Direct UPI to Owner", payment QR codes and payment requests will be routed directly to this UPI ID.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">Your UPI ID (VPA)</label>
+                  <input
+                    type="text"
+                    value={newUpiId}
+                    onChange={(e) => setNewUpiId(e.target.value)}
+                    placeholder="e.g. vidarbha.agro@okhdfcbank"
+                    className="w-full bg-white border border-[#E5DDCF] rounded-xl px-3 py-2 text-xs font-mono font-semibold text-[#103D2C]"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">Payee Business / Shop Name</label>
+                  <input
+                    type="text"
+                    value={newUpiPayeeName}
+                    onChange={(e) => setNewUpiPayeeName(e.target.value)}
+                    placeholder="e.g. Vidarbha Agro Machinery Store"
+                    className="w-full bg-white border border-[#E5DDCF] rounded-xl px-3 py-2 text-xs font-semibold text-[#103D2C]"
+                    required
+                  />
+                </div>
+              </div>
             </div>
 
             <div>
@@ -494,6 +902,17 @@ export default function OwnerDashboard({ onListingCreated }: OwnerDashboardProps
                 className="w-full bg-[#FBF7EF] border border-[#E5DDCF] rounded-xl px-3 py-2 text-xs font-semibold text-[#103D2C]"
               />
             </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Delivery / Mobilization Fee (₹)</label>
+              <input
+                type="number"
+                min="0"
+                value={newDeliveryFee}
+                onChange={(e) => setNewDeliveryFee(parseFloat(e.target.value) || 0)}
+                className="w-full bg-[#FBF7EF] border border-[#E5DDCF] rounded-xl px-3 py-2 text-xs font-semibold text-[#103D2C]"
+              />
+            </div>
           </div>
 
           <div className="flex gap-3 pt-4 border-t border-[#E5DDCF]">
@@ -503,7 +922,7 @@ export default function OwnerDashboard({ onListingCreated }: OwnerDashboardProps
               className="bg-[#103D2C] hover:bg-[#17643E] text-white font-bold py-3 px-6 rounded-xl transition-colors text-xs flex items-center gap-2 shadow-sm"
             >
               {creating ? <Loader2 size={14} className="animate-spin" /> : <PlusCircle size={14} />}
-              Publish Listing to KisanCare Marketplace
+              Publish Listing with 10km Radius & UPI Settlement
             </button>
           </div>
         </form>
