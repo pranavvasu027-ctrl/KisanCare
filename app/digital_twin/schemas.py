@@ -3,7 +3,7 @@ from typing import Optional, Dict, Any
 from datetime import datetime
 
 class Provenance(BaseModel):
-    source: str = Field("user_input", description="Data source (e.g., user_input, iot_sensor, api_fetch)")
+    source: str = Field("user_input", description="Data source (e.g., user_input, soil_health_card, api_fetch)")
     timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
 
 class FarmLocation(BaseModel):

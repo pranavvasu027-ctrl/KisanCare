@@ -1,10 +1,15 @@
 import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { translateDynamic } from '../../i18n/translateHelper';
 import {
   Bug, Camera, Upload, ShieldAlert, CheckCircle, Loader2,
   RotateCcw, AlertCircle, ShieldCheck, Sprout, Info, Leaf,
-  ExternalLink, BarChart3, AlertTriangle, Cpu
+  ExternalLink, BarChart3, AlertTriangle, Cpu, FlaskConical
 } from 'lucide-react';
 import { api } from '../../services/api';
+import { WorkflowStepper } from '../../components/workflow/WorkflowStepper';
+import { WorkflowFooter } from '../../components/workflow/WorkflowFooter';
 
 const AVAILABLE_SYMPTOMS = [
   'Yellow leaves',
@@ -68,7 +73,18 @@ interface DiagnosisResult {
   warnings?: string[];
 }
 
+interface InvalidImageResult {
+  status: 'INVALID_IMAGE';
+  reason: string;
+  message: string;
+  plantConfidence?: number;
+  leafConfidence?: number;
+}
+
 export default function DiseaseDetection() {
+  const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'en';
   const [diagnosisMode, setDiagnosisMode] = useState<'disease' | 'pest'>('disease');
   const [crop, setCrop] = useState('Tomato');
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>(['Yellow leaves', 'Stunted growth']);
@@ -79,13 +95,7 @@ export default function DiseaseDetection() {
   const [isDemo, setIsDemo] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [result, setResult] = useState<DiagnosisResult | null>(null);
-  const [invalidPhoto, setInvalidPhoto] = useState<{
-    status: 'INVALID_IMAGE';
-    reason: string;
-    message: string;
-    plantConfidence?: number;
-    leafConfidence?: number;
-  } | null>(null);
+  const [invalidImageResult, setInvalidImageResult] = useState<InvalidImageResult | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -109,6 +119,7 @@ export default function DiseaseDetection() {
       const url = URL.createObjectURL(file);
       setSelectedImage(url);
       setErrorMessage(null);
+      setInvalidImageResult(null);
       runDiagnosisWithFile(file, null, crop);
     }
   };
@@ -119,6 +130,7 @@ export default function DiseaseDetection() {
     setSelectedImage(preset.url);
     setCrop(preset.crop);
     setErrorMessage(null);
+    setInvalidImageResult(null);
     runDiagnosisWithFile(null, preset.id, preset.crop);
   };
 
@@ -128,6 +140,7 @@ export default function DiseaseDetection() {
     targetCrop: string
   ) => {
     setErrorMessage(null);
+    setInvalidImageResult(null);
     setAnalyzing(true);
 
     try {
@@ -150,31 +163,23 @@ export default function DiseaseDetection() {
       const rawData = response.data;
       setIsDemo(response.isDemo);
 
-      // Check if image failed plant/leaf validation gate
-      if (
-        rawData?.status === 'INVALID_IMAGE' ||
-        rawData?.is_valid_plant_image === false ||
-        rawData?.data?.status === 'INVALID_IMAGE' ||
-        rawData?.data?.is_valid_plant_image === false
-      ) {
-        const failureData = rawData?.status === 'INVALID_IMAGE' ? rawData : (rawData?.data || rawData);
-        setInvalidPhoto({
+      // Check if the backend flagged this upload as an invalid non-plant image
+      if (rawData.status === 'INVALID_IMAGE' || rawData.is_valid_plant_image === false) {
+        setInvalidImageResult({
           status: 'INVALID_IMAGE',
-          reason: failureData.reason || 'NO_PLANT_DETECTED',
-          message: failureData.message || 'Invalid photo. Please upload a clear photo of a plant leaf.',
-          plantConfidence: failureData.plant_confidence,
-          leafConfidence: failureData.leaf_confidence,
+          reason: rawData.reason || 'NO_PLANT_DETECTED',
+          message: rawData.message || 'Invalid photo. Please upload a clear photo of a plant leaf.',
+          plantConfidence: rawData.plant_confidence,
+          leafConfidence: rawData.leaf_confidence,
         });
         setResult(null);
         return;
       }
 
-      // Successful validation: clear invalid photo state
-      setInvalidPhoto(null);
+      setInvalidImageResult(null);
+      const data = rawData.data || rawData;
 
-      const data = rawData?.data || rawData;
-
-      const conditionName = data.condition || data.prediction || 'Unknown Foliar Condition';
+      const conditionName = rawData.disease || data.condition || data.prediction || 'Unknown Foliar Condition';
       const sciName = data.scientific_name || `${targetCrop} foliar pathological disorder`;
       const confidenceVal = typeof data.confidence_percent === 'number'
         ? data.confidence_percent
@@ -193,19 +198,45 @@ export default function DiseaseDetection() {
         probability: tp.probability ?? 0,
       }));
 
+      // 1. Safe normalization of severity ('Low' | 'Medium' | 'High')
+      let severityVal: 'Low' | 'Medium' | 'High' = confidenceVal > 80 ? 'High' : 'Medium';
+      if (typeof data.severity === 'string' && ['Low', 'Medium', 'High'].includes(data.severity)) {
+        severityVal = data.severity as 'Low' | 'Medium' | 'High';
+      } else if (typeof response.data?.severity === 'string' && ['Low', 'Medium', 'High'].includes(response.data.severity)) {
+        severityVal = response.data.severity as 'Low' | 'Medium' | 'High';
+      } else if (data.severity && typeof data.severity === 'object' && typeof data.severity.value === 'number') {
+        severityVal = data.severity.value > 50 ? 'High' : data.severity.value > 20 ? 'Medium' : 'Low';
+      }
+
+      // 2. Safe normalization of treatment to string
+      let treatmentVal = 'Consult local agricultural extension officer.';
+      if (typeof data.treatment === 'string' && data.treatment.trim()) {
+        treatmentVal = data.treatment;
+      } else if (chemicals.length > 0) {
+        treatmentVal = `Apply approved CIB&RC formulation (${chemicals[0].chemical_name}${chemicals[0].dosage ? ' - ' + chemicals[0].dosage : ''}) according to official label instructions. Observe pre-harvest interval and wear PPE.`;
+      } else if (typeof data.description === 'string' && data.description.trim()) {
+        treatmentVal = data.description;
+      }
+
+      // 3. Safe normalization of array items to strings
+      const nonChemList: string[] = (Array.isArray(data.non_chemical_options) ? data.non_chemical_options : [])
+        .map((x: any) => typeof x === 'string' ? x : (x?.title || x?.description || JSON.stringify(x)));
+      const prevList: string[] = (Array.isArray(data.preventive_management) ? data.preventive_management : [])
+        .map((x: any) => typeof x === 'string' ? x : (x?.title || x?.description || JSON.stringify(x)));
+
       setResult({
         condition: conditionName,
         scientificName: sciName,
         confidence: confidenceVal,
-        severity: data.severity || (confidenceVal > 80 ? 'High' : 'Medium'),
-        description: data.description || `Evaluated using deep learning vision model for ${targetCrop}.`,
-        treatment: data.treatment || 'Consult local agricultural extension officer.',
-        preventiveManagement: data.preventive_management || [
+        severity: severityVal,
+        description: typeof data.description === 'string' ? data.description : `Evaluated using deep learning vision model for ${targetCrop}.`,
+        treatment: treatmentVal,
+        preventiveManagement: prevList.length > 0 ? prevList : [
           'Maintain recommended plant spacing to facilitate canopy aeration.',
           'Adopt deep summer plowing to expose resting pathogen spores to solar heat.',
           'Rotate with non-host botanical families to disrupt disease cycles.'
         ],
-        nonChemicalOptions: data.non_chemical_options || [
+        nonChemicalOptions: nonChemList.length > 0 ? nonChemList : [
           'Apply bio-fungicides such as Trichoderma harzianum or Bacillus subtilis.',
           'Spray cold-pressed Neem seed kernel extract (NSKE 5%) at first symptom sign.',
           'Prune and destroy heavily blighted lower leaves before secondary sporulation.'
@@ -213,10 +244,10 @@ export default function DiseaseDetection() {
         chemicalTreatments: chemicals,
         topPredictions: topPreds,
         cropMatch: data.crop_match ?? true,
-        cropMismatchWarning: data.crop_mismatch_warning,
-        modelType: data.model_type || 'PyTorch EfficientNetV2-S + CIBRC Regulatory Engine',
-        latencyMs: data.provenance?.latency_ms,
-        warnings: data.warnings || [],
+        cropMismatchWarning: typeof data.crop_mismatch_warning === 'string' ? data.crop_mismatch_warning : undefined,
+        modelType: typeof data.model_type === 'string' ? data.model_type : 'PyTorch EfficientNetV2-S + CIBRC Regulatory Engine',
+        latencyMs: typeof data.provenance?.latency_ms === 'number' ? data.provenance.latency_ms : undefined,
+        warnings: Array.isArray(data.warnings) ? data.warnings.map((w: any) => typeof w === 'string' ? w : String(w)) : [],
       });
     } catch (err: any) {
       console.error('Diagnosis failed:', err);
@@ -246,37 +277,34 @@ export default function DiseaseDetection() {
     setSelectedFile(null);
     setSampleId(null);
     setResult(null);
-    setInvalidPhoto(null);
+    setInvalidImageResult(null);
     setErrorMessage(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const handleUploadAnother = () => {
-    handleReset();
-    fileInputRef.current?.click();
-  };
-
   return (
     <div className="p-4 lg:p-8 max-w-5xl mx-auto space-y-6">
+      <WorkflowStepper currentStageId={3} />
+
       {/* Header */}
       <div className="text-center max-w-2xl mx-auto mb-6">
         <div className="w-16 h-16 bg-[#17643E]/10 text-[#17643E] rounded-2xl flex items-center justify-center mx-auto mb-4">
           <Bug size={32} />
         </div>
         <div className="flex items-center justify-center gap-2">
-          <h1 className="text-3xl font-serif font-bold text-[#103D2C]">Disease & Pest Detection</h1>
+          <h1 className="text-3xl font-serif font-bold text-[#103D2C]">{t('disease.title')}</h1>
           {isDemo ? (
             <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-amber-300">
-              Demo / Mock Mode
+              {t('disease.sampleBadge')}
             </span>
           ) : (
             <span className="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-emerald-300 flex items-center gap-1">
-              <Cpu size={12} /> PyTorch EfficientNetV2-S Deep Learning
+              <Cpu size={12} /> {t('disease.deepLearningBadge')}
             </span>
           )}
         </div>
         <p className="text-[#292B26]/70 mt-2 text-sm">
-          Authentic plant foliar diagnosis powered by KisanCare's deep learning vision classifier (38 PlantVillage pathology classes) coupled with CIB&RC regulatory treatment protocols.
+          {t('disease.subtitle')}
         </p>
       </div>
 
@@ -292,40 +320,38 @@ export default function DiseaseDetection() {
         {/* Mode Selector Toggle */}
         <div className="flex items-center justify-between border-b border-[#E5DDCF] pb-3">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-[#103D2C] uppercase tracking-wider">Diagnostic Mode:</span>
+            <span className="text-xs font-bold text-[#103D2C] uppercase tracking-wider">{t('disease.diagnosticMode')}</span>
             <div className="flex rounded-lg border border-[#E5DDCF] p-0.5 bg-[#FBF7EF]">
               <button
                 type="button"
                 onClick={() => setDiagnosisMode('disease')}
-                className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
-                  diagnosisMode === 'disease'
+                className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${diagnosisMode === 'disease'
                     ? 'bg-[#103D2C] text-white shadow-xs'
                     : 'text-[#292B26]/70 hover:text-[#103D2C]'
-                }`}
+                  }`}
               >
-                Foliar Disease (EfficientNetV2-S)
+                {t('disease.foliarMode')}
               </button>
               <button
                 type="button"
                 onClick={() => setDiagnosisMode('pest')}
-                className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
-                  diagnosisMode === 'pest'
+                className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${diagnosisMode === 'pest'
                     ? 'bg-[#103D2C] text-white shadow-xs'
                     : 'text-[#292B26]/70 hover:text-[#103D2C]'
-                }`}
+                  }`}
               >
-                Insect Pest (YOLO11s)
+                {t('disease.pestMode')}
               </button>
             </div>
           </div>
           <span className="text-[11px] text-[#292B26]/60">
-            {diagnosisMode === 'disease' ? '38 PlantVillage pathology classes' : '102 IP102 insect pest classes'}
+            {diagnosisMode === 'disease' ? t('disease.foliarClasses') : t('disease.pestClasses')}
           </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-bold text-[#103D2C] uppercase tracking-wider mb-2">Affected Crop</label>
+            <label className="block text-xs font-bold text-[#103D2C] uppercase tracking-wider mb-2">{t('disease.affectedCrop')}</label>
             <select
               value={crop}
               onChange={(e) => setCrop(e.target.value)}
@@ -343,14 +369,14 @@ export default function DiseaseDetection() {
               className="w-full bg-[#103D2C] hover:bg-[#17643E] text-white font-medium py-2 px-4 rounded-lg text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-xs"
             >
               {analyzing ? <Loader2 size={16} className="animate-spin" /> : <Bug size={16} />}
-              <span>{analyzing ? 'Executing Deep Learning Inference...' : `Run ${diagnosisMode === 'pest' ? 'Pest' : 'Disease'} Diagnosis`}</span>
+              <span>{analyzing ? t('disease.executingInference') : t('disease.runDiagnosis', { mode: diagnosisMode === 'pest' ? 'Pest' : 'Disease' })}</span>
             </button>
           </div>
         </div>
 
         <div>
           <label className="block text-xs font-bold text-[#103D2C] uppercase tracking-wider mb-2">
-            Observed Symptoms / Field Signs
+            {t('disease.observedSymptoms')}
           </label>
           <div className="flex flex-wrap gap-2">
             {AVAILABLE_SYMPTOMS.map((sym) => {
@@ -360,13 +386,12 @@ export default function DiseaseDetection() {
                   key={sym}
                   type="button"
                   onClick={() => toggleSymptom(sym)}
-                  className={`text-xs px-3 py-1.5 rounded-full border transition-all cursor-pointer ${
-                    active
+                  className={`text-xs px-3 py-1.5 rounded-full border transition-all cursor-pointer ${active
                       ? 'bg-[#103D2C] text-white border-[#103D2C] font-semibold shadow-xs'
                       : 'bg-[#FBF7EF] text-[#292B26]/80 border-[#E5DDCF] hover:border-[#17643E]'
-                  }`}
+                    }`}
                 >
-                  {active ? `✓ ${sym}` : `+ ${sym}`}
+                  {active ? `✓ ${translateDynamic(sym, currentLang) || sym}` : `+ ${translateDynamic(sym, currentLang) || sym}`}
                 </button>
               );
             })}
@@ -425,7 +450,7 @@ export default function DiseaseDetection() {
           ) : (
             <div className="py-4 flex flex-col items-center justify-center max-w-sm">
               <Upload className="w-10 h-10 text-[#A8C69A] mb-3" />
-              <h3 className="font-bold text-[#103D2C] mb-1">Upload Genuine Leaf Photo</h3>
+              <h3 className="font-bold text-[#103D2C] mb-1">{t('disease.uploadLeafPhoto')}</h3>
               <p className="text-[11px] text-[#292B26]/60 mb-4 leading-relaxed">
                 Upload a clear close-up photograph of the symptomatic leaf (JPEG, PNG, WebP up to 15 MB). The real EfficientNetV2-S neural network will perform multi-class pathology classification.
               </p>
@@ -512,47 +537,30 @@ export default function DiseaseDetection() {
               <h4 className="font-bold text-[#103D2C]">Executing Deep Learning Vision Model</h4>
               <p className="text-xs text-[#292B26]/60 mt-1">Cross-referencing EfficientNetV2-S 38 pathology classes & CIB&RC treatments...</p>
             </div>
-          ) : invalidPhoto ? (
-            <div className="bg-white p-6 sm:p-8 rounded-2xl border border-amber-300 shadow-sm text-center space-y-4">
-              <div className="w-16 h-16 bg-amber-100 text-amber-700 rounded-2xl flex items-center justify-center mx-auto shadow-xs">
-                <AlertTriangle size={36} className="text-amber-600" />
+          ) : invalidImageResult ? (
+            <div className="bg-white rounded-2xl p-8 border-2 border-dashed border-amber-300 text-center flex flex-col items-center justify-center min-h-[360px] shadow-sm space-y-4">
+              <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600 border border-amber-200">
+                <AlertTriangle className="w-8 h-8 text-amber-500" />
               </div>
-
-              <div className="space-y-1">
-                <h3 className="text-xl font-serif font-bold text-[#103D2C]">Invalid Photo</h3>
-                <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">
-                  {invalidPhoto.reason === 'IMAGE_TOO_BLURRY' ? 'Image is too blurry' :
-                   invalidPhoto.reason === 'IMAGE_TOO_DARK' ? 'Image is too dark' :
-                   invalidPhoto.reason === 'LOW_IMAGE_QUALITY' ? 'Image quality is too low' :
-                   invalidPhoto.reason === 'NO_LEAF_DETECTED' ? 'No plant leaf detected' :
-                   invalidPhoto.reason === 'UNRELATED_IMAGE' ? 'Non-agricultural image detected' :
-                   'No plant leaf was detected'}
+              <div className="space-y-1.5 max-w-sm">
+                <h3 className="font-bold text-xl text-[#103D2C]">Invalid Photo</h3>
+                <span className="inline-block bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-amber-200">
+                  {invalidImageResult.reason.replace(/_/g, ' ')}
+                </span>
+                <p className="text-xs text-[#292B26]/80 leading-relaxed pt-1 font-medium">
+                  {invalidImageResult.message}
+                </p>
+                <p className="text-[11px] text-[#292B26]/60">
+                  No recognizable agricultural plant leaf was detected. The disease classifier cannot evaluate non-plant imagery.
                 </p>
               </div>
-
-              <div className="bg-amber-50/70 border border-amber-200 rounded-xl p-4 text-xs text-[#292B26]/80 text-left space-y-2">
-                <p className="font-medium text-amber-950">
-                  {invalidPhoto.message || 'No plant leaf was detected in the uploaded image.'}
-                </p>
-                <p className="text-[11px] text-[#292B26]/70 leading-relaxed">
-                  Please upload a clear photo of an agricultural plant leaf for disease detection.
-                </p>
-                {typeof invalidPhoto.plantConfidence === 'number' && (
-                  <div className="pt-2 border-t border-amber-200/60 flex items-center justify-between text-[11px] text-[#292B26]/60">
-                    <span>Plant presence confidence:</span>
-                    <span className="font-mono font-bold text-amber-900">{Math.round(invalidPhoto.plantConfidence * 100)}% (threshold: 70%)</span>
-                  </div>
-                )}
-              </div>
-
               <div className="pt-2">
                 <button
                   type="button"
-                  onClick={handleUploadAnother}
-                  className="bg-[#103D2C] hover:bg-[#17643E] text-white font-medium py-2.5 px-6 rounded-xl text-xs transition-all flex items-center justify-center gap-2 mx-auto cursor-pointer shadow-xs hover:shadow-md"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="bg-[#103D2C] hover:bg-[#17643E] text-white px-5 py-2.5 rounded-xl font-medium text-xs flex items-center gap-2 cursor-pointer shadow-sm transition-all"
                 >
-                  <Upload size={14} />
-                  <span>Upload Another Photo</span>
+                  <Upload size={15} /> Upload Another Photo
                 </button>
               </div>
             </div>
@@ -579,11 +587,10 @@ export default function DiseaseDetection() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
-                    result.severity === 'High' ? 'bg-red-100 text-red-800' :
-                    result.severity === 'Medium' ? 'bg-orange-100 text-orange-800' :
-                    'bg-emerald-100 text-emerald-800'
-                  }`}>
+                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${result.severity === 'High' ? 'bg-red-100 text-red-800' :
+                      result.severity === 'Medium' ? 'bg-orange-100 text-orange-800' :
+                        'bg-emerald-100 text-emerald-800'
+                    }`}>
                     Severity: {result.severity}
                   </span>
                   {result.modelType && (
@@ -644,10 +651,10 @@ export default function DiseaseDetection() {
                 {/* Treatment / Clinical Protocol */}
                 <div className="pt-2 border-t border-[#E5DDCF]/60">
                   <h5 className="text-xs font-bold text-[#103D2C] uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                    <CheckCircle size={14} className="text-[#17643E]" /> Direct Clinical Protocol
+                    <CheckCircle size={14} className="text-[#17643E]" /> {t('disease.treatmentProtocol')}
                   </h5>
                   <div className="bg-[#FBF7EF] p-3 rounded-lg border border-[#E5DDCF] text-xs text-[#292B26] leading-relaxed">
-                    {result.treatment}
+                    {translateDynamic(result.treatment, currentLang) || result.treatment}
                   </div>
                 </div>
 
@@ -655,7 +662,7 @@ export default function DiseaseDetection() {
                 {result.chemicalTreatments && result.chemicalTreatments.length > 0 && (
                   <div className="pt-2 border-t border-[#E5DDCF]/60 space-y-1.5">
                     <h5 className="text-xs font-bold text-[#103D2C] uppercase tracking-wider flex items-center gap-1.5">
-                      <ExternalLink size={13} className="text-[#17643E]" /> CIB&RC Registered Interventions
+                      <ExternalLink size={13} className="text-[#17643E]" /> {t('disease.chemicalTreatments')}
                     </h5>
                     <div className="space-y-1.5">
                       {result.chemicalTreatments.map((chem, i) => (
@@ -677,7 +684,7 @@ export default function DiseaseDetection() {
                 {/* Non-Chemical Management Options */}
                 <div className="pt-2 border-t border-[#E5DDCF]/60 space-y-1.5">
                   <h5 className="text-xs font-bold text-[#103D2C] uppercase tracking-wider flex items-center gap-1.5">
-                    <Leaf size={14} className="text-[#17643E]" /> Non-Chemical & Biological Controls
+                    <Leaf size={14} className="text-[#17643E]" /> {t('disease.nonChemicalOptions')}
                   </h5>
                   <ul className="text-xs text-[#292B26]/80 list-disc pl-4 space-y-1">
                     {result.nonChemicalOptions.map((opt, i) => (
@@ -689,13 +696,41 @@ export default function DiseaseDetection() {
                 {/* Preventive Management */}
                 <div className="pt-2 border-t border-[#E5DDCF]/60 space-y-1.5">
                   <h5 className="text-xs font-bold text-[#103D2C] uppercase tracking-wider flex items-center gap-1.5">
-                    <ShieldCheck size={14} className="text-[#17643E]" /> Preventive Field Practices
+                    <ShieldCheck size={14} className="text-[#17643E]" /> {t('disease.preventiveManagement')}
                   </h5>
                   <ul className="text-xs text-[#292B26]/80 list-disc pl-4 space-y-1">
                     {result.preventiveManagement.map((prev, i) => (
                       <li key={i}>{prev}</li>
                     ))}
                   </ul>
+                </div>
+
+                {/* Fertilizer & Soil Nutrition Advisory Action Banner */}
+                <div className="bg-[#103D2C] text-white p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+                  <div className="space-y-0.5">
+                    <span className="font-bold text-xs uppercase tracking-wider text-[#A8C69A] flex items-center gap-1.5">
+                      <FlaskConical size={14} /> Soil Nutrition & Balanced Fertilization
+                    </span>
+                    <span className="font-bold text-sm text-[#FBF7EF] block">
+                      Optimize Fertilizer & Soil Health for {crop}
+                    </span>
+                    <p className="text-[11px] text-[#A8C69A] leading-tight">
+                      Run real ML nutrient forecasting with local store & Amazon discovery (independent of foliar disease).
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/fertilizer', {
+                      state: {
+                        crop,
+                        disease: result.condition,
+                        location: 'Maharashtra',
+                      }
+                    })}
+                    className="bg-[#FBF7EF] text-[#103D2C] px-3.5 py-2 rounded-lg text-xs font-bold hover:bg-[#E5DDCF] transition-colors shrink-0 cursor-pointer shadow-xs"
+                  >
+                    Get Fertilizer & Soil Advice →
+                  </button>
                 </div>
 
                 {/* Scientific Disclaimer */}
@@ -721,6 +756,23 @@ export default function DiseaseDetection() {
           )}
         </div>
       </div>
+
+      <WorkflowFooter
+        currentStageNumber={3}
+        currentStageName="In-Season Crop Care"
+        completedActionMessage={result ? `Diagnosis complete for ${result.condition}! Next: Simulate harvest yield and cost adjustments.` : null}
+        prevStep={{ label: "Irrigation & Climate", path: "/irrigation" }}
+        nextStep={{
+          label: "What-If Simulator",
+          labelMr: "नफा व जोखीम सिम्युलेटर",
+          path: "/simulator",
+          description: "Simulate management adjustments, drought tolerance, and yield impact"
+        }}
+        alternativeNextStep={{
+          label: "Farm Economics",
+          path: "/economics"
+        }}
+      />
     </div>
   );
 }

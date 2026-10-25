@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from typing import List, Dict, Any
+from pydantic import BaseModel, Field
+from typing import List, Dict, Any, Optional
 from ml.rule_based.engine import RuleBasedModels
 from ml.market_price.predict import MarketPricePredictor
 
@@ -87,12 +87,24 @@ def assess_weather_risk(req: WeatherRiskRequest):
 # 7. Market Price Forecasting
 class MarketPriceRequest(BaseModel):
     crop: str
-    market: str
-    date: str
+    market: Optional[str] = None
+    date: Optional[str] = None
+    quantity: Optional[float] = Field(default=20.0, gt=0, le=50000)
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    force_refresh: Optional[bool] = False
 
 @router.post("/market-price")
 def forecast_market_price(req: MarketPriceRequest):
-    res = market_predictor.predict(req.crop, req.market, req.date)
+    res = market_predictor.predict(
+        crop=req.crop,
+        quantity=req.quantity or 20.0,
+        farmer_lat=req.latitude,
+        farmer_lon=req.longitude,
+        selected_market=req.market,
+        date_str=req.date,
+        force_refresh=req.force_refresh or False
+    )
     if res.get("status") == "error":
-        raise HTTPException(status_code=404 if "not found" in res["message"].lower() else 422 if "insufficient" in res["message"].lower() or "gap" in res["message"].lower() else 500, detail=res["message"])
+        raise HTTPException(status_code=404 if "not found" in res["message"].lower() else 422 if "insufficient" in res["message"].lower() or "not supported" in res["message"].lower() else 500, detail=res["message"])
     return res

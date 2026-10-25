@@ -1,1024 +1,1130 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  TrendingUp, TrendingDown, MapPin, Search, Loader2, RefreshCw,
-  AlertCircle, ArrowUpRight, SlidersHorizontal, RotateCcw, Calendar,
-  ChevronRight, Sparkles, Clock, Building2, Scale, X, ExternalLink,
-  ShieldCheck, Check, Info, ArrowRight
+  MapPin, TrendingUp, TrendingDown, ArrowRight, RefreshCw,
+  AlertCircle, ShieldCheck, CheckCircle2, Navigation,
+  Scale, Calendar, ExternalLink, Sparkles, Truck, IndianRupee,
+  Compass, Info, ChevronRight, Check
 } from 'lucide-react';
-import {
-  ResponsiveContainer, AreaChart, Area, Line, XAxis, YAxis,
-  CartesianGrid, Tooltip, Legend
-} from 'recharts';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet';
 import { api } from '../../services/api';
+import { useFarm } from '../../context/FarmContext';
+import { WorkflowStepper } from '../../components/workflow/WorkflowStepper';
+import { WorkflowFooter } from '../../components/workflow/WorkflowFooter';
 
-type SupportedCrop = 'Cotton' | 'Soyabean' | 'Tur';
-type SupportedMarket = 'Akola' | 'Amravati' | 'Akot';
-type SupportedTimeRange = '7D' | '14D' | '30D';
+// Scope: Strictly Cotton and Tur
+export type SupportedCrop = 'Cotton' | 'Tur';
+
+interface SupportingWebsite {
+  name: string;
+  url: string;
+  description: string;
+  badge: string;
+}
+
+interface MarketData {
+  name: string;
+  district: string;
+  state: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  distance_km: number;
+  straight_line_km: number;
+  estimated_road_km: number;
+  distance_display: string;
+  price_type: string;
+  current_price: number;
+  min_price?: number;
+  max_price?: number;
+  price_source?: string;
+  is_live?: boolean;
+  source_portal?: string;
+  transport_cost_per_qtl: number;
+  net_price_per_qtl: number;
+  expected_gross_amount: number;
+  expected_net_amount: number;
+  last_updated: string;
+  data_age_days: number;
+  data_freshness_label: string;
+  data_freshness_status: string;
+  google_maps_url: string;
+}
+
+interface ForecastInfo {
+  horizon_days: number;
+  expected_price: number;
+  trend: string;
+  change_pct: number;
+  empirical_mae: number;
+  empirical_mape: number;
+  range_min: number;
+  range_max: number;
+  range_display: string;
+}
+
+interface MarketApiResponse {
+  status: string;
+  crop: string;
+  crop_display: string;
+  price_type: string;
+  quantity_quintals: number;
+  data_source?: {
+    type: string;
+    server_status: string;
+    provider: string;
+    api_endpoint: string;
+    portal_url: string;
+    last_synced: string;
+    live_reporting_mandis: number;
+    supporting_websites: SupportingWebsite[];
+  };
+  farmer_location: {
+    latitude: number;
+    longitude: number;
+    is_fallback: boolean;
+    label: string;
+  };
+  recommended_market: MarketData;
+  best_price_market: MarketData;
+  closest_market: MarketData;
+  markets: MarketData[];
+  current_price: number;
+  forecast_7d: ForecastInfo;
+  forecast_14d: ForecastInfo;
+  forecast_28d: ForecastInfo;
+  recommended_sell_window: string;
+  sell_action: string;
+  sell_advice_reason: string;
+  expected_amount: number;
+  distance_km: number;
+  estimated_road_km: number;
+  transport_rate_per_qtl_per_km: number;
+  confidence: string;
+  confidence_description: string;
+  why_recommendation: string;
+  timestamp: string;
+}
+
+// Regional Agricultural Hub Presets for rapid zero-friction selection
+const REGIONAL_DISTRICT_HUBS = [
+  { name: 'Pune (पुणे)', coords: [18.4636, 73.8682] as [number, number] },
+  { name: 'Nashik (नाशिक)', coords: [20.0120, 73.7920] as [number, number] },
+  { name: 'Akola (अकोला)', coords: [20.7002, 77.0082] as [number, number] },
+  { name: 'Amravati (अमरावती)', coords: [20.9320, 77.7523] as [number, number] },
+  { name: 'Baramati (बारामती)', coords: [18.1519, 74.5770] as [number, number] },
+  { name: 'Latur (लातूर)', coords: [18.4088, 76.5604] as [number, number] },
+  { name: 'Solapur (सोलापूर)', coords: [17.6599, 75.9064] as [number, number] },
+  { name: 'Ahmednagar (अहमदनगर)', coords: [19.0950, 74.7490] as [number, number] },
+  { name: 'Wardha (वर्धा)', coords: [20.7453, 78.6022] as [number, number] },
+  { name: 'Yavatmal (यवतमाळ)', coords: [20.3888, 78.1204] as [number, number] },
+  { name: 'Washim (वाशीम)', coords: [20.1090, 77.1350] as [number, number] },
+  { name: 'Jalna (जालना)', coords: [19.8347, 75.8816] as [number, number] },
+];
+
+// Leaflet custom marker generator
+const createMarkerIcon = (color: string, label: string) => {
+  return L.divIcon({
+    className: 'custom-mandi-pin',
+    html: `
+      <div style="background-color: ${color}; color: white; padding: 4px 8px; border-radius: 9999px; font-weight: bold; font-size: 11px; display: flex; align-items: center; gap: 4px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); border: 2px solid white; white-space: nowrap;">
+        <span>📍</span><span>${label}</span>
+      </div>
+    `,
+    iconSize: [80, 30],
+    iconAnchor: [40, 15]
+  });
+};
+
+const farmerIcon = L.divIcon({
+  className: 'custom-farmer-pin',
+  html: `
+    <div style="background-color: #17643E; color: white; padding: 5px 10px; border-radius: 9999px; font-weight: bold; font-size: 12px; display: flex; align-items: center; gap: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); border: 2px solid #FBF7EF; white-space: nowrap;">
+      <span>🏡</span><span>Your Farm</span>
+    </div>
+  `,
+  iconSize: [100, 32],
+  iconAnchor: [50, 16]
+});
+
+// Helper component to recenter Leaflet map smoothly
+function MapRecenter({ center }: { center: [number, number] }) {
+  const map = useMap();
+  useEffect(() => {
+    map.flyTo(center, 9, { duration: 1.2 });
+  }, [center, map]);
+  return null;
+}
 
 export default function MarketIntelligence() {
-  // Active query state
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'en';
+  const { activeFarm } = useFarm();
+
+  // 1. Farmer Inputs (Only 3 essential questions)
   const [crop, setCrop] = useState<SupportedCrop>('Cotton');
-  const [market, setMarket] = useState<SupportedMarket>('Akola');
-  const [timeRange, setTimeRange] = useState<SupportedTimeRange>('7D');
+  const [quantity, setQuantity] = useState<number>(20);
 
-  // Staged filter state (in the control panel)
-  const [stagedCrop, setStagedCrop] = useState<SupportedCrop>('Cotton');
-  const [stagedMarket, setStagedMarket] = useState<SupportedMarket>('Akola');
-  const [stagedTimeRange, setStagedTimeRange] = useState<SupportedTimeRange>('7D');
+  // GPS / Location state: Only discover when requested by farmer or if active farm profile has coordinates
+  const hasFarmLocation = Boolean(activeFarm?.latitude && activeFarm?.longitude);
+  const [locationFetched, setLocationFetched] = useState<boolean>(hasFarmLocation);
+  const [customLocationName, setCustomLocationName] = useState<string>(() => {
+    return activeFarm?.location || 'Live GPS Location Required';
+  });
 
-  // Search & Sorting state
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortField, setSortField] = useState<'currentPrice' | 'priceChangePct' | 'name'>('currentPrice');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [farmerCoords, setFarmerCoords] = useState<[number, number]>(() => {
+    if (activeFarm?.latitude && activeFarm?.longitude) {
+      return [activeFarm.latitude, activeFarm.longitude];
+    }
+    return [18.4636, 73.8682]; // Default centroid (Pune / Western Maharashtra)
+  });
 
-  // Async & UI state
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  // UI & Data State
+  const [data, setData] = useState<MarketApiResponse | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<string>('23 Oct 2026, 05:30 PM IST');
-  const [refreshToast, setRefreshToast] = useState(false);
+  const [selectedMarketName, setSelectedMarketName] = useState<string | null>(null);
+  const [gpsLoading, setGpsLoading] = useState<boolean>(false);
+  const [showSourcesModal, setShowSourcesModal] = useState<boolean>(false);
 
-  // Detail Modal / Slide-over state
-  const [selectedDetailMarket, setSelectedDetailMarket] = useState<any>(null);
-
+  // Sync with activeFarm coordinates if updated
   useEffect(() => {
-    fetchMarketData(crop, market, timeRange);
-  }, [crop, market, timeRange]);
+    if (activeFarm?.latitude && activeFarm?.longitude) {
+      setFarmerCoords([activeFarm.latitude, activeFarm.longitude]);
+      setLocationFetched(true);
+      if (activeFarm.location) {
+        setCustomLocationName(activeFarm.location);
+      }
+    }
+  }, [activeFarm]);
 
-  const fetchMarketData = async (
-    targetCrop: SupportedCrop,
-    targetMarket: SupportedMarket,
-    targetRange: SupportedTimeRange
-  ) => {
+  // Fetch recommendations whenever crop, quantity, or coordinates change ONLY IF location has been fetched
+  useEffect(() => {
+    if (locationFetched) {
+      loadMarketIntelligence(false, farmerCoords);
+    }
+  }, [crop, quantity, farmerCoords, locationFetched]);
+
+  const loadMarketIntelligence = async (forceRefresh: boolean = false, coordsOverride?: [number, number]) => {
+    const coords = coordsOverride || farmerCoords;
     setLoading(true);
     setError(null);
     try {
-      const today = new Date().toISOString().split('T')[0];
-      const res = await api.getMarketPrice(targetCrop, targetMarket, today, targetRange);
-      setData(res.data);
-      if (res.data?.last_updated) {
-        setLastUpdated(res.data.last_updated);
+      const res = await api.getMarketPrice(
+        crop,
+        quantity,
+        coords[0],
+        coords[1],
+        undefined,
+        undefined,
+        forceRefresh
+      );
+      if (res && res.status === 'success') {
+        setData(res);
+      } else {
+        setError(res?.message || 'Could not load market data.');
       }
-    } catch (e: any) {
-      console.error('Market fetch error:', e);
-      setError('Unable to load market data for the selected parameters. Please retry.');
-      setData(null);
+    } catch (err: any) {
+      console.error('Market intelligence fetch failed:', err);
+      setError(err?.message || 'Network error fetching market intelligence.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      const res = await api.getMarketPrice(crop, market, today, timeRange);
-      setData(res.data);
-      const now = new Date();
-      const formatted = `${now.getDate()} Oct 2026, ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} IST`;
-      setLastUpdated(formatted);
-      setRefreshToast(true);
-      setTimeout(() => setRefreshToast(false), 2500);
-    } catch (err) {
-      setError('Refresh failed. Please check network connectivity.');
-    } finally {
-      setRefreshing(false);
+  const handleUseCurrentGPS = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser.');
+      return;
     }
+    setGpsLoading(true);
+    setError(null);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const lat = Number(pos.coords.latitude.toFixed(4));
+        const lon = Number(pos.coords.longitude.toFixed(4));
+        const newCoords: [number, number] = [lat, lon];
+        setFarmerCoords(newCoords);
+        setLocationFetched(true);
+        setCustomLocationName(`GPS (${lat.toFixed(2)}°, ${lon.toFixed(2)}°)`);
+        
+        // Reverse-geocode for human-readable locality
+        try {
+          const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+          if (resp.ok) {
+            const geodata = await resp.json();
+            const locality = geodata.address?.suburb || geodata.address?.village || geodata.address?.town || geodata.address?.city || 'Your Farm';
+            const district = geodata.address?.state_district || geodata.address?.county || geodata.address?.state || '';
+            const resolved = district ? `${locality}, ${district}` : locality;
+            setCustomLocationName(`GPS: ${resolved}`);
+          }
+        } catch {
+          // ignore reverse geocode error
+        }
+        setGpsLoading(false);
+        loadMarketIntelligence(false, newCoords);
+      },
+      (err) => {
+        console.warn('GPS location error:', err);
+        setGpsLoading(false);
+        alert('Could not detect GPS location. You can select your district from the regional presets below.');
+      },
+      { timeout: 10000, enableHighAccuracy: true }
+    );
   };
 
-  const handleApplyFilters = () => {
-    setCrop(stagedCrop);
-    setMarket(stagedMarket);
-    setTimeRange(stagedTimeRange);
+  const handleSelectDistrict = (hubName: string, coords: [number, number]) => {
+    setFarmerCoords(coords);
+    setCustomLocationName(hubName);
+    setLocationFetched(true);
+    loadMarketIntelligence(false, coords);
   };
 
-  const handleResetFilters = () => {
-    setStagedCrop('Cotton');
-    setStagedMarket('Akola');
-    setStagedTimeRange('7D');
-    setCrop('Cotton');
-    setMarket('Akola');
-    setTimeRange('7D');
-    setSearchQuery('');
-  };
-
-  // Filter and sort nearby comparison mandis
-  const filteredMarkets = useMemo(() => {
-    if (!data?.nearby_markets) return [];
-    return data.nearby_markets
-      .filter((m: any) => {
-        if (!searchQuery.trim()) return true;
-        const q = searchQuery.toLowerCase();
-        return (
-          m.name.toLowerCase().includes(q) ||
-          m.location.toLowerCase().includes(q) ||
-          m.variety.toLowerCase().includes(q) ||
-          m.marketKey.toLowerCase().includes(q)
-        );
-      })
-      .sort((a: any, b: any) => {
-        let diff = 0;
-        if (sortField === 'currentPrice') diff = a.currentPrice - b.currentPrice;
-        else if (sortField === 'priceChangePct') diff = a.priceChangePct - b.priceChangePct;
-        else diff = a.name.localeCompare(b.name);
-        return sortOrder === 'asc' ? diff : -diff;
-      });
-  }, [data?.nearby_markets, searchQuery, sortField, sortOrder]);
-
-  // Prepared chart slice based on selected time range
-  const chartPoints = useMemo(() => {
-    if (!data?.chart_data) return [];
-    const allPoints = data.chart_data;
-    const historicalPoints = allPoints.filter((p: any) => !p.isForecast);
-    const forecastPoints = allPoints.filter((p: any) => p.isForecast);
-
-    let histSliceCount = 7;
-    let forecastSliceCount = 7;
-
-    if (timeRange === '14D') {
-      histSliceCount = 14;
-      forecastSliceCount = 14;
-    } else if (timeRange === '30D') {
-      histSliceCount = 30;
-      forecastSliceCount = 14;
-    }
-
-    const histSlice = historicalPoints.slice(-histSliceCount);
-    const forecastSlice = forecastPoints.slice(0, forecastSliceCount);
-
-    return [...histSlice, ...forecastSlice];
-  }, [data?.chart_data, timeRange]);
-
-  // Custom Recharts Tooltip
-  const CustomChartTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const point = payload[0].payload;
-      const isForecast = point.isForecast;
-      const price = isForecast ? point.forecastPrice : point.historicalPrice;
-      return (
-        <div className="bg-[#103D2C] text-white p-3 rounded-xl shadow-xl border border-[#17643E] text-xs space-y-1 z-50">
-          <p className="font-semibold text-[#A8C69A]">{point.label} (2026)</p>
-          <div className="flex items-baseline gap-1">
-            <span className="text-base font-bold text-white">₹{price?.toLocaleString('en-IN')}</span>
-            <span className="text-[10px] text-white/70">/ quintal</span>
-          </div>
-          <div className="flex items-center gap-1.5 pt-1.5 border-t border-white/10 mt-1">
-            <span className={`w-2 h-2 rounded-full ${isForecast ? 'bg-[#B6532A]' : 'bg-[#A8C69A]'}`} />
-            <span className="text-white/80 font-medium">
-              {isForecast ? 'AI Forecast Projection' : 'Historical Modal Price'}
-            </span>
-          </div>
-          {isForecast && point.forecastMin && (
-            <p className="text-[11px] text-amber-200/90 pt-0.5">
-              Confidence Band: ₹{point.forecastMin} – ₹{point.forecastMax}
-            </p>
-          )}
-        </div>
-      );
-    }
-    return null;
-  };
+  // Find currently highlighted market in map
+  const activeMarket = useMemo(() => {
+    if (!data?.markets) return null;
+    if (!selectedMarketName) return data.recommended_market;
+    return data.markets.find(m => m.name === selectedMarketName) || data.recommended_market;
+  }, [data, selectedMarketName]);
 
   return (
-    <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-6">
-      {/* 1. TOP HEADER & CONTEXT BAR */}
-      <div className="bg-white rounded-2xl p-6 border border-[#E5DDCF] shadow-sm space-y-4">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#17643E]/10 text-[#17643E]">
-                Vidarbha Agri-Exchange Monitor
-              </span>
-              <span className="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
-                SAMPLE MARKET DATA
+    <div className="space-y-6 max-w-7xl mx-auto pb-16 font-sans">
+      {/* Workflow Stepper Navigation */}
+      <WorkflowStepper currentStageId={5} />
+
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-[#103D2C] to-[#17643E] p-6 rounded-3xl text-white shadow-lg">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+            Market Intelligence (बाजार भाव)
+          </h1>
+
+          {/* Real-time Server Link Badge & Source Links */}
+          <div className="flex flex-wrap items-center gap-2 mt-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-100 text-xs font-medium">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>
+                {data?.data_source?.type === 'LIVE_AGMARKNET_SERVER' || data?.data_source?.server_status?.includes('ONLINE')
+                  ? 'Connected to Live Agmarknet Server (data.gov.in)'
+                  : 'Agmarknet APMC Market Bulletin'}
               </span>
             </div>
-            <h1 className="text-2xl lg:text-3xl font-serif font-bold text-[#103D2C] mt-2">
-              Market Intelligence
-            </h1>
-            <p className="text-[#292B26]/75 text-sm mt-0.5 font-medium">
-              Understand market movement. Compare nearby prices. Make better selling decisions.
-            </p>
-          </div>
 
-          <div className="flex items-center gap-3">
             <button
-              onClick={handleRefresh}
-              disabled={refreshing || loading}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#FBF7EF] hover:bg-[#F2E8D5] text-[#103D2C] border border-[#E5DDCF] rounded-xl text-sm font-semibold transition-all hover:shadow-sm disabled:opacity-50"
-              title="Refresh latest market data"
+              type="button"
+              onClick={() => setShowSourcesModal(true)}
+              className="inline-flex items-center gap-1 text-xs text-[#F1A93B] hover:text-white font-semibold underline underline-offset-2 transition"
             >
-              <RefreshCw size={15} className={refreshing ? 'animate-spin text-[#17643E]' : ''} />
-              <span>{refreshing ? 'Updating...' : 'Refresh Data'}</span>
+              <Info size={13} />
+              <span>Official Market Servers & APIs</span>
             </button>
           </div>
         </div>
 
-        {/* Compact status/context bar */}
-        <div className="pt-3 border-t border-[#E5DDCF]/80 flex flex-wrap items-center justify-between text-xs text-[#292B26]/70 gap-y-2">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-            <span className="flex items-center gap-1.5">
-              <span className="font-semibold text-[#103D2C]">Selected Farm:</span> Green Acres (Field 1)
-            </span>
-            <span className="text-[#E5DDCF]">•</span>
-            <span className="flex items-center gap-1.5">
-              <span className="font-semibold text-[#103D2C]">Region:</span> Maharashtra (Vidarbha Belt)
-            </span>
-            <span className="text-[#E5DDCF]">•</span>
-            <span className="flex items-center gap-1.5 text-amber-900 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-              <ShieldCheck size={13} className="text-amber-700" />
-              <span>Demonstration dataset — not live Agmarknet mandi prices</span>
-            </span>
-          </div>
-          <div className="flex items-center gap-2 text-right">
-            <Clock size={13} className="text-[#17643E]" />
-            <span>Last Updated: <span className="font-medium text-[#103D2C]">{lastUpdated}</span></span>
-            {refreshToast && (
-              <span className="text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 animate-fade-in">
-                ✓ Updated just now
-              </span>
-            )}
-          </div>
-        </div>
+        <button
+          onClick={() => loadMarketIntelligence(true)}
+          disabled={loading}
+          className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2.5 rounded-2xl text-xs font-semibold transition self-start sm:self-center border border-white/20 shadow-sm"
+          title="Force refresh prices directly from real market servers"
+        >
+          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+          <span>Refresh Live Rates</span>
+        </button>
       </div>
 
-      {/* 2. MARKET CONTROL PANEL */}
-      <div className="bg-white rounded-2xl p-5 border border-[#E5DDCF] shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <SlidersHorizontal size={16} className="text-[#17643E]" />
-            <h2 className="text-sm font-bold uppercase tracking-wider text-[#103D2C]">
-              Market Control Panel
-            </h2>
-          </div>
-          <span className="text-xs text-[#292B26]/60">
-            Select crop & mandi to recompute projections
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 items-end">
-          {/* CROP SELECTOR */}
-          <div>
-            <label className="block text-xs font-semibold text-[#292B26]/70 mb-1">
-              CROP
+      {/* SECTION 1: SIMPLE FARMER INPUTS (3 QUESTIONS ONLY) */}
+      <div className="bg-white p-6 rounded-3xl border border-[#E5DDCF] shadow-sm space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+          {/* Question 1: Crop Selection (Cotton and Tur ONLY) */}
+          <div className="space-y-3">
+            <label className="text-xs font-bold uppercase tracking-wider text-[#103D2C] flex items-center gap-1.5">
+              <span>🌾</span> Step 1: Select Your Crop
             </label>
-            <div className="relative">
-              <select
-                value={stagedCrop}
-                onChange={(e) => setStagedCrop(e.target.value as SupportedCrop)}
-                className="w-full bg-[#FBF7EF] border border-[#E5DDCF] rounded-xl px-3.5 py-2.5 text-sm font-bold text-[#103D2C] focus:outline-none focus:border-[#17643E] transition-colors cursor-pointer appearance-none"
+            <div className="grid grid-cols-2 gap-3">
+              {/* Cotton Option */}
+              <button
+                type="button"
+                onClick={() => setCrop('Cotton')}
+                className={`p-3.5 rounded-2xl border-2 text-left transition flex flex-col justify-between ${
+                  crop === 'Cotton'
+                    ? 'border-[#17643E] bg-[#E8F3ED] text-[#103D2C] shadow-sm'
+                    : 'border-[#E5DDCF] bg-[#FBF7EF]/50 hover:bg-[#FBF7EF] text-[#292B26]/80'
+                }`}
               >
-                <option value="Cotton">Cotton (Kapas)</option>
-                <option value="Soyabean">Soyabean</option>
-                <option value="Tur">Tur (Pigeon Pea)</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#103D2C]">
-                ▼
-              </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl">☁️</span>
+                  {crop === 'Cotton' && <Check size={16} className="text-[#17643E]" />}
+                </div>
+                <div className="mt-2">
+                  <div className="font-bold text-sm">Cotton</div>
+                  <div className="text-xs text-[#292B26]/60">कापूस</div>
+                </div>
+              </button>
+
+              {/* Tur Option */}
+              <button
+                type="button"
+                onClick={() => setCrop('Tur')}
+                className={`p-3.5 rounded-2xl border-2 text-left transition flex flex-col justify-between ${
+                  crop === 'Tur'
+                    ? 'border-[#17643E] bg-[#E8F3ED] text-[#103D2C] shadow-sm'
+                    : 'border-[#E5DDCF] bg-[#FBF7EF]/50 hover:bg-[#FBF7EF] text-[#292B26]/80'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl">🥣</span>
+                  {crop === 'Tur' && <Check size={16} className="text-[#17643E]" />}
+                </div>
+                <div className="mt-2">
+                  <div className="font-bold text-sm">Tur</div>
+                  <div className="text-xs text-[#292B26]/60">तूर / अरहर</div>
+                </div>
+              </button>
             </div>
           </div>
 
-          {/* MARKET REGION SELECTOR */}
-          <div>
-            <label className="block text-xs font-semibold text-[#292B26]/70 mb-1">
-              MARKET REGION
-            </label>
-            <div className="relative">
-              <select
-                value={stagedMarket}
-                onChange={(e) => setStagedMarket(e.target.value as SupportedMarket)}
-                className="w-full bg-[#FBF7EF] border border-[#E5DDCF] rounded-xl px-3.5 py-2.5 text-sm font-bold text-[#103D2C] focus:outline-none focus:border-[#17643E] transition-colors cursor-pointer appearance-none"
-              >
-                <option value="Akola">Akola APMC</option>
-                <option value="Amravati">Amravati APMC</option>
-                <option value="Akot">Akot APMC</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#103D2C]">
-                ▼
-              </div>
-            </div>
-          </div>
-
-          {/* TIME RANGE SELECTOR */}
-          <div>
-            <label className="block text-xs font-semibold text-[#292B26]/70 mb-1">
-              TIME RANGE
-            </label>
-            <div className="relative">
-              <select
-                value={stagedTimeRange}
-                onChange={(e) => setStagedTimeRange(e.target.value as SupportedTimeRange)}
-                className="w-full bg-[#FBF7EF] border border-[#E5DDCF] rounded-xl px-3.5 py-2.5 text-sm font-bold text-[#103D2C] focus:outline-none focus:border-[#17643E] transition-colors cursor-pointer appearance-none"
-              >
-                <option value="7D">7 Days Horizon</option>
-                <option value="14D">14 Days Horizon</option>
-                <option value="30D">30 Days Historical</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#103D2C]">
-                ▼
-              </div>
-            </div>
-          </div>
-
-          {/* SEARCH INPUT */}
-          <div className="lg:col-span-1">
-            <label className="block text-xs font-semibold text-[#292B26]/70 mb-1">
-              FILTER MANDIS
+          {/* Question 2: Harvest Quantity */}
+          <div className="space-y-3">
+            <label className="text-xs font-bold uppercase tracking-wider text-[#103D2C] flex items-center gap-1.5">
+              <span>⚖️</span> Step 2: Harvest Quantity (Quintals)
             </label>
             <div className="relative">
               <input
-                type="text"
-                placeholder="Search crop or mandi..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-7 py-2.5 bg-[#FBF7EF] border border-[#E5DDCF] rounded-xl text-sm focus:outline-none focus:border-[#17643E] transition-colors placeholder:text-gray-400"
+                type="number"
+                min="1"
+                max="50000"
+                value={quantity || ''}
+                onChange={(e) => setQuantity(Math.max(1, Math.min(50000, Number(e.target.value) || 1)))}
+                className="w-full px-4 py-3 rounded-2xl border border-[#E5DDCF] focus:border-[#17643E] focus:ring-2 focus:ring-[#17643E]/20 text-sm font-bold text-[#103D2C] bg-[#FBF7EF]/40"
+                placeholder="20"
               />
-              <Search className="absolute left-3 top-3 text-gray-400 w-4 h-4" />
-              {searchQuery && (
+              <span className="absolute right-4 top-3.5 text-xs font-bold text-[#292B26]/50">
+                Quintals (क्विंटल)
+              </span>
+            </div>
+            {/* Quick Presets */}
+            <div className="flex items-center gap-2">
+              {[10, 20, 50, 100].map((preset) => (
                 <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-2.5 top-3 text-gray-400 hover:text-gray-600"
+                  key={preset}
+                  type="button"
+                  onClick={() => setQuantity(preset)}
+                  className={`text-[11px] px-2.5 py-1 rounded-xl font-semibold border transition ${
+                    quantity === preset
+                      ? 'bg-[#17643E] text-white border-[#17643E]'
+                      : 'bg-white border-[#E5DDCF] text-[#292B26]/70 hover:bg-[#FBF7EF]'
+                  }`}
                 >
-                  <X size={14} />
+                  {preset} q
                 </button>
-              )}
+              ))}
             </div>
           </div>
 
-          {/* ACTION BUTTONS */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleApplyFilters}
-              disabled={loading}
-              className="flex-1 bg-[#17643E] hover:bg-[#103D2C] text-white py-2.5 px-3 rounded-xl text-sm font-semibold transition-colors shadow-sm disabled:opacity-50 text-center"
-            >
-              Apply Filters
-            </button>
-            <button
-              onClick={handleResetFilters}
-              title="Reset all filters to default"
-              className="p-2.5 bg-[#FBF7EF] hover:bg-[#F2E8D5] text-[#292B26]/70 border border-[#E5DDCF] rounded-xl transition-colors"
-            >
-              <RotateCcw size={16} />
-            </button>
+          {/* Question 3: Farmer Location with Dynamic GPS Discovery */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold uppercase tracking-wider text-[#103D2C] flex items-center gap-1.5">
+                <span>📍</span> Step 3: Farm Location
+              </label>
+              {locationFetched && (
+                <button
+                  type="button"
+                  onClick={handleUseCurrentGPS}
+                  disabled={gpsLoading}
+                  className="text-[11px] font-bold text-[#17643E] hover:underline flex items-center gap-1"
+                >
+                  <Compass size={12} className={gpsLoading ? 'animate-spin' : ''} />
+                  <span>{gpsLoading ? 'Locating...' : 'Re-fetch GPS'}</span>
+                </button>
+              )}
+            </div>
+
+            {!locationFetched ? (
+              <button
+                type="button"
+                onClick={handleUseCurrentGPS}
+                disabled={gpsLoading}
+                className="w-full p-3.5 bg-gradient-to-r from-[#17643E] to-[#103D2C] hover:opacity-95 text-white rounded-2xl flex items-center justify-center gap-2 text-xs font-bold shadow-md transition transform active:scale-95"
+              >
+                <Compass size={16} className={gpsLoading ? 'animate-spin text-[#F1A93B]' : 'text-[#F1A93B]'} />
+                <span>{gpsLoading ? 'Acquiring GPS Satellite Fix...' : '📍 Fetch My Location (GPS)'}</span>
+              </button>
+            ) : (
+              <div className="p-3 bg-[#E8F3ED] border-2 border-[#17643E]/30 rounded-2xl flex items-center justify-between text-xs font-semibold text-[#103D2C]">
+                <div className="flex items-center gap-2 truncate">
+                  <MapPin size={16} className="text-[#17643E] shrink-0" />
+                  <span className="truncate font-bold">{customLocationName}</span>
+                </div>
+                <span className="text-[10px] bg-white px-2 py-0.5 rounded-full border border-[#17643E]/20 text-[#292B26]/70 shrink-0 ml-2">
+                  {farmerCoords[0].toFixed(2)}°, {farmerCoords[1].toFixed(2)}°
+                </span>
+              </div>
+            )}
+
+            {/* Quick District Presets */}
+            <div className="space-y-1">
+              <div className="text-[10px] font-bold text-[#292B26]/50 uppercase tracking-wider">
+                Or Select District Hub:
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {REGIONAL_DISTRICT_HUBS.map((hub) => (
+                  <button
+                    key={hub.name}
+                    type="button"
+                    onClick={() => handleSelectDistrict(hub.name, hub.coords)}
+                    className={`text-[10px] px-2 py-0.5 rounded-lg border transition ${
+                      locationFetched && farmerCoords[0] === hub.coords[0] && farmerCoords[1] === hub.coords[1]
+                        ? 'bg-[#17643E] text-white border-[#17643E] font-bold'
+                        : 'bg-white border-[#E5DDCF] text-[#292B26]/70 hover:bg-[#FBF7EF]'
+                    }`}
+                  >
+                    {hub.name.split(' ')[0]}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
+
         </div>
       </div>
 
       {/* ERROR STATE */}
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center justify-between">
-          <div className="flex items-center gap-3 text-red-800">
-            <AlertCircle size={20} className="shrink-0 text-red-600" />
-            <div>
-              <p className="font-bold text-sm">Failed to retrieve market updates</p>
-              <p className="text-xs text-red-700">{error}</p>
-            </div>
-          </div>
-          <button
-            onClick={() => fetchMarketData(crop, market, timeRange)}
-            className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold"
-          >
-            Retry
-          </button>
+        <div className="p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700 flex items-center gap-3 text-sm">
+          <AlertCircle size={20} className="shrink-0" />
+          <span>{error}</span>
         </div>
       )}
 
-      {/* 3. MARKET SNAPSHOT ROW */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* CARD 1: CURRENT MARKET PRICE */}
-        <div className="bg-white rounded-2xl p-5 border border-[#E5DDCF] shadow-sm relative overflow-hidden flex flex-col justify-between">
-          <div>
-            <div className="flex justify-between items-start">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#292B26]/60">
-                Current Market Price
-              </span>
-              <span className="text-[10px] bg-[#17643E]/10 text-[#17643E] font-semibold px-2 py-0.5 rounded-full">
-                {crop} • {market}
-              </span>
-            </div>
-            <div className="mt-3 flex items-baseline gap-2">
-              {loading ? (
-                <div className="h-9 w-32 bg-gray-200 rounded animate-pulse" />
-              ) : (
-                <>
-                  <span className="text-3xl font-extrabold text-[#103D2C]">
-                    ₹{data?.current_price?.toLocaleString('en-IN') || '--'}
-                  </span>
-                  <span className="text-xs text-[#292B26]/60 font-medium">/ quintal</span>
-                </>
-              )}
-            </div>
+      {/* LOCATION DISCOVERY HERO CARD (When farmer has not fetched location yet) */}
+      {!locationFetched && !loading && (
+        <div className="bg-gradient-to-br from-[#103D2C] via-[#14533C] to-[#17643E] rounded-3xl text-white p-6 sm:p-8 shadow-xl relative overflow-hidden border border-[#E5DDCF]/20 text-center space-y-4">
+          <div className="max-w-md mx-auto">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
+              Discover Nearby APMC Mandis
+            </h2>
           </div>
 
-          <div className="mt-3 pt-3 border-t border-[#E5DDCF]/60 flex items-center justify-between text-xs">
-            <div className="flex items-center gap-1 font-semibold">
-              {(data?.price_change_pct ?? 0) >= 0 ? (
-                <span className="text-[#17643E] flex items-center gap-0.5">
-                  <TrendingUp size={14} /> +{data?.price_change_pct}%
-                </span>
-              ) : (
-                <span className="text-[#B6532A] flex items-center gap-0.5">
-                  <TrendingDown size={14} /> {data?.price_change_pct}%
-                </span>
-              )}
-              <span className="text-[#292B26]/50 font-normal">vs prev period</span>
-            </div>
-            <span className="text-[11px] text-[#292B26]/70 truncate max-w-[120px]">
-              MSP: ₹{data?.msp_benchmark?.toLocaleString('en-IN')}
-            </span>
-          </div>
-        </div>
-
-        {/* CARD 2: MARKET TREND */}
-        <div className="bg-white rounded-2xl p-5 border border-[#E5DDCF] shadow-sm flex flex-col justify-between">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-[#292B26]/60">
-              Market Trend
-            </span>
-            <div className="mt-3 flex items-center gap-2">
-              {loading ? (
-                <div className="h-9 w-28 bg-gray-200 rounded animate-pulse" />
-              ) : (
-                <span className={`text-2xl font-bold flex items-center gap-2 ${
-                  data?.trend === 'Rising' ? 'text-[#17643E]' : data?.trend === 'Falling' ? 'text-[#B6532A]' : 'text-[#103D2C]'
-                }`}>
-                  {data?.trend === 'Rising' ? <TrendingUp size={24} /> : data?.trend === 'Falling' ? <TrendingDown size={24} /> : null}
-                  {data?.trend || 'Stable'}
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="mt-3 pt-3 border-t border-[#E5DDCF]/60 flex items-center justify-between text-xs text-[#292B26]/70">
-            <span>7-Day Movement Index</span>
-            <span className="font-semibold text-[#103D2C]">{data?.modal_variety || 'Commercial'}</span>
-          </div>
-        </div>
-
-        {/* CARD 3: BEST REGIONAL MANDI */}
-        <div className="bg-white rounded-2xl p-5 border border-[#E5DDCF] shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="flex justify-between items-start">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#292B26]/60">
-                Best Regional Mandi
-              </span>
-              <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
-                TOP PRICE
-              </span>
-            </div>
-            <div className="mt-3">
-              {loading ? (
-                <div className="h-9 w-32 bg-gray-200 rounded animate-pulse" />
-              ) : (
-                <div>
-                  <span className="text-2xl font-extrabold text-[#103D2C]">
-                    {data?.best_market?.name || 'Akot APMC'}
-                  </span>
-                  <div className="text-sm font-semibold text-[#17643E] mt-0.5">
-                    ₹{data?.best_market?.price?.toLocaleString('en-IN')} / qtl
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="mt-3 pt-3 border-t border-[#E5DDCF]/60 flex items-center justify-between text-xs">
-            <span className="text-[#292B26]/70">Premium vs {market}:</span>
-            <span className="font-bold text-[#17643E]">
-              {data?.best_market?.difference > 0 ? `+₹${data.best_market.difference} / qtl` : 'Selected is Top'}
-            </span>
-          </div>
-        </div>
-
-        {/* CARD 4: AI FORECAST */}
-        <div className="bg-[#FBF7EF] rounded-2xl p-5 border border-[#E5DDCF] shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="flex justify-between items-start">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#103D2C]/70 flex items-center gap-1.5">
-                <Sparkles size={13} className="text-[#B6532A]" /> AI 7-Day Forecast
-              </span>
-              <span className="text-[10px] font-semibold bg-white border border-[#E5DDCF] px-2 py-0.5 rounded-full text-[#103D2C]">
-                {data?.forecast?.confidence || 'Sample Model'}
-              </span>
-            </div>
-            <div className="mt-3">
-              {loading ? (
-                <div className="h-9 w-36 bg-gray-200 rounded animate-pulse" />
-              ) : (
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-extrabold text-[#103D2C]">
-                    ₹{data?.forecast?.expected_price?.toLocaleString('en-IN') || '--'}
-                  </span>
-                  <span className="text-xs font-semibold text-[#17643E]">
-                    ({data?.forecast?.trend || 'Upward'})
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="mt-3 pt-3 border-t border-[#E5DDCF]/60 flex items-center justify-between text-xs text-[#292B26]/70">
-            <span>Projected Range:</span>
-            <span className="font-semibold text-[#103D2C]">
-              ₹{data?.forecast?.min_price} – ₹{data?.forecast?.max_price}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* 4. ADVANCED PRICE TREND SECTION */}
-      <div className="bg-white rounded-2xl p-6 border border-[#E5DDCF] shadow-sm space-y-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-lg font-serif font-bold text-[#103D2C]">
-                Price Trend & AI Projections
-              </h3>
-              <span className="text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-full">
-                Demo dataset
-              </span>
-            </div>
-            <p className="text-xs text-[#292B26]/70 mt-0.5">
-              Historical modal prices and projected trajectory for {crop} at {market} APMC.
-            </p>
-          </div>
-
-          {/* Horizon Tabs */}
-          <div className="flex items-center bg-[#FBF7EF] p-1 rounded-xl border border-[#E5DDCF]">
-            {(['7D', '14D', '30D'] as SupportedTimeRange[]).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setTimeRange(tab)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  timeRange === tab
-                    ? 'bg-[#17643E] text-white shadow-sm'
-                    : 'text-[#292B26]/70 hover:text-[#103D2C]'
-                }`}
-              >
-                {tab === '7D' ? '7 Days' : tab === '14D' ? '14 Days' : '30 Days'}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* RECHARTS CHART CONTAINER */}
-        <div className="h-72 w-full pt-2">
-          {loading ? (
-            <div className="h-full w-full flex flex-col items-center justify-center text-[#292B26]/50 space-y-2">
-              <Loader2 className="w-8 h-8 animate-spin text-[#17643E]" />
-              <p className="text-xs font-medium">Recomputing mandi price curves...</p>
-            </div>
-          ) : chartPoints.length === 0 ? (
-            <div className="h-full w-full flex items-center justify-center text-[#292B26]/50 text-sm">
-              No price data available for the selected range.
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartPoints} margin={{ top: 10, right: 15, left: -10, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorHistorical" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#17643E" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="#17643E" stopOpacity={0.0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E5DDCF" vertical={false} />
-                <XAxis
-                  dataKey="label"
-                  stroke="#292B26"
-                  opacity={0.6}
-                  fontSize={11}
-                  tickLine={false}
-                  interval="preserveStartEnd"
-                />
-                <YAxis
-                  stroke="#292B26"
-                  opacity={0.6}
-                  fontSize={11}
-                  tickLine={false}
-                  domain={['auto', 'auto']}
-                  tickFormatter={(val) => `₹${val}`}
-                />
-                <Tooltip content={<CustomChartTooltip />} />
-                <Legend
-                  verticalAlign="top"
-                  align="right"
-                  height={30}
-                  iconSize={10}
-                  wrapperStyle={{ fontSize: '11px', paddingBottom: '8px' }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="historicalPrice"
-                  name="Historical Modal Price (₹/qtl)"
-                  stroke="#17643E"
-                  strokeWidth={2.5}
-                  fillOpacity={1}
-                  fill="url(#colorHistorical)"
-                  activeDot={{ r: 5, fill: '#17643E' }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="forecastPrice"
-                  name="AI Forecast (₹/qtl)"
-                  stroke="#B6532A"
-                  strokeWidth={2.2}
-                  strokeDasharray="4 4"
-                  dot={{ r: 3, fill: '#B6532A' }}
-                  activeDot={{ r: 6, fill: '#B6532A' }}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          )}
-        </div>
-
-        <div className="flex flex-wrap items-center justify-between text-[11px] text-[#292B26]/60 pt-2 border-t border-[#E5DDCF]/70">
-          <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#17643E]" /> Solid Green: Historical Daily Modal Price
-            <span className="w-2.5 h-2.5 rounded-full bg-[#B6532A] ml-3" /> Dashed Rust: AI Forecast Horizon
-          </span>
-          <span>Baseline Mandi: {market} APMC</span>
-        </div>
-      </div>
-
-      {/* 5. MARKET COMPARISON SECTION & DECISION INSIGHT */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* COMPARE NEARBY MARKETS CARDS */}
-        <div className="lg:col-span-2 bg-white rounded-2xl p-6 border border-[#E5DDCF] shadow-sm space-y-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-base font-serif font-bold text-[#103D2C]">
-                Compare Regional Mandis ({crop})
-              </h3>
-              <p className="text-xs text-[#292B26]/70">
-                Click any mandi to set active baseline or view in-depth metrics.
-              </p>
-            </div>
-            <span className="text-xs font-semibold text-[#17643E]">
-              3 Mandis Monitored
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {data?.nearby_markets?.map((m: any) => {
-              const isSelected = market === m.marketKey;
-              const isTop = data?.best_market?.name.includes(m.marketKey);
-
-              return (
-                <div
-                  key={m.id}
-                  onClick={() => {
-                    setMarket(m.marketKey as SupportedMarket);
-                    setStagedMarket(m.marketKey as SupportedMarket);
-                  }}
-                  className={`p-4 rounded-xl border transition-all cursor-pointer relative ${
-                    isSelected
-                      ? 'bg-[#FBF7EF] border-[#17643E] ring-2 ring-[#17643E]/20 shadow-sm'
-                      : 'bg-white border-[#E5DDCF] hover:border-[#17643E]/40 hover:bg-[#FBF7EF]/50'
-                  }`}
-                >
-                  {isTop && (
-                    <span className="absolute -top-2.5 right-3 bg-[#17643E] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                      Highest Price
-                    </span>
-                  )}
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-bold text-sm text-[#103D2C] flex items-center gap-1.5">
-                        <MapPin size={13} className={isSelected ? 'text-[#17643E]' : 'text-gray-400'} />
-                        {m.marketKey} APMC
-                      </h4>
-                      <p className="text-[11px] text-[#292B26]/60 mt-0.5">{m.distance}</p>
-                    </div>
-                  </div>
-
-                  <div className="mt-3">
-                    <span className="text-xl font-extrabold text-[#103D2C]">
-                      ₹{m.currentPrice.toLocaleString('en-IN')}
-                    </span>
-                    <span className="text-xs text-[#292B26]/60 ml-1">/ qtl</span>
-                  </div>
-
-                  <div className="mt-2.5 pt-2.5 border-t border-[#E5DDCF]/70 flex items-center justify-between text-xs">
-                    <span className={`font-semibold flex items-center gap-0.5 ${
-                      m.priceChangePct >= 0 ? 'text-[#17643E]' : 'text-[#B6532A]'
-                    }`}>
-                      {m.priceChangePct >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                      {m.priceChangePct >= 0 ? `+${m.priceChangePct}%` : `${m.priceChangePct}%`}
-                    </span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedDetailMarket(m);
-                      }}
-                      className="text-[11px] text-[#17643E] font-bold hover:underline"
-                    >
-                      View Details →
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* DECISION INSIGHT PANEL */}
-        <div className="bg-[#103D2C] text-white rounded-2xl p-6 shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Sparkles size={16} className="text-[#A8C69A]" />
-              <h3 className="text-sm font-bold uppercase tracking-wider text-[#A8C69A]">
-                Market Insight
-              </h3>
-            </div>
-            <p className="text-xs text-white/70">
-              Rule-based selling opportunity analysis
-            </p>
-
-            <div className="mt-5 space-y-3.5">
-              <div>
-                <span className="text-[11px] uppercase tracking-wider text-white/50 block font-semibold">
-                  BEST REGIONAL PRICE
-                </span>
-                <span className="text-xl font-bold text-white">
-                  {data?.rule_based_insight?.best_market_name || 'Akot APMC'} (₹{data?.rule_based_insight?.best_price?.toLocaleString('en-IN')})
-                </span>
-              </div>
-
-              <div>
-                <span className="text-[11px] uppercase tracking-wider text-white/50 block font-semibold">
-                  PRICE SIGNAL
-                </span>
-                <span className="inline-flex items-center gap-1.5 text-sm font-bold text-emerald-300">
-                  <TrendingUp size={14} /> {data?.rule_based_insight?.price_signal || 'Rising'} Trend Momentum
-                </span>
-              </div>
-
-              <div className="p-3 bg-white/10 rounded-xl border border-white/10">
-                <span className="text-[11px] uppercase tracking-wider text-amber-200 block font-bold mb-1">
-                  RECOMMENDED ACTION
-                </span>
-                <p className="text-xs text-white/90 leading-relaxed">
-                  {data?.rule_based_insight?.recommended_action ||
-                    'Monitor Akot APMC for higher selling margins.'}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-4 pt-3 border-t border-white/10 text-[10px] text-white/50">
-            {data?.rule_based_insight?.disclaimer ||
-              'Based on available market prices and trend rules — not a black-box ML prediction.'}
-          </div>
-        </div>
-      </div>
-
-      {/* 6. NEARBY MARKETS TABLE */}
-      <div className="bg-white rounded-2xl p-6 border border-[#E5DDCF] shadow-sm space-y-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-          <div>
-            <h3 className="text-lg font-serif font-bold text-[#103D2C]">
-              Regional APMC Comparison Table
-            </h3>
-            <p className="text-xs text-[#292B26]/70 mt-0.5">
-              Compare mandi prices, distances, and varieties. Click "View" to open full market dossiers.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-[#292B26]/60">Sort by:</span>
-            <select
-              value={sortField}
-              onChange={(e) => setSortField(e.target.value as any)}
-              className="bg-[#FBF7EF] border border-[#E5DDCF] rounded-lg px-2.5 py-1 text-xs font-semibold text-[#103D2C] outline-none cursor-pointer"
-            >
-              <option value="currentPrice">Price (High to Low)</option>
-              <option value="priceChangePct">Change (%)</option>
-              <option value="name">Market Name</option>
-            </select>
+          <div className="flex justify-center">
             <button
-              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-              className="p-1 bg-[#FBF7EF] border border-[#E5DDCF] rounded-lg text-xs font-bold text-[#103D2C] px-2"
-              title="Toggle sort direction"
+              type="button"
+              onClick={handleUseCurrentGPS}
+              disabled={gpsLoading}
+              className="px-8 py-3.5 rounded-2xl bg-[#F1A93B] hover:bg-[#e09828] text-[#103D2C] font-extrabold text-sm shadow-md transition transform active:scale-95 flex items-center justify-center gap-2"
             >
-              {sortOrder === 'asc' ? '↑' : '↓'}
+              <Compass size={18} className={gpsLoading ? 'animate-spin' : ''} />
+              <span>{gpsLoading ? 'Acquiring GPS Fix...' : 'Fetch My Location (GPS)'}</span>
             </button>
           </div>
-        </div>
 
-        {/* TABLE CONTAINER */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[700px]">
-            <thead>
-              <tr className="text-xs uppercase text-[#292B26]/60 border-b border-[#E5DDCF] bg-[#FBF7EF]/50">
-                <th className="py-3 px-3 font-semibold">Market Name</th>
-                <th className="py-3 px-3 font-semibold">Location</th>
-                <th className="py-3 px-3 font-semibold">Distance</th>
-                <th className="py-3 px-3 font-semibold">Current Price</th>
-                <th className="py-3 px-3 font-semibold">24h Change</th>
-                <th className="py-3 px-3 font-semibold">Trend</th>
-                <th className="py-3 px-3 font-semibold">Data Status</th>
-                <th className="py-3 px-3 font-semibold text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={8} className="py-12 text-center text-[#292B26]/50">
-                    <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-[#17643E]" />
-                    Loading APMC market listings...
-                  </td>
-                </tr>
-              ) : filteredMarkets.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="py-12 text-center">
-                    <div className="max-w-md mx-auto space-y-2">
-                      <p className="text-sm font-semibold text-[#103D2C]">
-                        No mandis found matching "{searchQuery}"
-                      </p>
-                      <p className="text-xs text-[#292B26]/60">
-                        Clear your search query or reset the control panel to see all Vidarbha mandis.
-                      </p>
-                      <button
-                        onClick={() => setSearchQuery('')}
-                        className="mt-2 px-3 py-1.5 bg-[#17643E] text-white text-xs font-semibold rounded-lg hover:bg-[#103D2C]"
-                      >
-                        Clear Search Query
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                filteredMarkets.map((m: any, idx: number) => {
-                  const isSelected = market === m.marketKey;
-                  return (
-                    <tr
-                      key={m.id || idx}
-                      className={`border-b border-[#E5DDCF]/60 transition-colors ${
-                        isSelected ? 'bg-emerald-50/60 font-medium' : 'hover:bg-[#FBF7EF]'
-                      }`}
-                    >
-                      <td className="py-3.5 px-3">
-                        <div className="flex items-center gap-2">
-                          <Building2 size={15} className={isSelected ? 'text-[#17643E]' : 'text-gray-400'} />
-                          <span className="font-bold text-[#103D2C]">{m.name}</span>
-                          {isSelected && (
-                            <span className="text-[10px] bg-[#17643E] text-white px-1.5 py-0.2 rounded font-semibold">
-                              ACTIVE
+          <div className="pt-3 border-t border-white/10 max-w-xl mx-auto">
+            <span className="text-[11px] text-[#FBF7EF]/70 font-semibold uppercase tracking-wider block mb-2">
+              Or Select District Hub:
+            </span>
+            <div className="flex flex-wrap justify-center gap-1.5">
+              {REGIONAL_DISTRICT_HUBS.map((hub) => (
+                <button
+                  key={hub.name}
+                  type="button"
+                  onClick={() => handleSelectDistrict(hub.name, hub.coords)}
+                  className="text-xs px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white font-medium transition"
+                >
+                  {hub.name.split(' ')[0]}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* LOADING SKELETON */}
+      {loading && !data && (
+        <div className="p-10 text-center bg-white rounded-3xl border border-[#E5DDCF] space-y-2">
+          <RefreshCw size={28} className="animate-spin text-[#17643E] mx-auto" />
+          <h3 className="text-sm font-bold text-[#103D2C]">Discovering Nearby Mandis & Rates...</h3>
+        </div>
+      )}
+
+      {/* SECTION 2: THE CORE DECISION ENGINE HERO CARD */}
+      {data && locationFetched && (
+        <div className="bg-gradient-to-br from-[#103D2C] via-[#14533C] to-[#17643E] rounded-3xl text-white p-6 sm:p-8 shadow-xl relative overflow-hidden border border-[#E5DDCF]/20">
+          <div className="absolute top-0 right-0 translate-x-8 -translate-y-8 w-64 h-64 bg-white/5 rounded-full blur-2xl pointer-events-none" />
+
+          <div className="relative z-10 space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 rounded-full bg-[#F1A93B] text-[#103D2C] text-xs font-extrabold uppercase tracking-wider flex items-center gap-1">
+                  <Sparkles size={12} />
+                  Best Selling Decision
+                </span>
+                <span className="text-xs text-white/70">
+                  Calculated for {data.quantity_quintals} Quintals of {data.crop}
+                </span>
+              </div>
+              
+              {/* Dynamic Confidence Badge */}
+              <div className="flex items-center gap-1.5 text-xs text-[#FBF7EF]/90 bg-white/10 px-3 py-1 rounded-full border border-white/15">
+                <ShieldCheck size={14} className="text-[#F1A93B]" />
+                <span className="font-semibold">{data.confidence}</span>
+              </div>
+            </div>
+
+            {/* Main Decision 3-Column Display */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              
+              {/* Decision 1: Where to Sell */}
+              <div className="bg-white/10 p-5 rounded-2xl border border-white/10 space-y-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#F1A93B] flex items-center gap-1.5">
+                  <MapPin size={14} /> Recommended Mandi
+                </span>
+                <div className="text-2xl font-black text-white">
+                  {data.recommended_market.name}
+                </div>
+                <div className="text-xs text-white/80">
+                  {data.recommended_market.district}, {data.recommended_market.state}
+                </div>
+                <div className="pt-2 flex items-center gap-2 text-xs font-semibold text-white/90">
+                  <span className="bg-white/15 px-2 py-0.5 rounded-md">
+                    ~{data.recommended_market.estimated_road_km} km road ({data.recommended_market.straight_line_km} km air)
+                  </span>
+                  <a
+                    href={data.recommended_market.google_maps_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#F1A93B] hover:underline flex items-center gap-1"
+                  >
+                    <span>Route</span>
+                    <ExternalLink size={12} />
+                  </a>
+                </div>
+              </div>
+
+              {/* Decision 2: How Much Money in Pocket */}
+              <div className="bg-white/15 p-5 rounded-2xl border-2 border-[#F1A93B]/40 space-y-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#F1A93B] flex items-center gap-1.5">
+                  <IndianRupee size={14} /> Expected In-Hand Amount
+                </span>
+                <div className="text-3xl font-black text-white">
+                  ₹{data.expected_amount.toLocaleString('en-IN')}
+                </div>
+                <div className="text-xs text-white/80 flex items-center justify-between">
+                  <span>Net Price: <strong>₹{data.recommended_market.net_price_per_qtl.toLocaleString('en-IN')}/q</strong></span>
+                  <span>(Raw: ₹{data.recommended_market.current_price.toLocaleString('en-IN')}/q)</span>
+                </div>
+                <div className="pt-1 text-[11px] text-[#FBF7EF]/70 flex items-center gap-1">
+                  <Truck size={12} />
+                  <span>Freight deduction: -₹{data.recommended_market.transport_cost_per_qtl}/q (₹3.50/qtl/km)</span>
+                </div>
+              </div>
+
+              {/* Decision 3: When to Sell */}
+              <div className="bg-white/10 p-5 rounded-2xl border border-white/10 space-y-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#F1A93B] flex items-center gap-1.5">
+                  <Calendar size={14} /> Best Time to Sell
+                </span>
+                <div className="text-xl font-black text-white">
+                  {data.recommended_sell_window}
+                </div>
+                <div className="text-xs text-white/80">
+                  {data.sell_advice_reason}
+                </div>
+                <div className="pt-2 text-[11px] text-[#F1A93B]">
+                  7-Day Outlook: {data.forecast_7d?.trend || 'Stable'} ({data.forecast_7d?.range_display})
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* SECTION 3: PRICE TREND FORECASTING (7, 14, 28 DAYS) */}
+      {data && locationFetched && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-[#103D2C] flex items-center gap-2">
+              <TrendingUp size={18} className="text-[#17643E]" />
+              <span>Price Trend Outlook (किंमतीचा अंदाज)</span>
+            </h2>
+            <span className="text-[11px] bg-[#E8F3ED] text-[#17643E] px-2.5 py-1 rounded-full font-bold">
+              Base Price: ₹{data.current_price.toLocaleString('en-IN')}/q
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            {/* 7-Day Forecast */}
+            <div className="bg-white p-5 rounded-2xl border border-[#E5DDCF] shadow-sm space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-[#292B26]/60 uppercase tracking-wider">Next 7 Days</span>
+                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                  data.forecast_7d.trend.includes('Rising')
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : data.forecast_7d.trend.includes('Falling')
+                    ? 'bg-rose-100 text-rose-800'
+                    : 'bg-amber-100 text-amber-800'
+                }`}>
+                  {data.forecast_7d.trend}
+                </span>
+              </div>
+              <div>
+                <div className="text-xl font-bold text-[#103D2C]">
+                  {data.forecast_7d.range_display}
+                </div>
+                <div className="text-xs text-[#292B26]/60 mt-0.5">
+                  Expected Modal Price: ₹{Math.round(data.forecast_7d.expected_price).toLocaleString('en-IN')}/q
+                </div>
+              </div>
+              <div className="text-[11px] text-[#292B26]/60 pt-2 border-t border-[#E5DDCF] flex justify-between">
+                <span>Change: {data.forecast_7d.change_pct > 0 ? `+${data.forecast_7d.change_pct}%` : `${data.forecast_7d.change_pct}%`}</span>
+                <span>Uncertainty: ±₹{Math.round(data.forecast_7d.empirical_mae)}/q</span>
+              </div>
+            </div>
+
+            {/* 14-Day Forecast */}
+            <div className="bg-white p-5 rounded-2xl border border-[#E5DDCF] shadow-sm space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-[#292B26]/60 uppercase tracking-wider">Next 14 Days</span>
+                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                  data.forecast_14d.trend.includes('Rising')
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : data.forecast_14d.trend.includes('Falling')
+                    ? 'bg-rose-100 text-rose-800'
+                    : 'bg-amber-100 text-amber-800'
+                }`}>
+                  {data.forecast_14d.trend}
+                </span>
+              </div>
+              <div>
+                <div className="text-xl font-bold text-[#103D2C]">
+                  {data.forecast_14d.range_display}
+                </div>
+                <div className="text-xs text-[#292B26]/60 mt-0.5">
+                  Expected Modal Price: ₹{Math.round(data.forecast_14d.expected_price).toLocaleString('en-IN')}/q
+                </div>
+              </div>
+              <div className="text-[11px] text-[#292B26]/60 pt-2 border-t border-[#E5DDCF] flex justify-between">
+                <span>Change: {data.forecast_14d.change_pct > 0 ? `+${data.forecast_14d.change_pct}%` : `${data.forecast_14d.change_pct}%`}</span>
+                <span>Uncertainty: ±₹{Math.round(data.forecast_14d.empirical_mae)}/q</span>
+              </div>
+            </div>
+
+            {/* 28-Day Forecast */}
+            <div className="bg-white p-5 rounded-2xl border border-[#E5DDCF] shadow-sm space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-[#292B26]/60 uppercase tracking-wider">Next 28 Days</span>
+                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                  data.forecast_28d.trend.includes('Rising')
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : data.forecast_28d.trend.includes('Falling')
+                    ? 'bg-rose-100 text-rose-800'
+                    : 'bg-amber-100 text-amber-800'
+                }`}>
+                  {data.forecast_28d.trend}
+                </span>
+              </div>
+              <div>
+                <div className="text-xl font-bold text-[#103D2C]">
+                  {data.forecast_28d.range_display}
+                </div>
+                <div className="text-xs text-[#292B26]/60 mt-0.5">
+                  Expected Modal Price: ₹{Math.round(data.forecast_28d.expected_price).toLocaleString('en-IN')}/q
+                </div>
+              </div>
+              <div className="text-[11px] text-[#292B26]/60 pt-2 border-t border-[#E5DDCF] flex justify-between">
+                <span>Change: {data.forecast_28d.change_pct > 0 ? `+${data.forecast_28d.change_pct}%` : `${data.forecast_28d.change_pct}%`}</span>
+                <span>Uncertainty: ±₹{Math.round(data.forecast_28d.empirical_mae)}/q</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* SECTION 4: NEARBY MANDIS COMPARISON & ACTUAL MAP */}
+      {data && locationFetched && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          {/* Left Column: Mandi Comparison Cards (7 cols) */}
+          <div className="lg:col-span-7 space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-[#103D2C] flex items-center gap-2">
+                <Scale size={18} className="text-[#17643E]" />
+                <span>Compare Nearby Markets (बाजार तुलना)</span>
+              </h2>
+              <span className="text-xs text-[#292B26]/50">
+                {data.markets.length} Mandis Available
+              </span>
+            </div>
+
+            <div className="space-y-3">
+              {data.markets.map((m) => {
+                const isRecommended = m.name === data.recommended_market.name;
+                const isBestPrice = m.name === data.best_price_market.name;
+                const isClosest = m.name === data.closest_market.name;
+
+                return (
+                  <div
+                    key={m.name}
+                    onClick={() => setSelectedMarketName(m.name)}
+                    className={`p-4 rounded-2xl border-2 transition cursor-pointer bg-white ${
+                      isRecommended
+                        ? 'border-[#17643E] bg-[#E8F3ED]/30 shadow-md ring-2 ring-[#17643E]/20'
+                        : selectedMarketName === m.name
+                        ? 'border-[#F1A93B] shadow-sm'
+                        : 'border-[#E5DDCF] hover:border-[#17643E]/40'
+                    }`}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-bold text-sm text-[#103D2C]">{m.name}</h3>
+                          {isRecommended && (
+                            <span className="bg-[#17643E] text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+                              ⭐ BEST BALANCED
+                            </span>
+                          )}
+                          {!isRecommended && isBestPrice && (
+                            <span className="bg-[#F1A93B] text-[#103D2C] text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+                              💰 HIGHEST PRICE
+                            </span>
+                          )}
+                          {!isRecommended && isClosest && (
+                            <span className="bg-blue-100 text-blue-800 text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+                              📍 CLOSEST
+                            </span>
+                          )}
+                          {m.is_live && (
+                            <span className="bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                              <span>Live Server Rate</span>
                             </span>
                           )}
                         </div>
-                      </td>
-                      <td className="py-3.5 px-3 text-xs text-[#292B26]/80">{m.location}</td>
-                      <td className="py-3.5 px-3 text-xs text-[#292B26]/80">{m.distance}</td>
-                      <td className="py-3.5 px-3 font-extrabold text-sm text-[#103D2C]">
-                        ₹{m.currentPrice.toLocaleString('en-IN')} <span className="text-xs font-normal text-[#292B26]/60">/ qtl</span>
-                      </td>
-                      <td className={`py-3.5 px-3 text-xs font-bold ${
-                        m.priceChangePct >= 0 ? 'text-[#17643E]' : 'text-[#B6532A]'
-                      }`}>
-                        {m.priceChangePct >= 0 ? `+${m.priceChangePct}%` : `${m.priceChangePct}%`}
-                      </td>
-                      <td className="py-3.5 px-3">
-                        <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${
-                          m.trend === 'Rising'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : m.trend === 'Falling'
-                            ? 'bg-amber-100 text-amber-800'
-                            : 'bg-gray-100 text-gray-700'
-                        }`}>
-                          {m.trend === 'Rising' ? <TrendingUp size={11} /> : m.trend === 'Falling' ? <TrendingDown size={11} /> : null}
-                          {m.trend}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-3">
-                        <span className="text-[10px] font-semibold bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full">
-                          {m.dataStatus}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-3 text-right">
-                        <button
-                          onClick={() => setSelectedDetailMarket(m)}
-                          className="px-3 py-1 bg-[#17643E] hover:bg-[#103D2C] text-white text-xs font-semibold rounded-lg transition-colors shadow-xs"
-                        >
-                          View
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                        <p className="text-xs text-[#292B26]/60 mt-0.5">
+                          {m.district}, {m.state} • ~{m.estimated_road_km} km road ({m.straight_line_km} km air)
+                        </p>
+                        <div className="text-[10px] text-[#292B26]/50 mt-1 flex items-center gap-2 flex-wrap">
+                          <span className="bg-[#FBF7EF] px-1.5 py-0.5 rounded border border-[#E5DDCF]">
+                            {m.data_freshness_label}
+                          </span>
+                          {m.min_price && m.max_price && (
+                            <span className="text-[#103D2C] font-semibold">
+                              Auction Range: ₹{Math.round(m.min_price).toLocaleString('en-IN')} – ₹{Math.round(m.max_price).toLocaleString('en-IN')}/q
+                            </span>
+                          )}
+                        </div>
+                      </div>
 
-      {/* 7. MARKET DETAIL MODAL / DRAWER */}
-      {selectedDetailMarket && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-xs animate-fade-in">
-          <div className="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-[#E5DDCF] animate-scale-up">
-            {/* Modal Header */}
-            <div className="bg-[#103D2C] text-white p-6 relative">
-              <button
-                onClick={() => setSelectedDetailMarket(null)}
-                className="absolute top-5 right-5 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
-                title="Close dialog"
-              >
-                <X size={18} />
-              </button>
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#A8C69A]">
-                <Building2 size={14} /> APMC Mandi Dossier
-              </div>
-              <h3 className="text-2xl font-serif font-bold text-white mt-1">
-                {selectedDetailMarket.name}
-              </h3>
-              <p className="text-xs text-white/70 mt-0.5">
-                {selectedDetailMarket.location} • {selectedDetailMarket.distance}
-              </p>
+                      {/* Prices and Net Payout */}
+                      <div className="text-left sm:text-right shrink-0">
+                        <div className="text-base font-black text-[#103D2C]">
+                          ₹{m.current_price.toLocaleString('en-IN')}/q
+                        </div>
+                        <div className="text-xs font-semibold text-[#17643E]">
+                          Net: ₹{m.net_price_per_qtl.toLocaleString('en-IN')}/q
+                        </div>
+                        <div className="text-[11px] text-[#292B26]/50">
+                          Total: ₹{m.expected_net_amount.toLocaleString('en-IN')}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bottom Action Footer for Each Mandi */}
+                    <div className="mt-3 pt-2.5 border-t border-[#E5DDCF]/60 flex flex-col sm:flex-row sm:items-center justify-between text-xs gap-1.5">
+                      <span className="text-[11px] text-[#292B26]/70">
+                        Freight deduction: ₹{m.transport_cost_per_qtl}/q (~{m.estimated_road_km} km @ ₹3.50/q/km)
+                      </span>
+                      <div className="flex items-center gap-3">
+                        <a
+                          href={m.source_portal?.startsWith('http') ? m.source_portal : 'https://agmarknet.gov.in'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-[#F1A93B] hover:underline text-[11px] font-bold flex items-center gap-1"
+                          title="Official Agmarknet Market Bulletin"
+                        >
+                          <span>Agmarknet Portal</span>
+                          <ExternalLink size={10} />
+                        </a>
+                        <a
+                          href={m.google_maps_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-[#17643E] hover:underline font-bold flex items-center gap-1"
+                        >
+                          <Navigation size={12} />
+                          <span>Google Maps</span>
+                          <ExternalLink size={10} />
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Right Column: Interactive Leaflet Map (5 cols) */}
+          <div className="lg:col-span-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-[#103D2C] flex items-center gap-2">
+                <Compass size={18} className="text-[#17643E]" />
+                <span>Mandi Map Visualizer</span>
+              </h2>
+              <span className="text-xs text-[#292B26]/60">
+                Click pin to navigate
+              </span>
             </div>
 
-            {/* Modal Body */}
-            <div className="p-6 space-y-4 text-sm text-[#292B26]">
-              {/* Top stats */}
-              <div className="grid grid-cols-2 gap-3 p-4 bg-[#FBF7EF] rounded-2xl border border-[#E5DDCF]">
-                <div>
-                  <span className="text-xs text-[#292B26]/60 font-semibold block">CURRENT MODAL PRICE</span>
-                  <div className="text-2xl font-extrabold text-[#103D2C] mt-0.5">
-                    ₹{selectedDetailMarket.currentPrice.toLocaleString('en-IN')}
-                    <span className="text-xs font-normal text-[#292B26]/60"> / qtl</span>
-                  </div>
-                </div>
-                <div>
-                  <span className="text-xs text-[#292B26]/60 font-semibold block">24H PRICE SHIFT</span>
-                  <div className={`text-base font-bold mt-1.5 flex items-center gap-1 ${
-                    selectedDetailMarket.priceChangePct >= 0 ? 'text-[#17643E]' : 'text-[#B6532A]'
-                  }`}>
-                    {selectedDetailMarket.priceChangePct >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
-                    {selectedDetailMarket.priceChangePct >= 0 ? `+${selectedDetailMarket.priceChangePct}%` : `${selectedDetailMarket.priceChangePct}%`}
-                    <span className="text-xs font-normal text-[#292B26]/60">({selectedDetailMarket.trend})</span>
-                  </div>
-                </div>
-              </div>
+            <div className="bg-white rounded-3xl border border-[#E5DDCF] shadow-sm overflow-hidden h-[540px] relative">
+              <MapContainer
+                center={farmerCoords}
+                zoom={8}
+                style={{ height: '100%', width: '100%' }}
+                scrollWheelZoom={false}
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
 
-              {/* Dossier Specs */}
-              <div className="space-y-2.5 text-xs">
-                <div className="flex justify-between py-1.5 border-b border-[#E5DDCF]/60">
-                  <span className="text-[#292B26]/60">Monitored Crop:</span>
-                  <span className="font-bold text-[#103D2C]">{crop}</span>
-                </div>
-                <div className="flex justify-between py-1.5 border-b border-[#E5DDCF]/60">
-                  <span className="text-[#292B26]/60">Modal Commercial Variety:</span>
-                  <span className="font-semibold text-[#103D2C]">{selectedDetailMarket.variety}</span>
-                </div>
-                <div className="flex justify-between py-1.5 border-b border-[#E5DDCF]/60">
-                  <span className="text-[#292B26]/60">Weekly Price Range:</span>
-                  <span className="font-semibold text-[#103D2C]">
-                    ₹{selectedDetailMarket.weeklyLow} – ₹{selectedDetailMarket.weeklyHigh} / qtl
-                  </span>
-                </div>
-                <div className="flex justify-between py-1.5 border-b border-[#E5DDCF]/60">
-                  <span className="text-[#292B26]/60">Trading Hours:</span>
-                  <span className="font-semibold text-[#103D2C]">{selectedDetailMarket.tradingHours}</span>
-                </div>
-                <div className="flex justify-between py-1.5 border-b border-[#E5DDCF]/60">
-                  <span className="text-[#292B26]/60">Data Provenance:</span>
-                  <span className="font-semibold text-amber-800 bg-amber-50 px-2 py-0.5 rounded">
-                    Sample Demonstration Dataset
-                  </span>
-                </div>
-              </div>
+                <MapRecenter center={activeMarket ? [activeMarket.latitude, activeMarket.longitude] : farmerCoords} />
 
-              {/* Farmer Tip */}
-              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-xs text-emerald-900 space-y-1">
-                <span className="font-bold flex items-center gap-1 text-[#17643E]">
-                  <Sparkles size={13} /> Practical Selling Note
-                </span>
-                <p className="text-emerald-800 leading-relaxed">
-                  Peak transaction volumes at {selectedDetailMarket.name} occur between 09:30 AM and 11:30 AM. Moisture levels under 8% for {crop} avoid APMC grading deductions.
-                </p>
-              </div>
+                {/* Farmer Farm Marker */}
+                <Marker position={farmerCoords} icon={farmerIcon}>
+                  <Popup>
+                    <div className="p-1 text-xs space-y-1">
+                      <p className="font-bold text-[#103D2C]">🏡 Your Farm Location</p>
+                      <p className="text-gray-600">{customLocationName}</p>
+                      <p className="text-[10px] text-gray-500">Lat: {farmerCoords[0]}, Lon: {farmerCoords[1]}</p>
+                    </div>
+                  </Popup>
+                </Marker>
 
-              {/* Action */}
-              <div className="pt-2 flex items-center gap-3">
-                <button
-                  onClick={() => {
-                    setMarket(selectedDetailMarket.marketKey as SupportedMarket);
-                    setStagedMarket(selectedDetailMarket.marketKey as SupportedMarket);
-                    setSelectedDetailMarket(null);
-                  }}
-                  className="flex-1 bg-[#17643E] hover:bg-[#103D2C] text-white py-2.5 rounded-xl font-semibold text-xs transition-colors shadow-sm text-center"
-                >
-                  Set as Active Baseline Mandi
-                </button>
-                <button
-                  onClick={() => setSelectedDetailMarket(null)}
-                  className="px-4 py-2.5 bg-[#FBF7EF] hover:bg-[#F2E8D5] text-[#292B26] border border-[#E5DDCF] rounded-xl font-semibold text-xs"
-                >
-                  Close
-                </button>
-              </div>
+                {/* Mandi Pins */}
+                {data.markets.map((m) => {
+                  const isRec = m.name === data.recommended_market.name;
+                  const pinColor = isRec ? '#17643E' : '#D97706';
+
+                  return (
+                    <Marker
+                      key={m.name}
+                      position={[m.latitude, m.longitude]}
+                      icon={createMarkerIcon(pinColor, `₹${m.current_price}/q`)}
+                      eventHandlers={{
+                        click: () => setSelectedMarketName(m.name),
+                      }}
+                    >
+                      <Popup>
+                        <div className="p-1 text-xs space-y-1 min-w-[180px]">
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="font-bold text-[#103D2C]">{m.name}</span>
+                            {isRec && (
+                              <span className="bg-[#17643E] text-white text-[9px] px-1.5 py-0.2 rounded font-bold">
+                                BEST
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-gray-600">{m.address}</p>
+                          <div className="border-t pt-1 space-y-0.5">
+                            <p className="text-[#103D2C] font-semibold">Price: ₹{m.current_price}/qtl</p>
+                            <p className="text-gray-600">Distance: ~{m.estimated_road_km} km road ({m.straight_line_km} km air)</p>
+                            <p className="text-[#17643E] font-bold">Net In-Hand: ₹{m.net_price_per_qtl}/qtl</p>
+                          </div>
+                          <a
+                            href={m.google_maps_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block mt-2 text-[#17643E] font-bold hover:underline"
+                          >
+                            Open in Google Maps &rarr;
+                          </a>
+                        </div>
+                      </Popup>
+                    </Marker>
+                  );
+                })}
+              </MapContainer>
             </div>
           </div>
         </div>
       )}
+
+      {/* Supporting Real Market Servers Modal */}
+      {showSourcesModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 space-y-5 border border-[#E5DDCF] shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold mb-1.5">
+                  <ShieldCheck size={13} />
+                  <span>Verified Government Market APIs</span>
+                </div>
+                <h3 className="text-xl font-bold text-[#103D2C]">
+                  Official Real Market Sources & APIs
+                </h3>
+                <p className="text-xs text-[#292B26]/70 mt-0.5">
+                  KisanCare fetches real-time auction rates directly from Ministry of Agriculture & Farmers Welfare servers.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSourcesModal(false)}
+                className="w-8 h-8 rounded-full bg-[#FBF7EF] hover:bg-[#E5DDCF] flex items-center justify-center text-gray-500 hover:text-black font-bold transition"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+              {/* Agmarknet */}
+              <div className="p-4 rounded-2xl border border-[#E5DDCF] bg-[#FBF7EF]/50 flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-sm text-[#103D2C]">Agmarknet Portal (agmarknet.gov.in)</span>
+                    <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      Official Bulletin
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#292B26]/70">
+                    Directorate of Marketing & Inspection (DMI), Ministry of Agriculture and Farmers Welfare. Publishes daily spot modal, minimum, and maximum auction rates across all Indian APMC market yards.
+                  </p>
+                </div>
+                <a
+                  href="https://agmarknet.gov.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 text-xs font-bold text-[#17643E] hover:underline flex items-center gap-1 mt-1 bg-white px-3 py-1.5 rounded-xl border border-[#E5DDCF]"
+                >
+                  <span>Portal</span>
+                  <ExternalLink size={12} />
+                </a>
+              </div>
+
+              {/* data.gov.in */}
+              <div className="p-4 rounded-2xl border border-[#E5DDCF] bg-[#FBF7EF]/50 flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-sm text-[#103D2C]">Open Government Data (data.gov.in)</span>
+                    <span className="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      REST JSON API
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#292B26]/70">
+                    Live API Resource <code className="text-[11px] bg-white px-1.5 py-0.5 rounded border border-[#E5DDCF]">9ef84268-d588-465a-a308-a864a43d0070</code>: "Current Daily Price of Various Commodities from Various Markets (Mandi)". Real-time programmatic feed.
+                  </p>
+                </div>
+                <a
+                  href="https://data.gov.in/resource/current-daily-price-various-commodities-various-markets-mandi"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 text-xs font-bold text-[#17643E] hover:underline flex items-center gap-1 mt-1 bg-white px-3 py-1.5 rounded-xl border border-[#E5DDCF]"
+                >
+                  <span>API Docs</span>
+                  <ExternalLink size={12} />
+                </a>
+              </div>
+
+              {/* e-NAM */}
+              <div className="p-4 rounded-2xl border border-[#E5DDCF] bg-[#FBF7EF]/50 flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-sm text-[#103D2C]">e-NAM (enam.gov.in)</span>
+                    <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      Pan-India E-Trading
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#292B26]/70">
+                    National Agriculture Market pan-India electronic trading portal integrating 1,361+ wholesale APMC mandis for online transparent price bidding.
+                  </p>
+                </div>
+                <a
+                  href="https://enam.gov.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 text-xs font-bold text-[#17643E] hover:underline flex items-center gap-1 mt-1 bg-white px-3 py-1.5 rounded-xl border border-[#E5DDCF]"
+                >
+                  <span>e-NAM</span>
+                  <ExternalLink size={12} />
+                </a>
+              </div>
+
+              {/* Kisan Suvidha */}
+              <div className="p-4 rounded-2xl border border-[#E5DDCF] bg-[#FBF7EF]/50 flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-sm text-[#103D2C]">Kisan Suvidha (kisansuvidha.gov.in)</span>
+                    <span className="bg-purple-100 text-purple-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      Farmer Advisory
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#292B26]/70">
+                    Farmer advisory portal by Department of Agriculture & Farmers Welfare providing live mandi rates, MSP procurement prices, and weather alerts.
+                  </p>
+                </div>
+                <a
+                  href="https://kisansuvidha.gov.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 text-xs font-bold text-[#17643E] hover:underline flex items-center gap-1 mt-1 bg-white px-3 py-1.5 rounded-xl border border-[#E5DDCF]"
+                >
+                  <span>Kisan Suvidha</span>
+                  <ExternalLink size={12} />
+                </a>
+              </div>
+            </div>
+
+            {/* Dynamic Real-Market Calculation Engine */}
+            <div className="p-4 rounded-2xl bg-[#E8F3ED] border border-[#17643E]/30 text-xs text-[#103D2C] space-y-1.5">
+              <div className="font-bold flex items-center gap-1.5 text-[#17643E]">
+                <Scale size={15} />
+                <span>Dynamic Real-World Freight Realization Calculation</span>
+              </div>
+              <p className="text-[11px] text-[#103D2C]/80 leading-relaxed">
+                Rather than hardcoding static calculations, KisanCare pulls real modal auction prices directly from government market servers and calculates:
+              </p>
+              <div className="font-mono text-[11px] bg-white/70 p-2 rounded-xl border border-[#17643E]/20 space-y-0.5">
+                <div>• Road Distance = Air Distance (GPS haversine) × 1.20 road winding factor</div>
+                <div>• Haulage Cost = Road Distance (km) × ₹3.50/quintal/km standard rural freight</div>
+                <div>• In-Hand Net Price = Modal Auction Rate − Haulage Cost per quintal</div>
+                <div>• Total Payout = Harvest Quantity (q) × In-Hand Net Price</div>
+              </div>
+            </div>
+
+            <div className="text-right pt-1">
+              <button
+                type="button"
+                onClick={() => setShowSourcesModal(false)}
+                className="bg-[#17643E] hover:bg-[#103D2C] text-white px-6 py-2 rounded-2xl text-xs font-bold transition shadow-sm"
+              >
+                Close & Return
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Workflow Navigation Footer */}
+      <WorkflowFooter
+        currentStageNumber={5}
+        currentStageName="Market Intelligence"
+        prevStep={{
+          path: "/economics",
+          label: "Farm Economics",
+          description: "Review cost of production and margin benchmarks"
+        }}
+        nextStep={{
+          path: "/rentals",
+          label: "Rentals & Machinery",
+          description: "Rent farm machinery or warehouse space"
+        }}
+      />
     </div>
   );
 }

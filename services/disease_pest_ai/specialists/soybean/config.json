@@ -1,0 +1,38 @@
+{
+  "architecture": "convnext_small",
+  "num_classes": 6,
+  "num_features": 768,
+  "label_names": [
+    "Downy Mildew",
+    "Frogeye Leaf Spot",
+    "Healthy",
+    "Mosaic Virus",
+    "Rust",
+    "Septoria Brown Spot"
+  ],
+  "label_descriptions": {
+    "Downy Mildew": "Downy_mildew",
+    "Frogeye Leaf Spot": "Frogeye_leaf_spot",
+    "Healthy": "Healthy",
+    "Mosaic Virus": "Mosaic_virus",
+    "Rust": "Rust",
+    "Septoria Brown Spot": "Septoria_brown_spot"
+  },
+  "pretrained_cfg": {
+    "custom_load": false,
+    "input_size": [3, 224, 224],
+    "test_input_size": [3, 288, 288],
+    "fixed_input_size": false,
+    "interpolation": "bilinear",
+    "crop_pct": 1.0,
+    "test_crop_pct": 1.0,
+    "crop_mode": "center",
+    "mean": [0.485, 0.456, 0.406],
+    "std": [0.229, 0.224, 0.225],
+    "num_classes": 1000,
+    "pool_size": [7, 7],
+    "first_conv": "stem.0",
+    "classifier": "head.fc",
+    "license": "apache-2.0"
+  }
+}

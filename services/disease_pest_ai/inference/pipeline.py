@@ -37,6 +37,8 @@ from disease_pest_ai.models.disease.yolo_disease_adapter import YoloDiseaseAdapt
 from disease_pest_ai.models.pest.wadhwani_adapter import WadhwaniPestAdapter
 from disease_pest_ai.models.pest.yolo_pest_adapter import YoloPestAdapter
 from disease_pest_ai.recommendation.treatment_engine import TreatmentEngine
+from disease_pest_ai.specialists.router import intelligent_router, FusedDiagnosticResult
+from disease_pest_ai.schemas.outputs import NonChemicalControl
 from disease_pest_ai.schemas.final_output import (
     AgricultureDiseaseResult,
     DiseaseSection,
@@ -70,7 +72,7 @@ class DiseasePestPipeline:
 
     def __init__(
         self,
-        primary_disease_model: str = "efficientnet",
+        primary_disease_model: str = "specialist",
         primary_pest_model: str = "yolo_pest",
         lazy_load: bool = True,
         treatment_engine: Optional[TreatmentEngine] = None,
@@ -92,7 +94,8 @@ class DiseasePestPipeline:
         self.condition_resolver = condition_resolver or ConditionResolver()
 
         if not lazy_load:
-            self._get_adapter(self.primary_disease_model_name)
+            if self.primary_disease_model_name in ("efficientnet", "yolo"):
+                self._get_adapter(self.primary_disease_model_name)
             self._get_adapter(self.primary_pest_model_name)
 
     def _get_adapter(self, model_key: str) -> BaseModelAdapter:
@@ -241,67 +244,90 @@ class DiseasePestPipeline:
         disease_section: DiseaseSection
         disease_latency_ms: float = 0.0
 
-        validation_result = None
+        fused_diagnostic: Optional[FusedDiagnosticResult] = None
         if is_foliar_eligible:
-            # STRICT PLANT / LEAF VALIDATION GATE (BEFORE ANY DISEASE CLASSIFIER CALL)
-            from disease_pest_ai.inference.validator import get_plant_validator
-            validator = get_plant_validator()
-            t0_val = time.perf_counter()
-            validation_result = validator.validate(input_payload.plant_image)
-            latency_breakdown["validation_ms"] = round((time.perf_counter() - t0_val) * 1000, 2)
-
-            if not validation_result.is_valid_plant_image:
-                # Image failed validation: DISEASE MODEL MUST NEVER BE CALLED!
-                aggregated_warnings.append(validation_result.message)
-                disease_section = DiseaseSection(
-                    condition="Invalid Photo - Plant Leaf Not Detected",
-                    condition_type=ConditionType.UNKNOWN,
-                    score=0.0,
-                    top_predictions=[],
-                    crop_match=False,
-                    status="INVALID_IMAGE",
-                )
-                run_pest_detection = False
-            else:
-                t0_dis = time.perf_counter()
+            t0_dis = time.perf_counter()
+            target_single_model = model_override or (
+                self.primary_disease_model_name
+                if self.primary_disease_model_name in ("efficientnet", "yolo")
+                else None
+            )
+            if target_single_model:
                 vision_result = self.predict_vision_only(
-                plant_image=input_payload.plant_image,
-                crop_name=input_payload.crop_name,
-                location_state=input_payload.location_state,
-                growth_stage=input_payload.growth_stage,
-                image_type=input_payload.image_type,
-                model_override=model_override,
-            )
-            disease_latency_ms = (time.perf_counter() - t0_dis) * 1000
-            latency_breakdown["disease_model_ms"] = round(disease_latency_ms, 2)
-            aggregated_warnings.extend(vision_result.warnings)
+                    plant_image=input_payload.plant_image,
+                    crop_name=input_payload.crop_name,
+                    location_state=input_payload.location_state,
+                    growth_stage=input_payload.growth_stage,
+                    image_type=input_payload.image_type,
+                    model_override=target_single_model,
+                )
+                disease_latency_ms = (time.perf_counter() - t0_dis) * 1000
+                latency_breakdown["disease_model_ms"] = round(disease_latency_ms, 2)
+                aggregated_warnings.extend(vision_result.warnings)
 
-            # Resolve condition and validate crop biological feasibility
-            resolved_dis = self.condition_resolver.resolve_disease(
-                raw_condition=vision_result.condition,
-                user_crop=input_payload.crop_name,
-                predicted_crop=vision_result.crop,
-            )
+                resolved_dis = self.condition_resolver.resolve_disease(
+                    raw_condition=vision_result.condition,
+                    user_crop=input_payload.crop_name,
+                    predicted_crop=vision_result.crop,
+                )
 
-            status_str = "diagnosed"
-            if resolved_dis.status == "HEALTHY":
-                status_str = "healthy"
-            elif not resolved_dis.is_crop_match:
-                status_str = "crop_mismatch"
-            elif vision_result.score < 0.60:
-                status_str = "low_score"
+                status_str = "diagnosed"
+                if resolved_dis.status == "HEALTHY":
+                    status_str = "healthy"
+                elif not resolved_dis.is_crop_match:
+                    status_str = "crop_mismatch"
+                elif vision_result.score < 0.60:
+                    status_str = "low_score"
 
-            disease_section = DiseaseSection(
-                condition=resolved_dis.canonical_condition,
-                condition_type=resolved_dis.condition_type,
-                score=round(vision_result.score, 4),
-                top_predictions=vision_result.top_predictions,
-                crop_match=resolved_dis.is_crop_match,
-                status=status_str,
-            )
-            for w in resolved_dis.warnings:
-                if w not in aggregated_warnings:
-                    aggregated_warnings.append(w)
+                disease_section = DiseaseSection(
+                    condition=resolved_dis.canonical_condition,
+                    condition_type=resolved_dis.condition_type,
+                    score=round(vision_result.score, 4),
+                    top_predictions=vision_result.top_predictions,
+                    crop_match=resolved_dis.is_crop_match,
+                    status=status_str,
+                )
+                for w in resolved_dis.warnings:
+                    if w not in aggregated_warnings:
+                        aggregated_warnings.append(w)
+            else:
+                # Multi-Crop Specialist Router
+                fused_diagnostic = intelligent_router.route(
+                    image=input_payload.plant_image,
+                    declared_crop=input_payload.crop_name,
+                )
+                disease_latency_ms = (time.perf_counter() - t0_dis) * 1000
+                latency_breakdown["disease_model_ms"] = round(disease_latency_ms, 2)
+                aggregated_warnings.extend(fused_diagnostic.warnings)
+
+                mapped_top: List[TopPrediction] = []
+                for cand in fused_diagnostic.all_candidates[:5]:
+                    c_type = ConditionType.HEALTHY if cand.get("category") == "healthy" else ConditionType.DISEASE
+                    mapped_top.append(
+                        TopPrediction(
+                            condition=cand.get("condition", "Unknown"),
+                            crop=cand.get("crop", input_payload.crop_name),
+                            score=float(cand.get("probability", 0.0)),
+                            condition_type=c_type,
+                        )
+                    )
+
+                cond_type_final = ConditionType.HEALTHY if fused_diagnostic.is_healthy else (
+                    ConditionType.UNKNOWN if fused_diagnostic.abstention else ConditionType.DISEASE
+                )
+
+                status_str = fused_diagnostic.fusion_outcome
+                if status_str in ("single_model", "agree"):
+                    status_str = "healthy" if fused_diagnostic.is_healthy else "diagnosed"
+
+                disease_section = DiseaseSection(
+                    condition=fused_diagnostic.condition,
+                    condition_type=cond_type_final,
+                    score=round(fused_diagnostic.calibrated_confidence, 4),
+                    top_predictions=mapped_top,
+                    crop_match=(fused_diagnostic.fusion_outcome != "crop_uncertain"),
+                    status=status_str,
+                )
         else:
             # Trap sheet: foliar disease classifier is bypassed
             aggregated_warnings.append(
@@ -389,19 +415,50 @@ class DiseasePestPipeline:
         pest_tx: Optional[TreatmentRecommendation] = None
 
         # Disease treatment query
-        if is_foliar_eligible and vision_result:
-            disease_tx = self.treatment_engine.get_treatment_recommendations(
-                crop_name=input_payload.crop_name,
-                condition=disease_section.condition,
-                condition_type=disease_section.condition_type,
-                location_state=input_payload.location_state,
-                growth_stage=str(input_payload.growth_stage),
-                prediction_score=disease_section.score,
-                crop_mismatch=not disease_section.crop_match,
-            )
-            for w in disease_tx.warnings:
-                if w not in aggregated_warnings:
-                    aggregated_warnings.append(w)
+        if is_foliar_eligible:
+            if fused_diagnostic and fused_diagnostic.abstention:
+                # ZERO-CHEMICAL SAFEGUARD: Suppress chemical pesticides under uncertainty
+                disease_tx = TreatmentRecommendation(
+                    status=RecommendationStatus.MANUAL_REVIEW_REQUIRED,
+                    reason_code=ReasonCode.CROP_CONDITION_MISMATCH if fused_diagnostic.fusion_outcome == "crop_uncertain" else ReasonCode.LOW_MODEL_SCORE,
+                    crop=input_payload.crop_name,
+                    condition=disease_section.condition,
+                    condition_type=disease_section.condition_type,
+                    non_chemical_controls=[
+                        NonChemicalControl(
+                            category="cultural",
+                            title="Field Scouting and Canopy Management",
+                            description="Practice field scouting, canopy aeration, and isolate symptomatic foliage. Submit sample to nearest Krishi Vigyan Kendra or State Agricultural Extension Officer for physical verification.",
+                            source_title="ICAR-KVK Integrated Pest Management Guidelines",
+                            source_url="https://icar.org.in",
+                            source_date="2026-03",
+                        )
+                    ],
+                    chemical_candidates=[],  # ZERO CHEMICALS GUARANTEED
+                    verification_status="manual_review_required",
+                    label_verification_required=True,
+                    field_validation_required=True,
+                    stage_specific_guidance="unavailable",
+                    geographic_scope="India",
+                    sources=["KisanCare Agricultural Safety Framework"],
+                    safety_notes=[
+                        "Under clinical abstention, diagnostic disagreement, or crop conflict, synthetic chemical pesticide applications are strictly withheld to protect farmer investments and prevent phytotoxic injury."
+                    ],
+                    warnings=aggregated_warnings,
+                )
+            else:
+                disease_tx = self.treatment_engine.get_treatment_recommendations(
+                    crop_name=input_payload.crop_name,
+                    condition=disease_section.condition,
+                    condition_type=disease_section.condition_type,
+                    location_state=input_payload.location_state,
+                    growth_stage=str(input_payload.growth_stage),
+                    prediction_score=disease_section.score,
+                    crop_mismatch=not disease_section.crop_match,
+                )
+                for w in disease_tx.warnings:
+                    if w not in aggregated_warnings:
+                        aggregated_warnings.append(w)
 
         # Pest treatment query
         if pest_result and pest_result.pests:
@@ -462,9 +519,6 @@ class DiseasePestPipeline:
             except Exception:
                 pass
 
-        if validation_result and not validation_result.is_valid_plant_image:
-            generate_visual_explanation = False
-
         if generate_visual_explanation:
             t0_exp = time.perf_counter()
             explainability_outputs = generate_explainability(
@@ -501,13 +555,22 @@ class DiseasePestPipeline:
 
         pipeline_ctx = {
             "version": "4.0.0",
-            "validation": validation_result.to_dict() if validation_result else None,
             "location_state": input_payload.location_state,
             "growth_stage": str(input_payload.growth_stage),
             "image_type": str(input_payload.image_type),
             "disease_status": disease_section.status,
             "pest_status": pest_section.status,
         }
+        if fused_diagnostic:
+            pipeline_ctx["specialist_routing"] = {
+                "routing_path": fused_diagnostic.routing_path,
+                "fusion_outcome": fused_diagnostic.fusion_outcome,
+                "model_attribution": fused_diagnostic.model_identifier,
+                "specialist_agreement": fused_diagnostic.specialist_agreement,
+                "abstention": fused_diagnostic.abstention,
+                "abstention_reason": fused_diagnostic.abstention_reason,
+                "competing_predictions": fused_diagnostic.competing_predictions,
+            }
 
         provenance = FinalProvenance(
             disease_model=dis_mod_name,

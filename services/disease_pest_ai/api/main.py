@@ -2,6 +2,7 @@
 
 Provides RESTful inference APIs with statutory CIB&RC treatment advisory
 and API key authentication.
+Configured strictly for Cotton (DenseNet-121) and Soybean (ConvNeXt-Small) models.
 """
 
 from contextlib import asynccontextmanager
@@ -30,20 +31,21 @@ logger = logging.getLogger("disease_pest_ai.api")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    """Lifespan context manager: preload models into memory at startup."""
+    """Lifespan context manager: preload Cotton and Soybean specialists at startup."""
     logger.info("==================================================")
     logger.info("Starting Agriculture AI Disease & Pest Service")
     logger.info("Allowed CORS Origins: %s", ALLOWED_ORIGINS)
+    logger.info("Foliar Disease Scope: Cotton & Soybean Specialists Only")
     logger.info("==================================================")
 
     try:
         pipeline = DiseasePestPipeline(
-            primary_disease_model="efficientnet",
+            primary_disease_model="specialist",
             primary_pest_model="yolo_pest",
             lazy_load=False,
         )
         set_pipeline(pipeline)
-        logger.info("✓ Primary models (EfficientNetV2-S + YOLO11s) and CIB&RC KB preloaded successfully.")
+        logger.info("✓ Specialist models (Cotton DenseNet-121 + Soybean ConvNeXt-Small) and CIB&RC KB preloaded successfully.")
     except Exception as exc:
         logger.error("❌ Failed to preload inference models: %s", exc, exc_info=True)
 
@@ -82,6 +84,7 @@ async def root():
         "version": API_VERSION,
         "docs": "/docs",
         "redoc": "/redoc",
+        "supported_crops": ["Cotton", "Soybean"],
         "endpoints": [
             {
                 "method": "GET",
@@ -94,7 +97,7 @@ async def root():
                 "path": "/api/v1/diagnose",
                 "auth_required": True,
                 "auth_header": "X-API-Key",
-                "description": "Multi-modal disease diagnosis, pest detection, and statutory CIB&RC treatment advisory",
+                "description": "Multi-modal disease diagnosis (Cotton & Soybean only), pest detection, and statutory CIB&RC treatment advisory",
             },
         ],
     }

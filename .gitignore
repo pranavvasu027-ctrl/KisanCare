@@ -19,9 +19,11 @@ env/
 .ruff_cache/
 .venv/
 venv/
+venv_old/
 ENV/
 env.bak/
 venv.bak/
+data/.cache/
 
 # Packaging
 develop-eggs/
@@ -74,6 +76,7 @@ data/raw/*
 data/processed/*
 *.h5
 *.onnx
+*.pt
 
 # ML Models & Artifacts default ignore, with whitelisted lightweight runtime models
 *.joblib
@@ -86,6 +89,13 @@ data/processed/*
 !services/irrigation_yield_api/models/irrigation/eto/*.pkl
 
 *.pt
-*.pth
-*.safetensors
 *.bin
+*.pth
+!services/irrigation_yield_api/models/irrigation/eto/eto_punjab_best.pth
+*.safetensors
+
+# Disease intelligence local evaluation datasets & scratch data
+services/disease_pest_ai/test_data/
+
+# Local backend database and scratch cache
+backend/data/

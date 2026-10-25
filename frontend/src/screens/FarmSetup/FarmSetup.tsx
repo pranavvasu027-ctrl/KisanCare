@@ -1,8 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from 'react';
 import { Map, Plus, Trash2, Save, CheckCircle2, AlertCircle, Loader2, Navigation, Crosshair, MapPin, Compass, Footprints } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../services/supabase';
 import BoundaryEditorModal from '../../components/map/BoundaryEditorModal';
+import { WorkflowStepper } from '../../components/workflow/WorkflowStepper';
+import { WorkflowFooter } from '../../components/workflow/WorkflowFooter';
 import GpsBoundaryModal from '../../components/map/GpsBoundaryModal';
 
 interface FieldItem {
@@ -27,6 +30,8 @@ interface FarmSummary {
 }
 
 export default function FarmSetup() {
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'en';
   const { user, isAuthenticated, isDemoMode } = useAuth();
 
   const [farmId, setFarmId] = useState<string | null>(null);
@@ -421,10 +426,12 @@ export default function FarmSetup() {
 
   return (
     <div className="p-4 lg:p-8 max-w-5xl mx-auto space-y-6">
+      <WorkflowStepper currentStageId={1} />
+
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-serif font-bold text-[#103D2C]">Farm Setup</h1>
+            <h1 className="text-3xl font-serif font-bold text-[#103D2C]">{t('farmSetup.title')}</h1>
             {(!isAuthenticated || isDemoMode) ? (
               <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-amber-300">
                 Demo Profile (Local Memory)
@@ -436,7 +443,7 @@ export default function FarmSetup() {
               </span>
             )}
           </div>
-          <p className="text-[#292B26]/70 mt-1">Configure your farm profile and field boundaries.</p>
+          <p className="text-[#292B26]/70 mt-1">{t('farmSetup.subtitle')}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
           {farmId && (
@@ -467,7 +474,7 @@ export default function FarmSetup() {
             className="bg-[#103D2C] text-white px-5 py-2.5 rounded-lg flex items-center gap-2 hover:bg-[#17643E] transition-colors cursor-pointer disabled:opacity-50"
           >
             {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-            <span>{isSaving ? 'Saving to Database...' : 'Save Changes'}</span>
+            <span>{isSaving ? t('common.loading') : t('farmSetup.saveFarm')}</span>
           </button>
         </div>
       </div>
@@ -529,7 +536,7 @@ export default function FarmSetup() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-[#292B26] mb-1">Farm Name</label>
+              <label className="block text-sm font-medium text-[#292B26] mb-1">{t('farmSetup.farmName')}</label>
               <input
                 type="text"
                 value={farmName}
@@ -539,7 +546,7 @@ export default function FarmSetup() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#292B26] mb-1">Total Area (Acres)</label>
+              <label className="block text-sm font-medium text-[#292B26] mb-1">{t('farmSetup.totalArea')}</label>
               <input
                 type="number"
                 step="0.1"
@@ -658,7 +665,7 @@ export default function FarmSetup() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-[#103D2C]">Fields Configuration</h2>
             <button onClick={addField} className="text-[#17643E] font-medium text-sm flex items-center gap-1 hover:underline cursor-pointer">
-              <Plus size={16} /> Add Field
+              <Plus size={16} /> {t('farmSetup.addField')}
             </button>
           </div>
 
@@ -716,6 +723,23 @@ export default function FarmSetup() {
           </div>
         </div>
       </div>
+
+      <WorkflowFooter
+        currentStageNumber={1}
+        currentStageName="Farm & Soil Setup"
+        completedActionMessage={saveStatus}
+        prevStep={{ label: "Dashboard", path: "/" }}
+        nextStep={{
+          label: "Soil Health Assessment",
+          labelMr: "माती परीक्षण",
+          path: "/soil",
+          description: "Test soil fertility & NPK levels for your fields"
+        }}
+        alternativeNextStep={{
+          label: "Digital Twin View",
+          path: "/digital-twin"
+        }}
+      />
 
       {/* GPS Walking Boundary Modal */}
       {farmId && (

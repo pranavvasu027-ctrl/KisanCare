@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { translateDynamic } from '../../i18n/translateHelper';
 import {
   Package, AlertTriangle, TrendingDown, Clock, ShieldCheck,
   ArrowRight, Loader2, Sparkles, CheckCircle2, Warehouse,
@@ -6,6 +8,8 @@ import {
   Truck, Scissors, Store, AlertCircle, Info, ChevronRight,
   TrendingUp, Database, Download
 } from 'lucide-react';
+import { WorkflowStepper } from '../../components/workflow/WorkflowStepper';
+import { WorkflowFooter } from '../../components/workflow/WorkflowFooter';
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis,
   Tooltip, Legend, CartesianGrid, Cell
@@ -27,6 +31,8 @@ const MOISTURE_THRESHOLDS: Record<PostHarvestCrop, { optimal: number; warning: n
 };
 
 export default function PostHarvestLoss() {
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'en';
   // Global View Controls
   const [selectedCropFilter, setSelectedCropFilter] = useState<'ALL' | PostHarvestCrop>('ALL');
   const [records, setRecords] = useState<LossRecord[]>([]);
@@ -433,8 +439,10 @@ export default function PostHarvestLoss() {
 
   return (
     <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-7 text-[#292B26]">
+      <WorkflowStepper currentStageId={5} />
       {/* 1. Header & Context */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b border-[#E5DDCF]">
+
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl lg:text-3xl font-serif font-bold text-[#103D2C]">
@@ -513,6 +521,7 @@ export default function PostHarvestLoss() {
             <span>Record Loss</span>
           </button>
         </div>
+
       </div>
 
       {/* Success Banner */}
@@ -617,7 +626,7 @@ export default function PostHarvestLoss() {
           <div className="bg-white rounded-2xl p-4.5 border border-[#E5DDCF] shadow-xs flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between text-xs text-[#292B26]/60 mb-1">
-                <span>Recoverable Potential</span>
+                <span>{t('postHarvest.recoverablePotential')}</span>
                 <ShieldCheck className="w-4 h-4 text-[#17643E]" />
               </div>
               <div className="flex items-baseline gap-2">
@@ -936,7 +945,7 @@ export default function PostHarvestLoss() {
                   </div>
 
                   <div className="bg-[#FBF7EF] rounded-xl p-3.5 border border-[#E5DDCF]">
-                    <span className="text-[11px] text-[#292B26]/60">Financial Impact</span>
+                    <span className="text-[11px] text-[#292B26]/60">{t('postHarvest.financialImpact')}</span>
                     <div className="text-xl font-bold font-serif text-[#B6532A] mt-0.5">
                       ₹{simResult.financialLossRs.toLocaleString()}
                     </div>
@@ -1384,6 +1393,25 @@ export default function PostHarvestLoss() {
           </div>
         </div>
       )}
+
+      <WorkflowFooter
+        currentStageNumber={5}
+        currentStageName="Market & Post-Harvest Storage"
+        completedActionMessage="Storage assessment complete. Check government storage schemes or return to Dashboard."
+        prevStep={{ label: "Market Intelligence", path: "/market" }}
+        nextStep={{
+          label: "Government Schemes",
+          labelMr: "शासकीय योजना",
+          path: "/schemes",
+          description: "Explore cold chain, PM-KISAN, and agricultural warehouse subsidies"
+        }}
+        alternativeNextStep={{
+          label: "Ask KisanCare AI",
+          path: "/copilot"
+        }}
+      />
+
+
     </div>
   );
 }

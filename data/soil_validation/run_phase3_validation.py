@@ -21,7 +21,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 # Add project root to sys.path to import ml pipeline directly
-ROOT_DIR = Path(r"C:\Users\Atharva\.gemini\antigravity\scratch\KisanCare")
+ROOT_DIR = Path(__file__).resolve().parents[2]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 

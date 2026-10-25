@@ -1,9 +1,12 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from 'react';
 import {
   Landmark, Search, Filter, ExternalLink, CheckCircle,
   FileText, ShieldCheck, ChevronDown, ChevronUp, Info,
   BadgeCheck, Bookmark, RotateCcw, Sparkles
 } from 'lucide-react';
+import { WorkflowStepper } from '../../components/workflow/WorkflowStepper';
+import { WorkflowFooter } from '../../components/workflow/WorkflowFooter';
 
 export type EligibilityFilterType =
   | 'All'
@@ -220,6 +223,8 @@ const ELIGIBILITY_OPTIONS: EligibilityFilterType[] = [
 ];
 
 export default function GovernmentSchemes() {
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'en';
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedEligibility, setSelectedEligibility] = useState<EligibilityFilterType>('All');
@@ -307,36 +312,36 @@ export default function GovernmentSchemes() {
 
   return (
     <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-6">
+      <WorkflowStepper currentStageId={5} />
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-serif font-bold text-[#103D2C]">Government Schemes</h1>
+            <h1 className="text-3xl font-serif font-bold text-[#103D2C]">{t('schemes.title')}</h1>
             <span className="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-emerald-300 flex items-center gap-1">
               <BadgeCheck size={13} className="text-emerald-700" />
               Verified Official Directory
             </span>
           </div>
           <p className="text-[#292B26]/70 mt-1 text-sm">
-            Browse verified agricultural welfare schemes, subsidy programs, credit limits, and official portal links.
+            {t('schemes.subtitle')}
           </p>
         </div>
 
         {/* Saved Schemes Toggle Pill */}
         <button
           onClick={() => setShowSavedOnly(!showSavedOnly)}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer shadow-xs ${
-            showSavedOnly
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer shadow-xs ${showSavedOnly
               ? 'bg-[#103D2C] text-white border-[#103D2C]'
               : 'bg-white text-[#103D2C] border-[#E5DDCF] hover:border-[#17643E]'
-          }`}
+            }`}
           title="Toggle view of bookmarked schemes"
         >
           <Bookmark size={15} className={showSavedOnly ? 'fill-white' : ''} />
           <span>Saved Schemes</span>
-          <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
-            showSavedOnly ? 'bg-white/20 text-white' : 'bg-[#FBF7EF] text-[#103D2C] font-bold border border-[#E5DDCF]'
-          }`}>
+          <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${showSavedOnly ? 'bg-white/20 text-white' : 'bg-[#FBF7EF] text-[#103D2C] font-bold border border-[#E5DDCF]'
+            }`}>
             {bookmarkedIds.length}
           </span>
         </button>
@@ -400,11 +405,10 @@ export default function GovernmentSchemes() {
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`text-xs px-3 py-1.5 rounded-full border transition-all whitespace-nowrap cursor-pointer ${
-                selectedCategory === cat
+              className={`text-xs px-3 py-1.5 rounded-full border transition-all whitespace-nowrap cursor-pointer ${selectedCategory === cat
                   ? 'bg-[#103D2C] text-white border-[#103D2C] font-semibold shadow-xs'
                   : 'bg-[#FBF7EF] text-[#292B26]/80 border-[#E5DDCF] hover:border-[#17643E]'
-              }`}
+                }`}
             >
               {cat}
             </button>
@@ -420,11 +424,10 @@ export default function GovernmentSchemes() {
             <button
               key={elig}
               onClick={() => setSelectedEligibility(elig)}
-              className={`text-xs px-3 py-1 rounded-lg border transition-all whitespace-nowrap cursor-pointer ${
-                selectedEligibility === elig
+              className={`text-xs px-3 py-1 rounded-lg border transition-all whitespace-nowrap cursor-pointer ${selectedEligibility === elig
                   ? 'bg-[#17643E] text-white border-[#17643E] font-medium shadow-xs'
                   : 'bg-white text-[#292B26]/80 border-[#E5DDCF] hover:border-[#17643E] hover:bg-[#FBF7EF]'
-              }`}
+                }`}
             >
               {elig}
             </button>
@@ -505,11 +508,10 @@ export default function GovernmentSchemes() {
                       type="button"
                       onClick={(e) => toggleBookmark(scheme.id, scheme.name, e)}
                       title={isBookmarked ? 'Remove bookmark' : 'Bookmark this scheme (stored locally)'}
-                      className={`p-2 rounded-lg border transition-colors cursor-pointer ${
-                        isBookmarked
+                      className={`p-2 rounded-lg border transition-colors cursor-pointer ${isBookmarked
                           ? 'bg-amber-50 border-amber-300 text-amber-600'
                           : 'bg-[#FBF7EF] border-[#E5DDCF] text-[#292B26]/60 hover:text-[#103D2C] hover:border-[#103D2C]'
-                      }`}
+                        }`}
                     >
                       <Bookmark size={16} className={isBookmarked ? 'fill-amber-500' : ''} />
                     </button>
@@ -577,11 +579,10 @@ export default function GovernmentSchemes() {
                         <button
                           type="button"
                           onClick={(e) => toggleBookmark(scheme.id, scheme.name, e)}
-                          className={`text-xs px-3 py-2 rounded-lg font-medium flex items-center gap-1.5 border transition-colors cursor-pointer ${
-                            isBookmarked
+                          className={`text-xs px-3 py-2 rounded-lg font-medium flex items-center gap-1.5 border transition-colors cursor-pointer ${isBookmarked
                               ? 'bg-amber-50 text-amber-800 border-amber-300'
                               : 'bg-white text-[#103D2C] border-[#E5DDCF] hover:border-[#17643E]'
-                          }`}
+                            }`}
                         >
                           <Bookmark size={13} className={isBookmarked ? 'fill-amber-500' : ''} />
                           <span>{isBookmarked ? 'Bookmarked' : 'Save Scheme'}</span>
@@ -604,6 +605,23 @@ export default function GovernmentSchemes() {
           })
         )}
       </div>
+
+      <WorkflowFooter
+        currentStageNumber={5}
+        currentStageName="Market, Subsidies & Completion"
+        completedActionMessage="You have completed all 5 stages of the KisanCare Seasonal Farmer Journey! Return to Dashboard Overview or consult your AI Copilot."
+        prevStep={{ label: "Post-Harvest Storage", path: "/post-harvest" }}
+        nextStep={{
+          label: "Dashboard Overview",
+          labelMr: "मुख्य डॅशबोर्ड",
+          path: "/",
+          description: "Return to farm overview and daily alerts"
+        }}
+        alternativeNextStep={{
+          label: "Ask KisanCare AI",
+          path: "/copilot"
+        }}
+      />
     </div>
   );
 }

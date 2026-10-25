@@ -1,0 +1,294 @@
+{
+  "generated_at": "2026-10-25T02:27:24.137378",
+  "dataset_source": "Agmarknet (Ministry of Agriculture & Farmers Welfare, Government of India) and Maharashtra State Mandis",
+  "dataset_records_count": 5518,
+  "time_series_date_span": "2014-09-01 to 2026-10-24",
+  "crops": {
+    "Cotton": {
+      "7d": {
+        "model_file": "cotton_market_7d.json",
+        "feature_cols": [
+          "ret_lag_1",
+          "ret_lag_3",
+          "ret_lag_7",
+          "ret_lag_14",
+          "ret_lag_28",
+          "rolling_mean_7_ratio",
+          "rolling_mean_14_ratio",
+          "rolling_mean_28_ratio",
+          "volatility_7",
+          "day_of_week",
+          "month"
+        ],
+        "bounds": {
+          "train_start": "2014-09-29",
+          "train_end": "2023-03-06",
+          "val_start": "2023-03-07",
+          "val_end": "2024-12-25",
+          "test_start": "2024-12-26",
+          "test_end": "2026-10-17",
+          "n_train": 3081,
+          "n_val": 660,
+          "n_test": 661
+        },
+        "test_metrics": {
+          "xgb": {
+            "mae": 112.66,
+            "rmse": 325.3,
+            "mape": 1.99,
+            "directional_accuracy_pct": 48.1
+          },
+          "naive_baseline": {
+            "mae": 109.11,
+            "rmse": 324.99,
+            "mape": 1.92,
+            "directional_accuracy_pct": 0.0
+          },
+          "ma7_baseline": {
+            "mae": 143.59,
+            "rmse": 352.79,
+            "mape": 2.57,
+            "directional_accuracy_pct": 50.0
+          }
+        }
+      },
+      "14d": {
+        "model_file": "cotton_market_14d.json",
+        "feature_cols": [
+          "ret_lag_1",
+          "ret_lag_3",
+          "ret_lag_7",
+          "ret_lag_14",
+          "ret_lag_28",
+          "rolling_mean_7_ratio",
+          "rolling_mean_14_ratio",
+          "rolling_mean_28_ratio",
+          "volatility_7",
+          "day_of_week",
+          "month"
+        ],
+        "bounds": {
+          "train_start": "2014-09-29",
+          "train_end": "2023-03-01",
+          "val_start": "2023-03-02",
+          "val_end": "2024-12-19",
+          "test_start": "2024-12-20",
+          "test_end": "2026-10-10",
+          "n_train": 3076,
+          "n_val": 659,
+          "n_test": 660
+        },
+        "test_metrics": {
+          "xgb": {
+            "mae": 184.9,
+            "rmse": 407.55,
+            "mape": 3.34,
+            "directional_accuracy_pct": 35.71
+          },
+          "naive_baseline": {
+            "mae": 175.99,
+            "rmse": 405.23,
+            "mape": 3.16,
+            "directional_accuracy_pct": 0.0
+          },
+          "ma7_baseline": {
+            "mae": 210.97,
+            "rmse": 431.71,
+            "mape": 3.81,
+            "directional_accuracy_pct": 27.55
+          }
+        }
+      },
+      "28d": {
+        "model_file": "cotton_market_28d.json",
+        "feature_cols": [
+          "ret_lag_1",
+          "ret_lag_3",
+          "ret_lag_7",
+          "ret_lag_14",
+          "ret_lag_28",
+          "rolling_mean_7_ratio",
+          "rolling_mean_14_ratio",
+          "rolling_mean_28_ratio",
+          "volatility_7",
+          "day_of_week",
+          "month"
+        ],
+        "bounds": {
+          "train_start": "2014-09-29",
+          "train_end": "2023-02-19",
+          "val_start": "2023-02-20",
+          "val_end": "2024-12-07",
+          "test_start": "2024-12-08",
+          "test_end": "2026-09-26",
+          "n_train": 3066,
+          "n_val": 657,
+          "n_test": 658
+        },
+        "test_metrics": {
+          "xgb": {
+            "mae": 294.23,
+            "rmse": 534.5,
+            "mape": 5.4,
+            "directional_accuracy_pct": 41.76
+          },
+          "naive_baseline": {
+            "mae": 276.61,
+            "rmse": 524.66,
+            "mape": 5.07,
+            "directional_accuracy_pct": 0.0
+          },
+          "ma7_baseline": {
+            "mae": 290.39,
+            "rmse": 540.51,
+            "mape": 5.36,
+            "directional_accuracy_pct": 31.8
+          }
+        }
+      }
+    },
+    "Tur": {
+      "7d": {
+        "model_file": "tur_market_7d.json",
+        "feature_cols": [
+          "ret_lag_1",
+          "ret_lag_3",
+          "ret_lag_7",
+          "ret_lag_14",
+          "ret_lag_28",
+          "rolling_mean_7_ratio",
+          "rolling_mean_14_ratio",
+          "rolling_mean_28_ratio",
+          "volatility_7",
+          "day_of_week",
+          "month"
+        ],
+        "bounds": {
+          "train_start": "2014-09-29",
+          "train_end": "2023-03-06",
+          "val_start": "2023-03-07",
+          "val_end": "2024-12-25",
+          "test_start": "2024-12-26",
+          "test_end": "2026-10-17",
+          "n_train": 3081,
+          "n_val": 660,
+          "n_test": 661
+        },
+        "test_metrics": {
+          "xgb": {
+            "mae": 450.21,
+            "rmse": 676.6,
+            "mape": 7.74,
+            "directional_accuracy_pct": 52.57
+          },
+          "naive_baseline": {
+            "mae": 447.74,
+            "rmse": 676.35,
+            "mape": 7.71,
+            "directional_accuracy_pct": 0.0
+          },
+          "ma7_baseline": {
+            "mae": 400.04,
+            "rmse": 619.61,
+            "mape": 6.87,
+            "directional_accuracy_pct": 69.37
+          }
+        }
+      },
+      "14d": {
+        "model_file": "tur_market_14d.json",
+        "feature_cols": [
+          "ret_lag_1",
+          "ret_lag_3",
+          "ret_lag_7",
+          "ret_lag_14",
+          "ret_lag_28",
+          "rolling_mean_7_ratio",
+          "rolling_mean_14_ratio",
+          "rolling_mean_28_ratio",
+          "volatility_7",
+          "day_of_week",
+          "month"
+        ],
+        "bounds": {
+          "train_start": "2014-09-29",
+          "train_end": "2023-03-01",
+          "val_start": "2023-03-02",
+          "val_end": "2024-12-19",
+          "test_start": "2024-12-20",
+          "test_end": "2026-10-10",
+          "n_train": 3076,
+          "n_val": 659,
+          "n_test": 660
+        },
+        "test_metrics": {
+          "xgb": {
+            "mae": 484.45,
+            "rmse": 718.47,
+            "mape": 8.26,
+            "directional_accuracy_pct": 54.09
+          },
+          "naive_baseline": {
+            "mae": 482.1,
+            "rmse": 718.29,
+            "mape": 8.23,
+            "directional_accuracy_pct": 0.0
+          },
+          "ma7_baseline": {
+            "mae": 473.26,
+            "rmse": 690.07,
+            "mape": 8.07,
+            "directional_accuracy_pct": 62.65
+          }
+        }
+      },
+      "28d": {
+        "model_file": "tur_market_28d.json",
+        "feature_cols": [
+          "ret_lag_1",
+          "ret_lag_3",
+          "ret_lag_7",
+          "ret_lag_14",
+          "ret_lag_28",
+          "rolling_mean_7_ratio",
+          "rolling_mean_14_ratio",
+          "rolling_mean_28_ratio",
+          "volatility_7",
+          "day_of_week",
+          "month"
+        ],
+        "bounds": {
+          "train_start": "2014-09-29",
+          "train_end": "2023-02-19",
+          "val_start": "2023-02-20",
+          "val_end": "2024-12-07",
+          "test_start": "2024-12-08",
+          "test_end": "2026-09-26",
+          "n_train": 3066,
+          "n_val": 657,
+          "n_test": 658
+        },
+        "test_metrics": {
+          "xgb": {
+            "mae": 616.35,
+            "rmse": 824.72,
+            "mape": 10.33,
+            "directional_accuracy_pct": 54.27
+          },
+          "naive_baseline": {
+            "mae": 613.4,
+            "rmse": 825.09,
+            "mape": 10.27,
+            "directional_accuracy_pct": 0.0
+          },
+          "ma7_baseline": {
+            "mae": 565.59,
+            "rmse": 753.43,
+            "mape": 9.39,
+            "directional_accuracy_pct": 60.85
+          }
+        }
+      }
+    }
+  }
+}

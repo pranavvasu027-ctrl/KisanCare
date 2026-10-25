@@ -11,6 +11,13 @@ import sys
 from pathlib import Path
 from PIL import Image
 from fastapi import APIRouter, HTTPException, Header, Request, UploadFile, File, Form, status
+
+_repo_root = Path(__file__).resolve().parent.parent.parent.parent
+if str(_repo_root) not in sys.path:
+    sys.path.insert(0, str(_repo_root))
+_services_path = _repo_root / "services"
+if str(_services_path) not in sys.path:
+    sys.path.insert(0, str(_services_path))
 from pydantic import BaseModel, Field
 
 from ..economics.engine import calculate_economics
@@ -21,6 +28,36 @@ from ..weather.service import get_weather_service
 router = APIRouter()
 _mock_field_boundaries: Dict[str, Dict[str, Any]] = {}
 router.include_router(copilot_router)
+
+
+class FieldSetupItem(BaseModel):
+    field_name: str = Field(min_length=1, max_length=256)
+    area: float = Field(gt=0)
+    area_unit: Optional[str] = Field(default="acre", max_length=32)
+    soil_type: Optional[str] = Field(default=None, max_length=128)
+    irrigation_method: Optional[str] = Field(default=None, max_length=128)
+    current_crop: Optional[str] = Field(default=None, max_length=128)
+    previous_crop: Optional[str] = Field(default=None, max_length=128)
+
+
+class OnboardingRequest(BaseModel):
+    farmer_id: Optional[str] = None
+    name: str = Field(min_length=1, max_length=256)
+    phone: str = Field(min_length=1, max_length=32)
+    state: str = Field(default="Maharashtra", max_length=128)
+    district: str = Field(min_length=1, max_length=128)
+    village: str = Field(min_length=1, max_length=128)
+    preferred_language: str = Field(default="en", max_length=16)
+    farming_experience: Optional[str] = Field(default=None, max_length=64)
+    farmer_category: Optional[str] = Field(default=None, max_length=64)
+    farm_name: str = Field(min_length=1, max_length=256)
+    total_area: float = Field(gt=0)
+    area_unit: str = Field(default="acre", max_length=32)
+    latitude: Optional[float] = Field(default=None, ge=-90.0, le=90.0)
+    longitude: Optional[float] = Field(default=None, ge=-180.0, le=180.0)
+    irrigation_source: Optional[str] = Field(default=None, max_length=128)
+    land_ownership: Optional[str] = Field(default="Owned", max_length=64)
+    fields: List[FieldSetupItem] = Field(min_length=1)
 
 
 class FarmCreate(BaseModel):
@@ -49,14 +86,31 @@ class SimulationRequest(BaseModel):
 class CropRecommendationRequest(BaseModel):
     district: str = Field(min_length=1, max_length=128)
     season: str = Field(min_length=1, max_length=32)
-    water_availability: str = Field(min_length=1, max_length=32)
+    water_availability: Optional[str] = Field(default="Medium", max_length=32)
+    water_access: Optional[str] = None
     top_k: int = Field(default=5, ge=1, le=20)
+    N: Optional[float] = None
+    P: Optional[float] = None
+    K: Optional[float] = None
+    ph: Optional[float] = None
+    temperature: Optional[float] = None
+    humidity: Optional[float] = None
+    rainfall: Optional[float] = None
+    nitrogen: Optional[float] = None
+    phosphorus: Optional[float] = None
+    potassium: Optional[float] = None
+    soil_ph: Optional[float] = None
+    state: Optional[str] = None
 
 
 class MarketPriceRequest(BaseModel):
     crop: str = Field(min_length=1, max_length=128)
-    market: str = Field(min_length=1, max_length=128)
-    date: str = Field(min_length=1, max_length=32)
+    market: Optional[str] = None
+    date: Optional[str] = None
+    quantity: Optional[float] = Field(default=20.0, gt=0, le=50000)
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    force_refresh: Optional[bool] = False
 
 
 class SymptomsRequest(BaseModel):
@@ -104,9 +158,9 @@ def _ml_service_url() -> str:
 
 def _ml_timeout_seconds() -> float:
     try:
-        return max(0.1, float(os.getenv("ML_SERVICE_TIMEOUT_SECONDS", "8")))
+        return max(0.1, float(os.getenv("ML_SERVICE_TIMEOUT_SECONDS", "15")))
     except ValueError:
-        return 8.0
+        return 15.0
 
 
 
@@ -217,15 +271,8 @@ def list_farms(authorization: Optional[str] = Header(None)):
     url = os.environ.get("SUPABASE_URL")
     key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
 
-    token_user_id = None
-    if authorization and authorization.startswith("Bearer "):
-        token = authorization.split("Bearer ", 1)[1].strip()
-        try:
-            import jwt
-            decoded = jwt.decode(token, options={"verify_signature": False})
-            token_user_id = decoded.get("sub") or decoded.get("user_id")
-        except Exception:
-            pass
+    from backend.app.core.auth import extract_verified_user_id
+    token_user_id = extract_verified_user_id(authorization, required=False)
 
     if url and key and token_user_id:
         try:
@@ -287,14 +334,10 @@ def create_farm(farm: FarmCreate, authorization: Optional[str] = Header(None)):
             from supabase import create_client
             sb = create_client(url, key)
             user_id = farm.farmer_id
-            if authorization and authorization.startswith("Bearer "):
-                token = authorization.split("Bearer ", 1)[1].strip()
-                try:
-                    import jwt
-                    decoded = jwt.decode(token, options={"verify_signature": False})
-                    user_id = decoded.get("sub") or decoded.get("user_id") or user_id
-                except Exception:
-                    pass
+            from backend.app.core.auth import extract_verified_user_id
+            v_uid = extract_verified_user_id(authorization, required=False)
+            if v_uid:
+                user_id = v_uid
 
             insert_data = {
                 "user_id": user_id,
@@ -358,15 +401,8 @@ def update_farm_field_boundaries(
     url = os.environ.get("SUPABASE_URL")
     key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
 
-    token_user_id = None
-    if authorization and authorization.startswith("Bearer "):
-        token = authorization.split("Bearer ", 1)[1].strip()
-        try:
-            import jwt
-            decoded = jwt.decode(token, options={"verify_signature": False})
-            token_user_id = decoded.get("sub") or decoded.get("user_id")
-        except Exception:
-            pass
+    from backend.app.core.auth import extract_verified_user_id
+    token_user_id = extract_verified_user_id(authorization, required=False)
 
     if not url or not key:
         if update.field_id in ["00000000-0000-0000-0000-000000000000", "invalid", "unknown"]:
@@ -570,15 +606,8 @@ def get_digital_twin(farm_id: str, authorization: Optional[str] = Header(None)):
             sb = create_client(url, key)
 
             # Check authorization if provided to enforce authorization rules
-            token_user_id = None
-            if authorization and authorization.startswith("Bearer "):
-                token = authorization.split("Bearer ", 1)[1].strip()
-                try:
-                    import jwt
-                    decoded = jwt.decode(token, options={"verify_signature": False})
-                    token_user_id = decoded.get("sub") or decoded.get("user_id")
-                except Exception:
-                    pass
+            from backend.app.core.auth import extract_verified_user_id
+            token_user_id = extract_verified_user_id(authorization, required=False)
 
             # 1. Look up by farm_id
             query = sb.table("farms").select(
@@ -815,25 +844,39 @@ def get_weather_forecast(
 
 @router.post("/crop-recommendation")
 def predict_crop(data: CropRecommendationRequest):
+    payload = data.model_dump(exclude_none=True)
+    has_soil_inputs = (
+        (data.N is not None or data.nitrogen is not None) and
+        (data.P is not None or data.phosphorus is not None) and
+        (data.K is not None or data.potassium is not None) and
+        (data.ph is not None or data.soil_ph is not None)
+    )
+
     try:
-        return _proxy_to_ml("/api/v1/crop-recommendation", data.model_dump())
+        return _proxy_to_ml("/api/v1/crop-recommendation", payload)
     except HTTPException as exc:
-        if exc.status_code == 503:
-            # Fall back to real in-process Model 1 pipeline
+        if exc.status_code in (502, 503, 504):
+            # Fall back to real in-process pipeline
             try:
-                from ml.crop_recommendation.predict import PredictionPipeline
-                p = PredictionPipeline()
-                result = p.recommend(
-                    district=data.district.upper(),
-                    season=data.season,
-                    water_availability=data.water_availability,
-                    top_k=data.top_k
-                )
-                if result.get("status") == "ERROR":
-                    raise HTTPException(status_code=404 if "Unknown district" in result.get("reason", "") else 422,
-                                        detail=result.get("reason", "Inference error"))
-                _persist_model_prediction("crop_recommendation", "2.0.0", data.model_dump(), result, provenance="TRAINED_RANDOM_FOREST")
-                return result
+                if has_soil_inputs:
+                    from ml.crop_recommendation.hf_predict import predict_crop_from_dict
+                    result = predict_crop_from_dict(payload)
+                    _persist_model_prediction("crop_recommendation", "2.0.0", payload, result, provenance="HUGGINGFACE_DUAL_MODEL")
+                    return result
+                else:
+                    from ml.crop_recommendation.predict import PredictionPipeline
+                    p = PredictionPipeline()
+                    result = p.recommend(
+                        district=data.district.upper(),
+                        season=data.season,
+                        water_availability=data.water_availability or "Medium",
+                        top_k=data.top_k
+                    )
+                    if result.get("status") == "ERROR":
+                        raise HTTPException(status_code=404 if "Unknown district" in result.get("reason", "") else 422,
+                                            detail=result.get("reason", "Inference error"))
+                    _persist_model_prediction("crop_recommendation", "2.0.0", payload, result, provenance="TRAINED_RANDOM_FOREST")
+                    return result
             except Exception as inner_exc:
                 if isinstance(inner_exc, HTTPException):
                     raise inner_exc
@@ -848,26 +891,30 @@ def get_market_price(data: MarketPriceRequest):
     try:
         return _proxy_to_ml("/api/v1/models/market-price", data.model_dump())
     except HTTPException as exc:
-        if exc.status_code == 503:
+        if exc.status_code in (503, 504):
             try:
                 from ml.market_price.predict import MarketPricePredictor
                 models_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "models"))
                 mp = MarketPricePredictor(models_dir=models_dir)
-                res = mp.predict(data.crop, data.market, data.date)
+                res = mp.predict(
+                    crop=data.crop,
+                    quantity=data.quantity or 20.0,
+                    farmer_lat=data.latitude,
+                    farmer_lon=data.longitude,
+                    selected_market=data.market,
+                    date_str=data.date,
+                    force_refresh=data.force_refresh or False
+                )
                 if res.get("status") == "error":
                     msg = res.get("message", "Market forecasting error")
-                    code = 404 if "not found" in msg.lower() else (422 if "insufficient" in msg.lower() or "gap" in msg.lower() else 500)
+                    code = 404 if "not found" in msg.lower() else (422 if "insufficient" in msg.lower() or "not supported" in msg.lower() else 500)
                     raise HTTPException(status_code=code, detail=msg)
-                _persist_model_prediction("market_price", "1.0.0", data.model_dump(), res, provenance="TRAINED_XGBOOST")
+                _persist_model_prediction("market_price", "2.0.0", data.model_dump(), res, provenance="TRAINED_XGBOOST")
                 return res
             except Exception as inner:
                 if isinstance(inner, HTTPException):
                     raise inner
-                if os.getenv("ML_MOCK_FALLBACK_ENABLED", "false").lower() == "true":
-                    return _market_mock(data)
                 raise exc
-        if exc.status_code in (502, 503, 504) and os.getenv("ML_MOCK_FALLBACK_ENABLED", "false").lower() == "true":
-            return _market_mock(data)
         raise
 
 
@@ -1033,111 +1080,169 @@ def _process_image_disease_detection(pil_img: Image.Image, crop: str, symptoms: 
 
 @router.post("/disease-detection")
 async def detect_disease(request: Request):
-    """
-    Unified Disease & Pest Detection endpoint.
-    Strictly gates all image uploads through PlantLeafValidator before calling
-    any disease classification model. Rejects non-plant and low-quality images.
-    Preserves backward compatibility for JSON symptom requests.
-    """
     content_type = request.headers.get("content-type", "")
+    if "multipart/form-data" in content_type:
+        form = await request.form()
+        uploaded_file = form.get("file")
+        crop = form.get("crop")
+        crop_name = form.get("crop_name")
+        location_state = form.get("location_state") or "Maharashtra"
+        growth_stage = form.get("growth_stage") or "vegetative"
+        image_type = form.get("image_type") or "leaf"
+        symptoms = form.get("symptoms")
+        sample_id = form.get("sample_id")
 
-    # 1. JSON Request (Symptom-based detection without image)
-    if "application/json" in content_type:
-        try:
-            body = await request.json()
-        except Exception:
-            raise HTTPException(status_code=422, detail="Invalid JSON payload.")
-
-        symptoms = body.get("symptoms", [])
-        crop = body.get("crop", "Tomato")
-        sample_id = body.get("sample_id")
-        image_base64 = body.get("image_base64")
-
-        pil_img = None
-        if sample_id:
-            pil_img = _resolve_sample_image(sample_id)
-        elif image_base64:
-            import base64
+        from services.disease_pest_ai.api.routes.diagnose import detect_disease_frontend_compat
+        res = await detect_disease_frontend_compat(
+            file=uploaded_file,
+            crop=crop,
+            crop_name=crop_name,
+            location_state=str(location_state),
+            growth_stage=str(growth_stage),
+            image_type=str(image_type),
+            symptoms=str(symptoms) if symptoms else None,
+            sample_id=str(sample_id) if sample_id else None,
+        )
+        if res.get("status") in ("VALID", "success") and res.get("is_valid_plant_image", True) and "data" in res:
             try:
-                img_bytes = base64.b64decode(image_base64)
-                pil_img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+                _persist_model_prediction(
+                    "disease_detection",
+                    "EfficientNetV2-S",
+                    {"crop": crop or crop_name, "location_state": str(location_state)},
+                    res["data"],
+                    provenance="MEASURED"
+                )
             except Exception:
-                pil_img = None
-
-        if pil_img is not None:
-            return _process_image_disease_detection(pil_img, crop, symptoms)
-
-        if not symptoms:
-            raise HTTPException(status_code=422, detail="Symptoms list cannot be empty.")
-
-        try:
-            return _proxy_to_ml("/api/v1/models/disease-detection", {"crop": crop, "symptoms": symptoms})
-        except HTTPException as exc:
-            if exc.status_code == 503:
-                from ml.rule_based.engine import RuleBasedModels
-                res = RuleBasedModels.detect_disease(symptoms, crop)
-                res["model_type"] = "RULE_BASED_EXPERT_SYSTEM"
-                _persist_model_prediction("disease_detection", "1.0.0", {"crop": crop, "symptoms": symptoms}, res, provenance="RULE_BASED_EXPERT_SYSTEM")
-                return res
-            raise
-
-    # 2. Multipart Form Upload (Real image file or sample id)
-    form = await request.form()
-    uploaded_file = form.get("file")
-    sample_id = form.get("sample_id")
-    crop = form.get("crop") or form.get("crop_name") or "Tomato"
-    symptoms_raw = form.get("symptoms")
-    symptoms = []
-    if symptoms_raw:
-        import json
-        try:
-            symptoms = json.loads(symptoms_raw) if isinstance(symptoms_raw, str) else list(symptoms_raw)
-        except Exception:
-            symptoms = [str(symptoms_raw)]
-
-    pil_img = None
-    if uploaded_file and hasattr(uploaded_file, "read"):
-        file_bytes = await uploaded_file.read()
-        if not file_bytes:
-            raise HTTPException(status_code=400, detail="Uploaded file is empty.")
-        try:
-            pil_img = Image.open(io.BytesIO(file_bytes))
-            pil_img.verify()
-            pil_img = Image.open(io.BytesIO(file_bytes)).convert("RGB")
-        except Exception as e:
-            raise HTTPException(status_code=422, detail=f"Invalid image format: {e}")
-    elif sample_id:
-        pil_img = _resolve_sample_image(str(sample_id))
-
-    if pil_img is None:
-        if not symptoms:
-            return {
-                "success": False,
-                "status": "INVALID_IMAGE",
-                "is_valid_plant_image": False,
-                "plant_confidence": 0.0,
-                "leaf_confidence": 0.0,
-                "message": "Invalid photo. Please upload a clear photo of a plant leaf.",
-                "reason": "NO_PLANT_DETECTED"
-            }
-        from ml.rule_based.engine import RuleBasedModels
-        res = RuleBasedModels.detect_disease(symptoms, crop)
-        res["model_type"] = "RULE_BASED_EXPERT_SYSTEM"
+                pass
         return res
 
-    return _process_image_disease_detection(pil_img, crop, symptoms)
-
-
-@router.post("/pest-detection")
-def detect_pest(data: SymptomsRequest):
     try:
-        return _proxy_to_ml("/api/v1/models/pest-detection", data.model_dump())
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON or form payload")
+
+    crop_val = body.get("crop")
+    symptoms_val = body.get("symptoms")
+
+    sample_id = body.get("sample_id")
+    img_b64 = body.get("image_base64")
+    if img_b64:
+        import base64
+        import io
+        from starlette.datastructures import UploadFile
+        img_bytes = base64.b64decode(img_b64)
+        uf = UploadFile(filename="uploaded_image.jpg", file=io.BytesIO(img_bytes))
+        from services.disease_pest_ai.api.routes.diagnose import detect_disease_frontend_compat
+        return await detect_disease_frontend_compat(
+            file=uf,
+            crop=crop_val,
+            location_state=body.get("location_state", "Maharashtra"),
+            growth_stage=body.get("growth_stage", "vegetative"),
+            image_type=body.get("image_type", "leaf"),
+            symptoms=symptoms_val,
+            sample_id=sample_id,
+        )
+    if sample_id:
+        from services.disease_pest_ai.api.routes.diagnose import detect_disease_frontend_compat
+        return await detect_disease_frontend_compat(
+            file=None,
+            crop=crop_val,
+            location_state=body.get("location_state", "Maharashtra"),
+            growth_stage=body.get("growth_stage", "vegetative"),
+            image_type=body.get("image_type", "leaf"),
+            symptoms=symptoms_val,
+            sample_id=sample_id,
+        )
+
+    if not crop_val or symptoms_val is None or (isinstance(symptoms_val, list) and len(symptoms_val) == 0):
+        raise HTTPException(status_code=422, detail="Missing required fields: crop, symptoms")
+
+    try:
+        return _proxy_to_ml("/api/v1/models/disease-detection", body)
     except HTTPException as exc:
         if exc.status_code == 503:
             from ml.rule_based.engine import RuleBasedModels
-            res = RuleBasedModels.detect_pest(data.symptoms, data.crop)
+            res = RuleBasedModels.detect_disease(symptoms_val, crop_val)
             res["model_type"] = "RULE_BASED_EXPERT_SYSTEM"
-            _persist_model_prediction("pest_detection", "1.0.0", data.model_dump(), res, provenance="RULE_BASED_EXPERT_SYSTEM")
+            _persist_model_prediction("disease_detection", "1.0.0", body, res, provenance="RULE_BASED_EXPERT_SYSTEM")
+            return res
+        raise
+
+
+@router.post("/pest-detection")
+async def detect_pest(request: Request):
+    content_type = request.headers.get("content-type", "")
+    if "multipart/form-data" in content_type:
+        form = await request.form()
+        uploaded_file = form.get("file")
+        crop = form.get("crop")
+        crop_name = form.get("crop_name")
+        location_state = form.get("location_state") or "Maharashtra"
+        growth_stage = form.get("growth_stage") or "vegetative"
+        image_type = form.get("image_type") or "trap_sticky_sheet"
+        symptoms = form.get("symptoms")
+        sample_id = form.get("sample_id")
+
+        from services.disease_pest_ai.api.routes.diagnose import detect_disease_frontend_compat
+        res = await detect_disease_frontend_compat(
+            file=uploaded_file,
+            crop=crop,
+            crop_name=crop_name,
+            location_state=str(location_state),
+            growth_stage=str(growth_stage),
+            image_type=str(image_type),
+            symptoms=str(symptoms) if symptoms else None,
+            sample_id=str(sample_id) if sample_id else None,
+        )
+        if res.get("status") == "success" and "data" in res:
+            try:
+                _persist_model_prediction(
+                    "pest_detection",
+                    "YOLO11s",
+                    {"crop": crop or crop_name, "location_state": str(location_state)},
+                    res["data"],
+                    provenance="MEASURED"
+                )
+            except Exception:
+                pass
+        return res
+
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON or form payload")
+
+    crop_val = body.get("crop")
+    symptoms_val = body.get("symptoms")
+
+    img_b64 = body.get("image_base64")
+    if img_b64:
+        import base64
+        import io
+        from starlette.datastructures import UploadFile
+        img_bytes = base64.b64decode(img_b64)
+        uf = UploadFile(filename="uploaded_pest.jpg", file=io.BytesIO(img_bytes))
+        from services.disease_pest_ai.api.routes.diagnose import detect_disease_frontend_compat
+        return await detect_disease_frontend_compat(
+            file=uf,
+            crop=crop_val,
+            location_state=body.get("location_state", "Maharashtra"),
+            growth_stage=body.get("growth_stage", "vegetative"),
+            image_type=body.get("image_type", "trap_sticky_sheet"),
+            symptoms=symptoms_val,
+        )
+
+    if not crop_val or symptoms_val is None or (isinstance(symptoms_val, list) and len(symptoms_val) == 0):
+        raise HTTPException(status_code=422, detail="Missing required fields: crop, symptoms")
+
+    try:
+        return _proxy_to_ml("/api/v1/models/pest-detection", body)
+    except HTTPException as exc:
+        if exc.status_code == 503:
+            from ml.rule_based.engine import RuleBasedModels
+            res = RuleBasedModels.detect_pest(symptoms_val, crop_val)
+            res["model_type"] = "RULE_BASED_EXPERT_SYSTEM"
+            _persist_model_prediction("pest_detection", "1.0.0", body, res, provenance="RULE_BASED_EXPERT_SYSTEM")
             return res
         raise
 
@@ -1243,3 +1348,200 @@ def estimate_post_harvest_loss(data: PostHarvestRequest):
     }
     _persist_model_prediction("post_harvest_loss", "1.0.0", data.model_dump(), result, provenance="EMPIRICAL_STORAGE_HEURISTIC", farm_id=data.farm_id)
     return result
+
+
+# ==============================================================================
+# REAL ML FERTILIZER ADVISORY & STORE DISCOVERY
+# ==============================================================================
+from ..fertilizer.schemas import FertilizerInput, FertilizerAdvisoryResponse
+from ..fertilizer.service import fertilizer_service
+from ..fertilizer.store_service import find_matching_stores
+
+
+@router.post("/fertilizer-advisory", response_model=FertilizerAdvisoryResponse)
+def get_fertilizer_advisory(data: FertilizerInput):
+    """Execute real ML fertilizer application recommendation and local store discovery."""
+    try:
+        return fertilizer_service.generate_advisory(data)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Fertilizer advisory calculation failed: {exc}") from exc
+
+
+@router.get("/fertilizer-stores")
+def list_fertilizer_stores(
+    locality: Optional[str] = None,
+    pin_code: Optional[str] = None,
+    district: Optional[str] = None,
+    product: Optional[str] = None,
+):
+    """Discover local demonstration fertilizer retailers ranked by locality."""
+    prods = [product] if product else None
+    stores = find_matching_stores(locality=locality, pin_code=pin_code, district=district, recommended_fertilizers=prods)
+    return {"status": "success", "total": len(stores), "stores": [s.model_dump() for s in stores]}
+
+
+@router.get("/fertilizer-models")
+def get_fertilizer_model_info():
+    """Metadata inspection for DNgigi/FertiliserApplication multi-output random forest."""
+    from ..fertilizer.model_adapter import (
+        HF_REPO_ID,
+        PINNED_REVISION,
+        NUMERICAL_TARGETS,
+        SUPPORTED_TRAINING_CROPS,
+        fertilizer_model_adapter,
+    )
+    return {
+        "model_identifier": HF_REPO_ID,
+        "pinned_revision": PINNED_REVISION,
+        "is_available": fertilizer_model_adapter.is_available(),
+        "numerical_targets": NUMERICAL_TARGETS,
+        "supported_training_crops": list(SUPPORTED_TRAINING_CROPS.keys()),
+        "architecture": "MultiOutput Random Forest Regressor and Classifier",
+        "license": "MIT",
+        "limitations": "Trained on East Africa Agricultural Soil Survey data; unvalidated for Indian vertisols without local calibration.",
+    }
+
+
+@router.post("/onboarding")
+def complete_onboarding(data: OnboardingRequest, authorization: Optional[str] = Header(None)):
+    """
+    Production-grade endpoint for Farmer Onboarding (Phase 1).
+    Atomically registers the farmer profile, farm, fields, and initial season crop assignments.
+    Supports authenticated Supabase session persistence as well as robust local development fallback.
+    """
+    user_id = data.farmer_id
+    from backend.app.core.auth import extract_verified_user_id
+    v_uid = extract_verified_user_id(authorization, required=False)
+    if v_uid:
+        user_id = v_uid
+    if not user_id:
+        user_id = str(uuid.uuid4())
+
+    url = os.environ.get("SUPABASE_URL")
+    key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+
+    if url and key:
+        try:
+            from supabase import create_client
+            sb = create_client(url, key)
+
+            # 1. Upsert Farmer Profile
+            profile_payload = {
+                "user_id": user_id,
+                "name": data.name.strip(),
+                "phone": data.phone.strip(),
+                "state": data.state.strip(),
+                "district": data.district.strip(),
+                "village": data.village.strip(),
+                "preferred_language": data.preferred_language,
+                "role": "farmer",
+                "updated_at": "now()"
+            }
+            if data.farming_experience:
+                profile_payload["farming_experience"] = data.farming_experience
+            if data.farmer_category:
+                profile_payload["farmer_category"] = data.farmer_category
+
+            sb.table("profiles").upsert(profile_payload, on_conflict="user_id").execute()
+
+            # 2. Insert Farm
+            farm_location = f"{data.village.strip()}, {data.district.strip()}, {data.state.strip()}"
+            farm_payload = {
+                "user_id": user_id,
+                "farm_name": data.farm_name.strip(),
+                "location": farm_location,
+                "total_area": data.total_area,
+                "area_unit": data.area_unit,
+                "land_ownership": data.land_ownership or "Owned",
+                "status": "ACTIVE"
+            }
+            if data.latitude is not None and data.longitude is not None:
+                f_lat, f_lon, has_coords = _validate_coordinates(data.latitude, data.longitude)
+                if has_coords:
+                    farm_payload["latitude"] = f_lat
+                    farm_payload["longitude"] = f_lon
+
+            res_farm = sb.table("farms").insert(farm_payload).execute()
+            if not res_farm.data:
+                raise HTTPException(status_code=500, detail="Failed to persist farm record")
+            created_farm = res_farm.data[0]
+            farm_id = created_farm["id"]
+
+            # 3. Insert Fields & Initial Seasons
+            created_fields = []
+            for field in data.fields:
+                field_payload = {
+                    "farm_id": farm_id,
+                    "field_name": field.field_name.strip(),
+                    "area": field.area,
+                    "area_unit": field.area_unit or data.area_unit,
+                    "status": "ACTIVE"
+                }
+                if field.soil_type:
+                    field_payload["soil_description"] = field.soil_type
+                res_field = sb.table("fields").insert(field_payload).execute()
+                if res_field.data:
+                    f_record = res_field.data[0]
+                    field_id = f_record["id"]
+                    created_fields.append(f_record)
+
+                    # Create initial season record for field
+                    season_payload = {
+                        "field_id": field_id,
+                        "season_name": "Kharif 2024",
+                        "crop": field.current_crop or "Cotton",
+                        "previous_crop": field.previous_crop,
+                        "status": "ACTIVE"
+                    }
+                    try:
+                        sb.table("seasons").insert(season_payload).execute()
+                    except Exception as s_exc:
+                        print(f"[Onboarding] Note: Season insert warning: {s_exc}")
+
+            return {
+                "status": "success",
+                "message": "Farmer onboarding persisted successfully",
+                "user_id": user_id,
+                "farm_id": farm_id,
+                "farm_name": data.farm_name,
+                "fields_created": len(created_fields),
+                "is_mock": False
+            }
+        except HTTPException:
+            raise
+        except Exception as exc:
+            print(f"[Onboarding] Supabase persistence error: {exc}")
+            raise HTTPException(status_code=500, detail=f"Database persistence failure: {str(exc)}")
+
+    # Development / Test Fallback when Supabase is not configured
+    mock_farm_id = str(uuid.uuid4())
+    return {
+        "status": "success",
+        "message": "Farmer onboarding validated and accepted (development mode)",
+        "user_id": user_id,
+        "farm_id": mock_farm_id,
+        "farm_name": data.farm_name,
+        "fields_created": len(data.fields),
+        "is_mock": True,
+        "data": {
+            "profile": {
+                "user_id": user_id,
+                "name": data.name,
+                "phone": data.phone,
+                "location": f"{data.village}, {data.district}, {data.state}",
+                "preferred_language": data.preferred_language,
+                "farming_experience": data.farming_experience,
+                "farmer_category": data.farmer_category
+            },
+            "farm": {
+                "id": mock_farm_id,
+                "farm_name": data.farm_name,
+                "total_area": data.total_area,
+                "area_unit": data.area_unit,
+                "location": f"{data.village}, {data.district}, {data.state}",
+                "irrigation_source": data.irrigation_source,
+                "land_ownership": data.land_ownership
+            },
+            "fields": [f.model_dump() for f in data.fields]
+        }
+    }

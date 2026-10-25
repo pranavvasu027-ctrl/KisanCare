@@ -1,0 +1,1 @@
+# KisanCare Core Module
