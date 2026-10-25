@@ -48,7 +48,7 @@ export default function ChatbotScreen() {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | undefined>(undefined);
-  const [copilotModel, setCopilotModel] = useState<string>('gemini-3.8-flash');
+  const [copilotModel, setCopilotModel] = useState<string>('gemini-flash-lite-latest');
   const [copilotReady, setCopilotReady] = useState<boolean>(true);
 
   const [messages, setMessages] = useState<ChatMessage[]>([

@@ -9,6 +9,7 @@ import {
   TextInput,
   ScrollView,
   Platform,
+  Image,
 } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -116,8 +117,8 @@ export default function RentalsScreen() {
   const handleOpenBooking = (item: RentalListing) => {
     setSelectedListing(item);
     setFormError(null);
-    setStartDate(getOffsetDateString(1));
-    setEndDate(getOffsetDateString(1));
+    setStartDate(getOffsetDateString(2));
+    setEndDate(getOffsetDateString(2));
     setDuration('2');
     setNotes('');
     setIsBookingModalOpen(true);
@@ -205,11 +206,14 @@ export default function RentalsScreen() {
       // Invalidate and refresh bookings list
       refetchBookings();
     } catch (err: any) {
-      setFormError(
-        err?.message ||
-          err?.userFriendlyMessage ||
-          'Failed to reserve equipment. The slot may be already booked.'
-      );
+      const msg = err?.message || err?.userFriendlyMessage || '';
+      if (msg.toLowerCase().includes('conflict') || msg.toLowerCase().includes('already reserved')) {
+        setFormError('⚠️ This equipment is already reserved for the selected date. Please choose a different date from the presets above.');
+      } else {
+        setFormError(
+          msg || 'Failed to reserve equipment. The slot may be already booked.'
+        );
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -229,18 +233,34 @@ export default function RentalsScreen() {
       refreshing={activeTab === 'browse' ? isListingsFetching : isBookingsFetching}
       onRefresh={() => (activeTab === 'browse' ? refetchListings() : refetchBookings())}
     >
-      {/* Top Header */}
-      <View style={styles.header}>
-        <View style={styles.badgeRow}>
-          <Badge label="Live Backend Verified" variant="success" size="sm" />
-          <Text style={[styles.endpointMeta, { color: theme.textSecondary }]}>
-            /api/v1/rentals
+      {/* Top Header with Back Navigation & Leaf Logo */}
+      <View style={styles.topNavRow}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+          activeOpacity={0.7}
+          accessible={true}
+          accessibilityLabel="Back to Home"
+        >
+          <Ionicons name="arrow-back" size={24} color="#1F2937" />
+        </TouchableOpacity>
+        <View style={{ flex: 1, marginLeft: 12 }}>
+          <View style={styles.badgeRow}>
+            <Badge label="Live Verified" variant="success" size="sm" />
+            <Text style={[styles.endpointMeta, { color: theme.textSecondary }]}>
+              /api/v1/rentals
+            </Text>
+          </View>
+          <Text style={[styles.title, { color: theme.text }]}>Equipment Rentals</Text>
+          <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
+            Verified tractors & implements across Maharashtra
           </Text>
         </View>
-        <Text style={[styles.title, { color: theme.text }]}>Farm Equipment Rentals</Text>
-        <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-          Verified agricultural machinery, tractors and farm services across Maharashtra
-        </Text>
+        <Image
+          source={require('../../assets/images/ui/kisancare_leaf_logo.png')}
+          style={styles.leafLogo}
+          resizeMode="contain"
+        />
       </View>
 
       {/* Segmented Tab Controls: Browse vs My Bookings */}
@@ -371,6 +391,13 @@ export default function RentalsScreen() {
             <View>
               {listings.map((item) => (
                 <Card key={item.id} variant="elevated" style={styles.listingCard}>
+                  {item.image_url ? (
+                    <Image
+                      source={{ uri: item.image_url }}
+                      style={styles.listingThumbnail}
+                      resizeMode="cover"
+                    />
+                  ) : null}
                   {/* Top Row: Title, Verification Badge */}
                   <View style={styles.listingHeader}>
                     <View style={{ flex: 1, paddingRight: 8 }}>
@@ -876,6 +903,31 @@ export default function RentalsScreen() {
 }
 
 const styles = StyleSheet.create({
+  topNavRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.two,
+    marginBottom: Spacing.two,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  leafLogo: {
+    width: 34,
+    height: 34,
+  },
+  listingThumbnail: {
+    width: '100%',
+    height: 130,
+    borderRadius: 12,
+    marginBottom: 10,
+    backgroundColor: '#F3F4F6',
+  },
   header: {
     paddingVertical: Spacing.three,
   },

@@ -30,6 +30,8 @@ export interface RentalListing {
   status?: 'available' | 'rented' | 'maintenance' | string;
   is_active?: boolean;
   rating?: number;
+  image_url?: string;
+  description?: string;
   provider?: RentalProvider;
   owner_name?: string;
 }

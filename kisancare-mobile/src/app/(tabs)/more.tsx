@@ -191,6 +191,13 @@ export default function MoreScreen() {
           onPress: () => router.push('/rentals' as any),
         })}
         {renderSettingItem({
+          icon: 'trending-up-outline',
+          title: 'Market Intelligence & Mandi Prices',
+          subtitle: 'Live APMC prices and 7-day price forecasting',
+          badge: 'MANDI AI',
+          onPress: () => router.push('/(tabs)/market' as any),
+        })}
+        {renderSettingItem({
           icon: 'wallet-outline',
           title: 'Farm Finances & Crop Loans',
           subtitle: 'Revenue ₹2.4L • Net Profit ₹1.68L • Active KCC',

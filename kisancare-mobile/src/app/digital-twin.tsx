@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { useQuery } from '@tanstack/react-query';
 import { ScreenContainer } from '@/components/common/ScreenContainer';
 import { Card } from '@/components/common/Card';
 import { Badge } from '@/components/common/Badge';
@@ -8,22 +9,44 @@ import { Colors, BorderRadius, Spacing, Typography } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { fetchFarms } from '@/services/farmService';
+import { apiClient } from '@/services/apiClient';
 
 export default function DigitalTwinScreen() {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? 'light'];
   const router = useRouter();
 
+  const { data: farmsData } = useQuery({
+    queryKey: ['farms'],
+    queryFn: fetchFarms,
+  });
+
+  const activeFarm = farmsData?.farms?.[0];
+  const farmId = activeFarm?.id || 'F001';
+  const farmName = activeFarm?.name || 'Takli Bu Farm';
+  const cropName = activeFarm?.activeCrop || 'Cotton';
+
+  const { data: dtData, isLoading, refetch } = useQuery({
+    queryKey: ['digital-twin', farmId],
+    queryFn: () => apiClient.get<any>(`/api/v1/digital-twin/${farmId}`),
+  });
+
+  const healthScore = dtData?.healthScore ?? 88;
+  const soilMoisture = Math.round((dtData?.state?.soil_moisture ?? 0.45) * 100);
+  const temp = dtData?.climate?.temperature ?? 28;
+  const condition = dtData?.climate?.weather_condition ?? 'Sunny';
+
   const phenologyStages = [
     { name: 'Sowing & Germination', days: 'Day 1-10', status: 'Completed', active: false },
     { name: 'Vegetative Growth', days: 'Day 11-45', status: 'Completed', active: false },
-    { name: 'Flowering & Bloom', days: 'Day 46-70', status: 'Completed', active: false },
-    { name: 'Pod Filling & Development', days: 'Day 71-95', status: 'Active Stage', active: true },
-    { name: 'Physiological Maturity', days: 'Day 96-115', status: 'Upcoming', active: false },
+    { name: 'Flowering & Boll/Pod Set', days: 'Day 46-75', status: 'Active Stage', active: true },
+    { name: 'Boll Maturation / Filling', days: 'Day 76-110', status: 'Upcoming', active: false },
+    { name: 'Harvest Window', days: 'Day 111-140', status: 'Upcoming', active: false },
   ];
 
   return (
-    <ScreenContainer>
+    <ScreenContainer onRefresh={refetch}>
       <View style={styles.header}>
         <Text style={[styles.title, { color: theme.text }]}>
           Farm Digital Twin Simulator
@@ -38,13 +61,13 @@ export default function DigitalTwinScreen() {
         <View style={styles.statusRow}>
           <View>
             <Text style={[styles.fieldName, { color: theme.text }]}>
-              North Field (Plot A) • Soybean
+              {farmName} • {cropName}
             </Text>
             <Text style={[styles.metaText, { color: theme.textSecondary }]}>
-              Day 98 of 115 • Sown 15 Jan 2026
+              {activeFarm?.location || 'Akola, Maharashtra'} • {activeFarm?.areaAcres || 5.2} Acres
             </Text>
           </View>
-          <Badge label="Vigor: 92%" variant="success" />
+          <Badge label={`Vigor: ${healthScore}%`} variant="success" />
         </View>
 
         <View style={[styles.divider, { backgroundColor: theme.borderLight }]} />
@@ -55,7 +78,7 @@ export default function DigitalTwinScreen() {
               Soil Moisture
             </Text>
             <Text style={[styles.metricVal, { color: theme.primary }]}>
-              68%
+              {soilMoisture}%
             </Text>
             <Text style={[styles.metricHint, { color: theme.textMuted }]}>
               Field Capacity: 75%
@@ -67,7 +90,7 @@ export default function DigitalTwinScreen() {
               Water Stress (CWSI)
             </Text>
             <Text style={[styles.metricVal, { color: theme.success }]}>
-              0.14
+              0.16
             </Text>
             <Text style={[styles.metricHint, { color: theme.textMuted }]}>
               Safe Range &lt; 0.35
@@ -76,24 +99,23 @@ export default function DigitalTwinScreen() {
 
           <View style={styles.metricItem}>
             <Text style={[styles.metricLabel, { color: theme.textSecondary }]}>
-              Daily ETc
+              Simulated Temp
             </Text>
-            <Text style={[styles.metricVal, { color: theme.info }]}>
-              4.8 mm
+            <Text style={[styles.metricVal, { color: theme.text }]}>
+              {Math.round(temp)}°C
             </Text>
             <Text style={[styles.metricHint, { color: theme.textMuted }]}>
-              FAO-56 Penman
+              {condition}
             </Text>
           </View>
         </View>
       </Card>
 
-      {/* Phenology Timeline */}
+      {/* Crop Phenology Stage Progress */}
       <Text style={[styles.sectionTitle, { color: theme.text }]}>
-        Crop Phenology Stage Progression
+        Phenology Progress ({cropName})
       </Text>
-
-      <Card style={styles.card}>
+      <Card variant="outlined" style={styles.card}>
         {phenologyStages.map((stage, idx) => (
           <View key={stage.name} style={styles.timelineRow}>
             <View style={styles.timelineIndicator}>
@@ -104,43 +126,36 @@ export default function DigitalTwinScreen() {
                     backgroundColor: stage.active
                       ? theme.primary
                       : stage.status === 'Completed'
-                      ? theme.primaryLight
-                      : theme.borderLight,
+                      ? theme.success
+                      : theme.border,
                   },
                 ]}
               >
-                {stage.status === 'Completed' ? (
+                {stage.status === 'Completed' && (
                   <Ionicons name="checkmark" size={12} color="#FFFFFF" />
-                ) : stage.active ? (
-                  <View style={styles.innerDot} />
-                ) : null}
+                )}
+                {stage.active && <View style={styles.innerDot} />}
               </View>
-              {idx !== phenologyStages.length - 1 && (
+              {idx < phenologyStages.length - 1 && (
                 <View
                   style={[
                     styles.line,
                     {
                       backgroundColor:
-                        stage.status === 'Completed' ? theme.primaryLight : theme.borderLight,
+                        stage.status === 'Completed' ? theme.success : theme.borderLight,
                     },
                   ]}
                 />
               )}
             </View>
-
             <View style={styles.timelineContent}>
               <View style={styles.timelineHeader}>
-                <Text
-                  style={[
-                    styles.stageName,
-                    { color: stage.active ? theme.primary : theme.text },
-                  ]}
-                >
+                <Text style={[styles.stageName, { color: theme.text }]}>
                   {stage.name}
                 </Text>
                 <Badge
                   label={stage.status}
-                  variant={stage.active ? 'success' : stage.status === 'Completed' ? 'neutral' : 'neutral'}
+                  variant={stage.active ? 'info' : stage.status === 'Completed' ? 'success' : 'neutral'}
                   size="sm"
                 />
               </View>

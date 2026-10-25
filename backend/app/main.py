@@ -29,6 +29,31 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
 
+from typing import Any
+from fastapi.exceptions import RequestValidationError
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
+
+def _sanitize_validation_error(val: Any) -> Any:
+    if isinstance(val, bytes):
+        try:
+            return val.decode("utf-8")
+        except UnicodeDecodeError:
+            return f"<binary data: {len(val)} bytes>"
+    elif isinstance(val, dict):
+        return {k: _sanitize_validation_error(v) for k, v in val.items()}
+    elif isinstance(val, (list, tuple)):
+        return [_sanitize_validation_error(v) for v in val]
+    return val
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+    sanitized = [_sanitize_validation_error(err) for err in exc.errors()]
+    return JSONResponse(
+        status_code=422,
+        content={"detail": jsonable_encoder(sanitized)},
+    )
+
 from fastapi.middleware.cors import CORSMiddleware
 app.add_middleware(
     CORSMiddleware,

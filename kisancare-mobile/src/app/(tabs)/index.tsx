@@ -12,6 +12,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { fetchFarms } from '@/services/farmService';
+import { fetchLiveAdvisories } from '@/services/advisoryService';
 import { getStoredProfile } from '@/services/profileService';
 import { Colors, Typography, BorderRadius } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -29,7 +30,30 @@ export default function HomeScreen() {
     queryFn: fetchFarms,
   });
 
+  const { data: advisoriesBundle } = useQuery({
+    queryKey: ['live-advisories'],
+    queryFn: () => fetchLiveAdvisories(),
+  });
+
+  const liveWeather = advisoriesBundle?.weatherSummary;
+  const tempDisplay = liveWeather?.temperature ? `${Math.round(liveWeather.temperature)}°C` : '31°C';
+  const conditionDisplay = liveWeather?.condition || 'Sunny';
+  const humidityDisplay = liveWeather?.humidity ? `${Math.round(liveWeather.humidity)}%` : '35%';
+  const windDisplay = liveWeather?.windSpeed ? `${Math.round(liveWeather.windSpeed)} km/h` : '10 km/h';
+
+  const activeFarm = farmsData?.farms?.[0];
+  const activeCropName = activeFarm?.activeCrop || 'Cotton';
   const totalAcres = farmsData?.farms?.reduce((acc, f) => acc + f.areaAcres, 0) || 5.2;
+
+  let daysSinceSowing = '45 days';
+  if (activeFarm?.sowingDate) {
+    const sown = new Date(activeFarm.sowingDate);
+    const now = new Date();
+    const diff = Math.floor((now.getTime() - sown.getTime()) / (1000 * 60 * 60 * 24));
+    if (diff > 0 && diff < 365) {
+      daysSinceSowing = `${diff} days`;
+    }
+  }
 
   return (
     <ScrollView
@@ -83,10 +107,14 @@ export default function HomeScreen() {
         activeOpacity={0.9}
       >
         <View style={styles.weatherLeft}>
-          <Ionicons name="partly-sunny" size={38} color="#FBBF24" />
+          <Ionicons
+            name={conditionDisplay.toLowerCase().includes('rain') ? 'rainy' : conditionDisplay.toLowerCase().includes('cloud') ? 'partly-sunny' : 'sunny'}
+            size={38}
+            color="#FBBF24"
+          />
           <View style={styles.weatherTempContainer}>
-            <Text style={styles.weatherTemp}>28°C</Text>
-            <Text style={styles.weatherCondition}>Partly Cloudy</Text>
+            <Text style={styles.weatherTemp}>{tempDisplay}</Text>
+            <Text style={styles.weatherCondition}>{conditionDisplay}</Text>
           </View>
         </View>
 
@@ -95,15 +123,15 @@ export default function HomeScreen() {
         <View style={styles.weatherRight}>
           <View style={styles.weatherMetricItem}>
             <Text style={styles.weatherMetricLabel}>Rain</Text>
-            <Text style={styles.weatherMetricValue}>30%</Text>
+            <Text style={styles.weatherMetricValue}>20%</Text>
           </View>
           <View style={styles.weatherMetricItem}>
             <Text style={styles.weatherMetricLabel}>Humidity</Text>
-            <Text style={styles.weatherMetricValue}>62%</Text>
+            <Text style={styles.weatherMetricValue}>{humidityDisplay}</Text>
           </View>
           <View style={styles.weatherMetricItem}>
             <Text style={styles.weatherMetricLabel}>Wind</Text>
-            <Text style={styles.weatherMetricValue}>12 km/h</Text>
+            <Text style={styles.weatherMetricValue}>{windDisplay}</Text>
           </View>
         </View>
       </TouchableOpacity>
@@ -128,7 +156,7 @@ export default function HomeScreen() {
               <Ionicons name="flower-outline" size={20} color="#16A34A" />
             </View>
             <View>
-              <Text style={styles.summaryValue}>Soybean</Text>
+              <Text style={styles.summaryValue}>{activeCropName}</Text>
               <Text style={styles.summaryLabel}>Current Crop</Text>
             </View>
           </View>
@@ -143,7 +171,7 @@ export default function HomeScreen() {
               <Ionicons name="calendar-outline" size={20} color="#0284C7" />
             </View>
             <View>
-              <Text style={styles.summaryValue}>68 days</Text>
+              <Text style={styles.summaryValue}>{daysSinceSowing}</Text>
               <Text style={styles.summaryLabel}>Since Sowing</Text>
             </View>
           </View>

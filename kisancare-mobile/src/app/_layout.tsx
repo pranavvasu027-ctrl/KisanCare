@@ -109,6 +109,7 @@ export default function RootLayout() {
             name="rentals"
             options={{
               title: 'Equipment Rentals',
+              headerShown: false,
               presentation: 'card',
             }}
           />

@@ -72,14 +72,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="market"
         options={{
-          title: t('tabs.market'),
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? 'trending-up' : 'trending-up-outline'}
-              size={22}
-              color={color as string}
-            />
-          ),
+          href: null,
         }}
       />
       <Tabs.Screen

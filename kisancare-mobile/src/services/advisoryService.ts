@@ -51,6 +51,8 @@ export interface AdvisoryBundle {
   weatherSummary?: {
     location: string;
     temperature?: number;
+    humidity?: number;
+    windSpeed?: number;
     condition?: string;
     averageEt0?: number;
   };
@@ -83,8 +85,10 @@ export async function fetchLiveAdvisories(params?: {
 
     weatherSummary = {
       location: forecast.location || 'Akola, Maharashtra',
-      temperature: forecast.current?.temperature,
-      condition: forecast.current?.weather_condition,
+      temperature: forecast.current?.temperature ?? 30,
+      humidity: forecast.current?.humidity ?? 60,
+      windSpeed: (forecast.current as any)?.wind_speed_kmh ?? 12,
+      condition: forecast.current?.weather_condition || 'Partly Cloudy',
       averageEt0: forecast.agricultural_advisory?.average_daily_et0_mm,
     };
 
