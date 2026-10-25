@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   X, Calendar, Clock, MapPin, CheckCircle2, AlertTriangle, ShieldCheck,
-  Truck, UserCheck, Info, ChevronRight, FileText, IndianRupee, Loader2
+  Truck, UserCheck, Info, ChevronRight, FileText, IndianRupee, Loader2, QrCode
 } from 'lucide-react';
 import { RentalListing, PriceCalculationResult, AvailabilityCheckResult, RentalBooking } from '../../types/rental';
 import { rentalApi } from '../../services/rentalApi';
 import { ListingImage } from './ListingImage';
+import UPIPaymentModal from './UPIPaymentModal';
 
 interface BookingModalProps {
   listing: RentalListing;
@@ -57,6 +58,7 @@ export default function BookingModal({
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [successBooking, setSuccessBooking] = useState<RentalBooking | null>(null);
+  const [showUpiModal, setShowUpiModal] = useState<boolean>(false);
 
   // Re-calculate price on parameter changes
   useEffect(() => {
@@ -198,12 +200,46 @@ export default function BookingModal({
             </div>
           </div>
 
-          <div className="text-xs text-left bg-blue-50 border border-blue-200 rounded-xl p-3 text-blue-900 flex items-start gap-2">
-            <Info size={16} className="text-blue-600 shrink-0 mt-0.5" />
-            <div>
-              <strong>Payment Policy:</strong> No advance payment required online. Pay ₹{successBooking.total_amount} upon equipment arrival and work completion via Cash or Direct UPI.
+          {/* Direct UPI Settlement CTA if chosen */}
+          {successBooking.payment_method === 'online_upi' ? (
+            <div className="p-3.5 bg-purple-50 border border-purple-200 rounded-2xl text-xs space-y-2 text-left">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-purple-900 flex items-center gap-1.5">
+                  <QrCode size={15} />
+                  Direct UPI Payment Ready
+                </span>
+                <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${
+                  successBooking.payment_status === 'paid'
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : 'bg-purple-200 text-purple-900'
+                }`}>
+                  {successBooking.payment_status === 'paid' ? 'Paid' : 'Unpaid'}
+                </span>
+              </div>
+              <p className="text-[11px] text-purple-800">
+                You can scan the shopkeeper's QR code or click your UPI app to complete payment directly.
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowUpiModal(true)}
+                className="w-full bg-[#103D2C] hover:bg-[#17643E] text-white font-bold py-2.5 px-4 rounded-xl transition-colors text-xs flex items-center justify-center gap-2 shadow-sm"
+              >
+                <QrCode size={14} />
+                <span>
+                  {successBooking.payment_status === 'paid'
+                    ? 'View Verified UPI Receipt'
+                    : `Settle ₹${successBooking.total_amount.toLocaleString('en-IN')} via UPI`}
+                </span>
+              </button>
             </div>
-          </div>
+          ) : (
+            <div className="text-xs text-left bg-blue-50 border border-blue-200 rounded-xl p-3 text-blue-900 flex items-start gap-2">
+              <Info size={16} className="text-blue-600 shrink-0 mt-0.5" />
+              <div>
+                <strong>Payment Policy:</strong> No advance payment required online. Pay ₹{successBooking.total_amount.toLocaleString('en-IN')} upon equipment arrival and work completion via Cash or Direct UPI.
+              </div>
+            </div>
+          )}
 
           <div className="flex gap-3 pt-2">
             <button
@@ -214,6 +250,18 @@ export default function BookingModal({
               Track in Bookings
             </button>
           </div>
+
+          {/* Render UPI Modal if triggered */}
+          {showUpiModal && (
+            <UPIPaymentModal
+              booking={successBooking}
+              onClose={() => setShowUpiModal(false)}
+              onPaymentSuccess={(updated) => {
+                setSuccessBooking(updated);
+                onBookingSuccess(updated);
+              }}
+            />
+          )}
         </div>
       </div>
     );

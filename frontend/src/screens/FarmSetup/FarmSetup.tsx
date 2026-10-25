@@ -4,6 +4,8 @@ import { Map, Plus, Trash2, Save, CheckCircle2, AlertCircle, Loader2, Navigation
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../services/supabase';
 import BoundaryEditorModal from '../../components/map/BoundaryEditorModal';
+import { WorkflowStepper } from '../../components/workflow/WorkflowStepper';
+import { WorkflowFooter } from '../../components/workflow/WorkflowFooter';
 import GpsBoundaryModal from '../../components/map/GpsBoundaryModal';
 
 interface FieldItem {
@@ -424,6 +426,8 @@ export default function FarmSetup() {
 
   return (
     <div className="p-4 lg:p-8 max-w-5xl mx-auto space-y-6">
+      <WorkflowStepper currentStageId={1} />
+
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
@@ -719,6 +723,23 @@ export default function FarmSetup() {
           </div>
         </div>
       </div>
+
+      <WorkflowFooter
+        currentStageNumber={1}
+        currentStageName="Farm & Soil Setup"
+        completedActionMessage={saveStatus}
+        prevStep={{ label: "Dashboard", path: "/" }}
+        nextStep={{
+          label: "Soil Health Assessment",
+          labelMr: "माती परीक्षण",
+          path: "/soil",
+          description: "Test soil fertility & NPK levels for your fields"
+        }}
+        alternativeNextStep={{
+          label: "Digital Twin View",
+          path: "/digital-twin"
+        }}
+      />
 
       {/* GPS Walking Boundary Modal */}
       {farmId && (

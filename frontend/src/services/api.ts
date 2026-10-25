@@ -35,7 +35,13 @@ async function fetchAPI(endpoint: string, options?: RequestInit) {
       // Ignore if supabase offline
     }
 
-    const response = await fetch(endpoint, {
+    const baseUrl = import.meta.env.VITE_API_BASE_URL;
+    let targetUrl = endpoint;
+    if (baseUrl && endpoint.startsWith('/') && typeof window !== 'undefined' && !window.location.origin.includes('localhost') && !window.location.origin.includes('127.0.0.1')) {
+      targetUrl = `${baseUrl.replace(/\/+$/, '')}${endpoint}`;
+    }
+
+    const response = await fetch(targetUrl, {
       ...options,
       headers
     });
@@ -229,6 +235,14 @@ export const api = {
     };
   },
 
+  // Farmer Onboarding API
+  submitOnboarding: async (onboardingData: any) => {
+    return await fetchAPI('/api/v1/onboarding', {
+      method: 'POST',
+      body: JSON.stringify(onboardingData)
+    });
+  },
+
   // Farms Listing API
   getFarms: async () => {
     const demo = await isDemoActive();
@@ -383,353 +397,28 @@ export const api = {
     };
   },
 
-  // 3. Market Price Forecasting API (XGBoost ML Model & Demo Dataset)
+  // 3. Market Price Forecasting API (Trained XGBoost Models & Real Agmarknet Data)
   getMarketPrice: async (
-    crop: string = 'Cotton',
-    market: string = 'Akola',
-    date?: string,
-    timeRange: '7D' | '14D' | '30D' = '7D'
-  ) => {
-    // Standardize crop and market names to supported Vidarbha set
-    const normalizedCrop = crop.toLowerCase() === 'soyabean' || crop.toLowerCase() === 'soybean'
-      ? 'Soyabean'
-      : crop.toLowerCase() === 'tur' || crop.toLowerCase() === 'pigeon pea'
-      ? 'Tur'
-      : 'Cotton';
-
-    const normalizedMarket = market.toLowerCase().includes('amravati')
-      ? 'Amravati'
-      : market.toLowerCase().includes('akot')
-      ? 'Akot'
-      : 'Akola';
-
-    if (!DEMO_MODE) {
-      try {
-        const data = await fetchAPI('/api/v1/market-price', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            crop: normalizedCrop,
-            market: normalizedMarket,
-            date: date || new Date().toISOString().split('T')[0]
-          })
-        });
-        return { data, isDemo: false };
-      } catch (err) {
-        console.warn('Backend market price API failed or unavailable, falling back to demonstration dataset:', err);
-      }
-    }
-
-    // High-fidelity Vidarbha Agricultural Demonstration Dataset (Cotton, Soyabean, Tur)
-    const baseProfiles: Record<string, {
-      msp: number;
-      variety: Record<string, string>;
-      markets: Record<string, {
-        currentPrice: number;
-        previousPrice: number;
-        weeklyHigh: number;
-        weeklyLow: number;
-        distance: string;
-        distanceKm: number;
-        location: string;
-        trend: 'Rising' | 'Falling' | 'Stable';
-        changePct: number;
-      }>;
-      forecast7d: { expected: number; min: number; max: number; trend: 'Upward' | 'Downward' | 'Stable' };
-      forecast14d: { expected: number; min: number; max: number; trend: 'Upward' | 'Downward' | 'Stable' };
-    }> = {
-      Cotton: {
-        msp: 7121,
-        variety: {
-          Akola: 'Medium Staple',
-          Amravati: 'Desi Medium',
-          Akot: 'Shankar-6 Premium'
-        },
-        markets: {
-          Akot: {
-            currentPrice: 7350,
-            previousPrice: 7180,
-            weeklyHigh: 7410,
-            weeklyLow: 7140,
-            distance: '45 km',
-            distanceKm: 45,
-            location: 'Akot APMC, Akola District',
-            trend: 'Rising',
-            changePct: 2.37
-          },
-          Akola: {
-            currentPrice: 7280,
-            previousPrice: 7150,
-            weeklyHigh: 7320,
-            weeklyLow: 7110,
-            distance: '0 km (Local)',
-            distanceKm: 0,
-            location: 'Akola APMC Yard',
-            trend: 'Rising',
-            changePct: 1.82
-          },
-          Amravati: {
-            currentPrice: 7190,
-            previousPrice: 7230,
-            weeklyHigh: 7250,
-            weeklyLow: 7120,
-            distance: '95 km',
-            distanceKm: 95,
-            location: 'Amravati Main Mandi',
-            trend: 'Stable',
-            changePct: -0.55
-          }
-        },
-        forecast7d: { expected: 7390, min: 7320, max: 7460, trend: 'Upward' },
-        forecast14d: { expected: 7450, min: 7350, max: 7550, trend: 'Upward' }
-      },
-      Soyabean: {
-        msp: 4892,
-        variety: {
-          Akola: 'Yellow JS-9305',
-          Amravati: 'Yellow Standard',
-          Akot: 'Yellow JS-335 Clean'
-        },
-        markets: {
-          Akot: {
-            currentPrice: 4670,
-            previousPrice: 4590,
-            weeklyHigh: 4710,
-            weeklyLow: 4560,
-            distance: '45 km',
-            distanceKm: 45,
-            location: 'Akot APMC, Akola District',
-            trend: 'Rising',
-            changePct: 1.74
-          },
-          Akola: {
-            currentPrice: 4640,
-            previousPrice: 4550,
-            weeklyHigh: 4680,
-            weeklyLow: 4520,
-            distance: '0 km (Local)',
-            distanceKm: 0,
-            location: 'Akola APMC Yard',
-            trend: 'Rising',
-            changePct: 1.98
-          },
-          Amravati: {
-            currentPrice: 4580,
-            previousPrice: 4610,
-            weeklyHigh: 4630,
-            weeklyLow: 4540,
-            distance: '95 km',
-            distanceKm: 95,
-            location: 'Amravati Main Mandi',
-            trend: 'Stable',
-            changePct: -0.65
-          }
-        },
-        forecast7d: { expected: 4710, min: 4660, max: 4750, trend: 'Upward' },
-        forecast14d: { expected: 4750, min: 4680, max: 4820, trend: 'Upward' }
-      },
-      Tur: {
-        msp: 7550,
-        variety: {
-          Akola: 'Red (Maruti)',
-          Amravati: 'White Local',
-          Akot: 'White / Gajar Red'
-        },
-        markets: {
-          Akot: {
-            currentPrice: 9940,
-            previousPrice: 9760,
-            weeklyHigh: 10020,
-            weeklyLow: 9720,
-            distance: '45 km',
-            distanceKm: 45,
-            location: 'Akot APMC, Akola District',
-            trend: 'Rising',
-            changePct: 1.84
-          },
-          Akola: {
-            currentPrice: 9850,
-            previousPrice: 9700,
-            weeklyHigh: 9920,
-            weeklyLow: 9650,
-            distance: '0 km (Local)',
-            distanceKm: 0,
-            location: 'Akola APMC Yard',
-            trend: 'Rising',
-            changePct: 1.55
-          },
-          Amravati: {
-            currentPrice: 9720,
-            previousPrice: 9750,
-            weeklyHigh: 9800,
-            weeklyLow: 9620,
-            distance: '95 km',
-            distanceKm: 95,
-            location: 'Amravati Main Mandi',
-            trend: 'Stable',
-            changePct: -0.31
-          }
-        },
-        forecast7d: { expected: 10010, min: 9900, max: 10120, trend: 'Upward' },
-        forecast14d: { expected: 10110, min: 9950, max: 10280, trend: 'Upward' }
-      }
-    };
-
-    const cropProfile = baseProfiles[normalizedCrop] || baseProfiles.Cotton;
-    const marketInfo = cropProfile.markets[normalizedMarket] || cropProfile.markets.Akola;
-
-    // Find regional best market
-    let bestMktName = 'Akot';
-    let highestPrice = 0;
-    Object.entries(cropProfile.markets).forEach(([mName, mData]) => {
-      if (mData.currentPrice > highestPrice) {
-        highestPrice = mData.currentPrice;
-        bestMktName = mName;
-      }
-    });
-
-    const priceDiff = highestPrice - marketInfo.currentPrice;
-
-    // Build 30-day realistic historical price trend + 14-day projection
-    // Anchor date: 2026-10-23
-    const anchorDate = new Date(2026, 9, 23); // Month is 0-indexed (9 = Oct)
-    const chartPoints: Array<{
-      date: string;
-      label: string;
-      historicalPrice?: number;
-      forecastPrice?: number;
-      forecastMin?: number;
-      forecastMax?: number;
-      isForecast: boolean;
-    }> = [];
-
-    // Historical 30 days
-    const histDays = 30;
-    const baseP = marketInfo.currentPrice;
-
-    // Seed-like deterministic variation so curves look smooth and realistic
-    for (let i = histDays - 1; i >= 0; i--) {
-      const d = new Date(anchorDate);
-      d.setDate(anchorDate.getDate() - i);
-      const dayStr = d.toISOString().split('T')[0];
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const label = `${d.getDate()} ${monthNames[d.getMonth()]}`;
-
-      // Gradual drift towards current price with authentic mandi variance (no extreme leaps)
-      const dayFactor = (histDays - 1 - i) / (histDays - 1);
-      const wave = Math.sin(i * 0.45) * (baseP * 0.012);
-      const priceVal = Math.round((marketInfo.previousPrice * (1 - dayFactor) + baseP * dayFactor) + wave);
-
-      chartPoints.push({
-        date: dayStr,
-        label,
-        historicalPrice: i === 0 ? baseP : priceVal,
-        isForecast: false
-      });
-    }
-
-    // Connect transition point on anchor date
-    const lastHist = chartPoints[chartPoints.length - 1];
-    lastHist.forecastPrice = baseP;
-    lastHist.forecastMin = baseP;
-    lastHist.forecastMax = baseP;
-
-    // Future 14 days forecast
-    const forecastProfile = timeRange === '14D' || timeRange === '30D' ? cropProfile.forecast14d : cropProfile.forecast7d;
-    const forecastDays = 14;
-    const targetForecast = forecastProfile.expected;
-
-    for (let f = 1; f <= forecastDays; f++) {
-      const fd = new Date(anchorDate);
-      fd.setDate(anchorDate.getDate() + f);
-      const dayStr = fd.toISOString().split('T')[0];
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const label = `${fd.getDate()} ${monthNames[fd.getMonth()]}`;
-
-      const fRatio = f / 7;
-      const expectedAtDay = Math.round(baseP + (targetForecast - baseP) * Math.min(1.2, fRatio));
-      const spread = Math.round(baseP * 0.008 * f);
-
-      chartPoints.push({
-        date: dayStr,
-        label,
-        forecastPrice: expectedAtDay,
-        forecastMin: expectedAtDay - spread,
-        forecastMax: expectedAtDay + spread,
-        isForecast: true
-      });
-    }
-
-    // Build nearby comparison list for Akola, Amravati, Akot
-    const nearbyList = Object.entries(cropProfile.markets).map(([mName, mData]) => {
-      return {
-        id: mName.toLowerCase(),
-        name: `${mName} APMC`,
-        marketKey: mName,
-        location: mData.location,
-        distance: mData.distance,
-        distanceKm: mData.distanceKm,
-        currentPrice: mData.currentPrice,
-        previousPrice: mData.previousPrice,
-        priceChangePct: mData.changePct,
-        trend: mData.trend,
-        dataStatus: 'SAMPLE DATA',
-        variety: cropProfile.variety[mName] || 'Standard Modal',
-        weeklyHigh: mData.weeklyHigh,
-        weeklyLow: mData.weeklyLow,
-        tradingHours: '08:30 AM – 04:30 PM (Mon-Sat)'
-      };
-    });
-
-    // Rule-based recommendation logic
-    let actionRecommendation = '';
-    if (normalizedMarket === bestMktName) {
-      actionRecommendation = `${bestMktName} APMC currently offers the peak price of ₹${highestPrice.toLocaleString('en-IN')}/qtl for ${normalizedCrop}. With prices showing positive momentum, this represents a strong selling window over the next 3 to 7 days.`;
-    } else {
-      actionRecommendation = `${bestMktName} APMC offers a ₹${priceDiff}/qtl premium over ${normalizedMarket}. If your farm's transport differential to ${bestMktName} is under ₹${Math.round(priceDiff * 0.45)}/qtl, diverting harvest lots to ${bestMktName} can increase net returns.`;
-    }
-
-    return {
-      isDemo: true,
-      data: {
+    crop: 'Cotton' | 'Tur' = 'Cotton',
+    quantity: number = 20,
+    latitude?: number | null,
+    longitude?: number | null,
+    market?: string,
+    date?: string
+  ): Promise<any> => {
+    const normalizedCrop = crop.toLowerCase().includes('tur') ? 'Tur' : 'Cotton';
+    return await fetchAPI('/api/v1/market-price', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         crop: normalizedCrop,
-        market: normalizedMarket,
-        timeRange,
-        current_price: marketInfo.currentPrice,
-        previous_price: marketInfo.previousPrice,
-        price_change_pct: marketInfo.changePct,
-        trend: marketInfo.trend,
-        msp_benchmark: cropProfile.msp,
-        modal_variety: cropProfile.variety[normalizedMarket] || 'Commercial Grade',
-        best_market: {
-          name: `${bestMktName} APMC`,
-          marketKey: bestMktName,
-          price: highestPrice,
-          difference: priceDiff,
-          location: cropProfile.markets[bestMktName]?.location || `${bestMktName}, Maharashtra`
-        },
-        forecast: {
-          expected_price: forecastProfile.expected,
-          min_price: forecastProfile.min,
-          max_price: forecastProfile.max,
-          trend: forecastProfile.trend,
-          horizon_days: timeRange === '14D' ? 14 : 7,
-          confidence: 'Medium (Sample Model)'
-        },
-        chart_data: chartPoints,
-        nearby_markets: nearbyList,
-        rule_based_insight: {
-          best_market_name: `${bestMktName} APMC`,
-          best_price: highestPrice,
-          price_signal: marketInfo.trend,
-          recommended_action: actionRecommendation,
-          reasoning: `Calculated from relative modal price spreads across ${Object.keys(cropProfile.markets).join(', ')} mandis.`,
-          disclaimer: 'Based on available demonstration market prices & trend rules — not a black-box ML recommendation.'
-        },
-        last_updated: '23 Oct 2026, 05:30 PM IST',
-        data_provenance: 'Demonstration dataset — not live mandi prices'
-      }
-    };
+        quantity: quantity > 0 ? quantity : 20,
+        latitude: latitude !== undefined ? latitude : undefined,
+        longitude: longitude !== undefined ? longitude : undefined,
+        market: market || undefined,
+        date: date || new Date().toISOString().split('T')[0]
+      })
+    });
   },
 
   // 4. Disease Detection API (Authentic PyTorch EfficientNetV2-S + CIBRC Regulatory Engine)

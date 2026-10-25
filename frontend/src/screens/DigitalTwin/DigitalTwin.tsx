@@ -10,6 +10,8 @@ import { MapContainer, TileLayer, Marker, Popup, Polygon, useMap } from 'react-l
 import L from 'leaflet';
 import { api } from '../../services/api';
 import BoundaryEditorModal from '../../components/map/BoundaryEditorModal';
+import { WorkflowStepper } from '../../components/workflow/WorkflowStepper';
+import { WorkflowFooter } from '../../components/workflow/WorkflowFooter';
 import GpsBoundaryModal from '../../components/map/GpsBoundaryModal';
 import { Footprints } from 'lucide-react';
 
@@ -160,7 +162,7 @@ export default function DigitalTwin() {
         </div>
         <h2 className="text-2xl font-serif font-bold text-[#103D2C]">No Farm Profile Found</h2>
         <p className="text-[#292B26]/70 text-sm max-w-md">
-          To explore the interactive {t('digitalTwin.title')} map and micro-climate telemetry, create your first farm parcel in My Farms.
+          To explore the interactive {t('digitalTwin.title', 'Digital Twin')} map and agro-climatic profile, create your first farm parcel in My Farms.
         </p>
         <button
           onClick={() => navigate('/farm-setup')}
@@ -174,6 +176,8 @@ export default function DigitalTwin() {
 
   return (
     <div className="p-4 lg:p-8 max-w-7xl mx-auto flex flex-col h-full space-y-6">
+      <WorkflowStepper currentStageId={1} />
+
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -181,7 +185,7 @@ export default function DigitalTwin() {
             <h1 className="text-3xl font-serif font-bold text-[#103D2C]">Farm {t('digitalTwin.title')}</h1>
             {farmData?.is_mock ? (
               <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-amber-300">
-                Mock Telemetry
+                Sample Farm Profile
               </span>
             ) : (
               <span className="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-emerald-300">
@@ -253,17 +257,15 @@ export default function DigitalTwin() {
           <div className="flex rounded-lg border border-[#E5DDCF] bg-[#FBF7EF] p-0.5 text-xs">
             <button
               onClick={() => setActiveBaseLayer('osm')}
-              className={`px-2.5 py-1 rounded-md font-medium transition-all cursor-pointer ${
-                activeBaseLayer === 'osm' ? 'bg-[#103D2C] text-white shadow-xs' : 'text-[#292B26]/70 hover:text-[#103D2C]'
-              }`}
+              className={`px-2.5 py-1 rounded-md font-medium transition-all cursor-pointer ${activeBaseLayer === 'osm' ? 'bg-[#103D2C] text-white shadow-xs' : 'text-[#292B26]/70 hover:text-[#103D2C]'
+                }`}
             >
               Standard Map
             </button>
             <button
               onClick={() => setActiveBaseLayer('satellite')}
-              className={`px-2.5 py-1 rounded-md font-medium transition-all cursor-pointer ${
-                activeBaseLayer === 'satellite' ? 'bg-[#103D2C] text-white shadow-xs' : 'text-[#292B26]/70 hover:text-[#103D2C]'
-              }`}
+              className={`px-2.5 py-1 rounded-md font-medium transition-all cursor-pointer ${activeBaseLayer === 'satellite' ? 'bg-[#103D2C] text-white shadow-xs' : 'text-[#292B26]/70 hover:text-[#103D2C]'
+                }`}
             >
               Satellite
             </button>
@@ -373,7 +375,7 @@ export default function DigitalTwin() {
                     >
                       <Popup>
                         <div className="text-xs">
-                          <strong>{fld.name}</strong> ({fld.area} {fld.area_unit})<br/>
+                          <strong>{fld.name}</strong> ({fld.area} {fld.area_unit})<br />
                           Crop: {fld.crop} ({fld.stage})
                         </div>
                       </Popup>
@@ -563,6 +565,23 @@ export default function DigitalTwin() {
           }}
         />
       )}
+
+      <WorkflowFooter
+        currentStageNumber={1}
+        currentStageName="Farm & Soil Setup"
+        completedActionMessage="Digital Twin synchronized with geospatial field boundaries! Next: Evaluate soil nutrient profiles."
+        prevStep={{ label: "My Farm Setup", path: "/farm-setup" }}
+        nextStep={{
+          label: "Soil Health Assessment",
+          labelMr: "माती परीक्षण",
+          path: "/soil",
+          description: "Evaluate NPK & pH records for your fields"
+        }}
+        alternativeNextStep={{
+          label: "Crop Intelligence",
+          path: "/crop-recommendation"
+        }}
+      />
     </div>
   );
 }

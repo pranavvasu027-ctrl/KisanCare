@@ -313,13 +313,26 @@ class GeminiLLMProvider(LLMProvider):
             raw_key = self._explicit_api_key
 
         else:
-
+            if _env_file.exists():
+                load_dotenv(dotenv_path=_env_file, override=True)
             raw_key = os.environ.get("GEMINI_API_KEY")
 
         key = raw_key.strip() if raw_key else None
 
-        self.api_key = key
+        # Filter out placeholder or template keys
+        placeholder_keys = {
+            "your-gemini-api-key",
+            "your_gemini_api_key",
+            "placeholder",
+            "your-api-key",
+            "none",
+            "null",
+            "test"
+        }
+        if key and (key.lower() in placeholder_keys or key.lower().startswith("your_") or key.lower().startswith("your-")):
+            key = None
 
+        self.api_key = key
         self.model_name = self._explicit_model or os.environ.get("GEMINI_MODEL", "gemini-flash-lite-latest")
 
         if not key:
@@ -361,9 +374,7 @@ class GeminiLLMProvider(LLMProvider):
         # Never leak API key or connection credentials
 
         if "API_KEY" in err_msg or "key" in err_msg.lower() or "credential" in err_msg.lower():
-
-            return HTTPException(status_code=502, detail="Gemini provider authentication failed.")
-
+            return HTTPException(status_code=502, detail="Gemini provider authentication failed. Please verify that your GEMINI_API_KEY in .env is valid.")
         if "503" in err_msg or "UNAVAILABLE" in err_msg or "high demand" in err_msg.lower() or "overloaded" in err_msg.lower():
 
             return HTTPException(status_code=503, detail="Gemini model is currently experiencing temporary high demand. Please try again in a moment.")
@@ -439,9 +450,7 @@ class GeminiLLMProvider(LLMProvider):
             # Try configured model with graceful fallback if quota or high demand occurs
 
             models_to_try = [self.model_name]
-
-            for m in ["gemini-flash-lite-latest", "gemini-flash-latest", "gemini-3.8-flash"]:
-
+            for m in ["gemini-flash-lite-latest", "gemini-flash-latest", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-3.8-flash"]:
                 if m not in models_to_try:
 
                     models_to_try.append(m)
@@ -475,10 +484,10 @@ class GeminiLLMProvider(LLMProvider):
                 except Exception as model_err:
 
                     last_err = model_err
-
-                    continue
-
-
+                    err_str = str(model_err)
+                    if any(code in err_str for code in ["404", "429", "503", "NOT_FOUND"]) or any(k in err_str.lower() for k in ["quota", "demand", "not found"]):
+                        continue
+                    raise model_err
 
             if response is None and last_err:
 

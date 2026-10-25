@@ -17,7 +17,12 @@ try:
         BookingRecord,
         RentalReviewCreate,
         RecordExpenseRequest,
-        DispatchStatus
+        DispatchStatus,
+        NearbyEquipmentDiscoveryResponse,
+        ShopNotification,
+        ShopkeeperSubscriptionPlan,
+        SubscriptionUpgradeRequest,
+        BookingUPIPaymentSubmit
     )
     from app.rentals.service import rental_service
     from app.rentals.geography import MAHARASHTRA_DIVISIONS
@@ -32,7 +37,12 @@ except ModuleNotFoundError:
         BookingRecord,
         RentalReviewCreate,
         RecordExpenseRequest,
-        DispatchStatus
+        DispatchStatus,
+        NearbyEquipmentDiscoveryResponse,
+        ShopNotification,
+        ShopkeeperSubscriptionPlan,
+        SubscriptionUpgradeRequest,
+        BookingUPIPaymentSubmit
     )
     from backend.app.rentals.service import rental_service
     from backend.app.rentals.geography import MAHARASHTRA_DIVISIONS
@@ -312,3 +322,112 @@ def get_recommendations(
 ):
     """Get smart agricultural machinery and labour recommendations tailored to crop and field size."""
     return rental_service.get_smart_recommendations(crop=crop, acreage=acreage, task=task)
+
+
+# -----------------------------------------------------------------------------
+# Google Maps Places & Nearby Equipment Discovery
+# -----------------------------------------------------------------------------
+@router.get("/nearby", response_model=NearbyEquipmentDiscoveryResponse)
+def get_nearby_equipment(
+    lat: float = Query(20.7002, ge=-90.0, le=90.0, description="Farmer GPS or manual Latitude"),
+    lon: float = Query(77.0082, ge=-180.0, le=180.0, description="Farmer GPS or manual Longitude"),
+    radius_km: float = Query(50.0, ge=1.0, le=100.0, description="Surface radius in kilometers"),
+    category: Optional[str] = Query(None, description="Optional equipment category filter"),
+    query: Optional[str] = Query(None, description="Optional keyword search"),
+    location_name: str = Query("Farmer Location", description="Display label for location")
+):
+    """Discover rental shops from Google Maps Places and registered platform listings within 50km radius, sorted with nearest first."""
+    return rental_service.discover_nearby(
+        lat=lat,
+        lon=lon,
+        radius_km=radius_km,
+        category=category,
+        query=query,
+        location_name=location_name
+    )
+
+
+# -----------------------------------------------------------------------------
+# Real UPI Settlement Endpoint
+# -----------------------------------------------------------------------------
+@router.post("/bookings/{booking_id}/pay-upi", response_model=BookingRecord)
+def submit_upi_payment(
+    booking_id: str,
+    payload: BookingUPIPaymentSubmit,
+    authorization: Optional[str] = Header(None)
+):
+    """Submit UPI transaction reference (UTR) for an accepted booking and mark payment as completed."""
+    user_id = _extract_user_id(authorization)
+    try:
+        return rental_service.submit_upi_payment(booking_id, payload, user_id=user_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+
+
+# -----------------------------------------------------------------------------
+# Shopkeeper Real-Time In-App Notifications
+# -----------------------------------------------------------------------------
+@router.get("/owner/notifications", response_model=List[ShopNotification])
+def get_owner_notifications(
+    provider_id: Optional[str] = Query(None),
+    authorization: Optional[str] = Header(None)
+):
+    """Retrieve instant notifications for incoming booking requests and payments."""
+    user_id = _extract_user_id(authorization)
+    if user_id:
+        provider_id = user_id
+    return rental_service.get_owner_notifications(provider_id=provider_id)
+
+
+@router.post("/owner/notifications/{notification_id}/read", response_model=Dict[str, Any])
+def mark_notification_read(
+    notification_id: str,
+    provider_id: Optional[str] = Query(None),
+    authorization: Optional[str] = Header(None)
+):
+    """Mark a shopkeeper notification as read."""
+    user_id = _extract_user_id(authorization)
+    if user_id:
+        provider_id = user_id
+    try:
+        return rental_service.mark_notification_read(notification_id, provider_id=provider_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+
+
+# -----------------------------------------------------------------------------
+# Shopkeeper Revenue & Subscription Model (Priority Placement)
+# -----------------------------------------------------------------------------
+@router.get("/owner/subscription/plans", response_model=List[ShopkeeperSubscriptionPlan])
+def get_subscription_plans():
+    """Retrieve available subscription tiers for equipment rental shopkeepers."""
+    return rental_service.get_subscription_plans()
+
+
+@router.get("/owner/subscription", response_model=Dict[str, Any])
+def get_owner_subscription(
+    provider_id: Optional[str] = Query(None),
+    authorization: Optional[str] = Header(None)
+):
+    """Retrieve current subscription status and priority tier for the shopkeeper."""
+    user_id = _extract_user_id(authorization)
+    if user_id:
+        provider_id = user_id
+    return rental_service.get_owner_subscription(provider_id=provider_id)
+
+
+@router.post("/owner/subscription/upgrade", response_model=Dict[str, Any])
+def upgrade_owner_subscription(
+    req: SubscriptionUpgradeRequest,
+    provider_id: Optional[str] = Query(None),
+    authorization: Optional[str] = Header(None)
+):
+    """Upgrade shopkeeper subscription to Gold Merchant or Pro Partner for #1 priority ranking."""
+    user_id = _extract_user_id(authorization)
+    if user_id:
+        provider_id = user_id
+    try:
+        return rental_service.upgrade_owner_subscription(req, provider_id=provider_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+

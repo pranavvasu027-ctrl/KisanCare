@@ -30,3 +30,10 @@ API_KEY_NAME: str = "X-API-Key"
 DEFAULT_ORIGINS = "http://localhost:3000,http://localhost:5173,http://localhost:8000,http://127.0.0.1:3000,http://127.0.0.1:5173,http://127.0.0.1:8000,*"
 raw_origins = os.getenv("ALLOWED_ORIGINS", DEFAULT_ORIGINS)
 ALLOWED_ORIGINS: List[str] = [orig.strip() for orig in raw_origins.split(",") if orig.strip()]
+
+# Plant Leaf Image Validation Settings
+VALIDATION_PLANT_THRESHOLD: float = float(os.getenv("VALIDATION_PLANT_THRESHOLD", "0.75"))
+VALIDATION_LEAF_THRESHOLD: float = float(os.getenv("VALIDATION_LEAF_THRESHOLD", "0.75"))
+VALIDATION_BLUR_THRESHOLD: float = float(os.getenv("VALIDATION_BLUR_THRESHOLD", "20.0"))
+VALIDATION_MIN_DIMENSION: int = int(os.getenv("VALIDATION_MIN_DIMENSION", "128"))
+
