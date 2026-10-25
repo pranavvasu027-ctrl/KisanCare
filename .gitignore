@@ -88,9 +88,10 @@ data/processed/*
 !services/irrigation_yield_api/models/crop_yield/*.pkl
 !services/irrigation_yield_api/models/irrigation/eto/*.pkl
 
+*.pt
+*.bin
 *.pth
 !services/irrigation_yield_api/models/irrigation/eto/eto_punjab_best.pth
-
 *.safetensors
 
 # Disease intelligence local evaluation datasets & scratch data

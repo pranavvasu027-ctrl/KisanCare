@@ -23,10 +23,10 @@ from ml.soil_intelligence.schemas import (
 PLENARY_BOUNDS = {
     "pH": (3.5, 10.5, "Standard agricultural soil reaction limits (extremely acidic < 3.5 or alkali > 10.5)"),
     "EC": (0.0, 15.0, "Electrical conductivity in dS/m (values > 15 dS/m indicate extreme saline wasteland)"),
-    "OC": (0.01, 5.0, "Soil Organic Carbon in % (mineral agricultural soils rarely exceed 5% OC)"),
+    "OC": (0.01, 10.0, "Soil Organic Carbon in % (mineral soils typically 0.1-5% OC; compost/manure heaps reach 5-10%)"),
     "N": (10.0, 1200.0, "Available Nitrogen in kg/ha elemental N"),
-    "P": (0.5, 250.0, "Available Phosphorus in kg/ha elemental P"),
-    "K": (10.0, 2000.0, "Available Potassium in kg/ha elemental K"),
+    "P": (0.5, 300.0, "Available Phosphorus in kg/ha elemental P"),
+    "K": (10.0, 4000.0, "Available Potassium in kg/ha elemental K (horticultural & compost-enriched soils reach 4000 kg/ha)"),
 }
 
 
@@ -58,9 +58,9 @@ class ReportFieldNormalizer:
     def detect_unit(raw_text: str) -> Tuple[NutrientUnit, Optional[str]]:
         """Parses unit string from raw text snippet."""
         text = raw_text.lower()
-        if "kg/ha" in text or "kg / ha" in text or "kg/hectare" in text or "kg\\ha" in text or "kg \\ ha" in text:
+        if any(u in text for u in ["kg/ha", "kg / ha", "kg/hectare", "kg\\ha", "kg \\ ha", "kgyha", "koyha", "ko/ha", "kq/ha", "kg.ha"]):
             return NutrientUnit.KG_PER_HA, "Explicitly matched kg/ha"
-        elif "mg/kg" in text or "mg / kg" in text or "mg\\kg" in text:
+        elif any(u in text for u in ["mg/kg", "mg / kg", "mg\\kg", "ma/ka", "ma/kg"]):
             return NutrientUnit.MG_PER_KG, "Explicitly matched mg/kg"
         elif "ppm" in text or "parts per million" in text:
             return NutrientUnit.PPM, "Explicitly matched ppm"
@@ -68,7 +68,7 @@ class ReportFieldNormalizer:
             return NutrientUnit.PERCENT, "Explicitly matched %"
         elif "ds/m" in text or "ds / m" in text or "mmhos/cm" in text or "ds\\m" in text:
             return NutrientUnit.DS_PER_M, "Explicitly matched dS/m"
-        elif "ph" in text:
+        elif re.search(r"\bph\b|\bp\.h\b", text):
             return NutrientUnit.PH_INDEX, "pH scale"
         return NutrientUnit.KG_PER_HA, "Default assumed kg/ha (Warning: Unit was not explicitly stated in text)"
 
@@ -106,6 +106,7 @@ class ReportFieldNormalizer:
 
         # 1. Clean and parse float value (handle OCR space instead of decimal, e.g. '0 58' -> '0.58')
         raw_trimmed = raw_val_str.strip()
+        raw_trimmed = re.sub(r"(\d+),(\d+)", r"\1.\2", raw_trimmed)
         if re.match(r"^\d+\s+\d{1,2}$", raw_trimmed):
             raw_trimmed = re.sub(r"\s+", ".", raw_trimmed)
 

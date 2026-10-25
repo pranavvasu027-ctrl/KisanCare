@@ -1,0 +1,761 @@
+{
+  "dataset": {
+    "name": "Western Maharashtra Soil-Crop Research Dataset (MittiSeva / Sanchita Gholap)",
+    "license": "CC0 1.0 Universal (Public Domain)",
+    "total_samples": 4513,
+    "features": [
+      "Nitrogen",
+      "Phosphorus",
+      "Potassium",
+      "pH",
+      "Rainfall",
+      "Temperature"
+    ],
+    "crop_classes_count": 16,
+    "crops": [
+      "Cotton",
+      "Ginger",
+      "Gram",
+      "Grapes",
+      "Groundnut",
+      "Jowar",
+      "Maize",
+      "Masoor",
+      "Moong",
+      "Rice",
+      "Soybean",
+      "Sugarcane",
+      "Tur",
+      "Turmeric",
+      "Urad",
+      "Wheat"
+    ],
+    "districts": [
+      "Kolhapur",
+      "Satara",
+      "Sangli",
+      "Solapur",
+      "Pune"
+    ]
+  },
+  "stratified_cv_5fold": {
+    "random_forest": {
+      "mean_top1": 0.971,
+      "std_top1": 0.004,
+      "mean_top3": 1.0,
+      "std_top3": 0.0,
+      "mean_macro_f1": 0.9452,
+      "std_macro_f1": 0.0115,
+      "oof_top1": 0.971,
+      "oof_top3": 1.0,
+      "oof_macro_f1": 0.9463
+    },
+    "lightgbm": {
+      "mean_top1": 0.9867,
+      "std_top1": 0.0023,
+      "mean_top3": 1.0,
+      "std_top3": 0.0,
+      "mean_macro_f1": 0.9791,
+      "std_macro_f1": 0.0051,
+      "oof_top1": 0.9867,
+      "oof_top3": 1.0,
+      "oof_macro_f1": 0.9791
+    },
+    "per_crop": {
+      "Cotton": {
+        "samples": 650,
+        "rf_precision": 0.9908,
+        "rf_recall": 0.9908,
+        "rf_f1": 0.9908,
+        "lgb_precision": 0.9908,
+        "lgb_recall": 0.9938,
+        "lgb_f1": 0.9923
+      },
+      "Ginger": {
+        "samples": 125,
+        "rf_precision": 1.0,
+        "rf_recall": 0.992,
+        "rf_f1": 0.996,
+        "lgb_precision": 0.992,
+        "lgb_recall": 0.992,
+        "lgb_f1": 0.992
+      },
+      "Gram": {
+        "samples": 78,
+        "rf_precision": 0.9545,
+        "rf_recall": 0.8077,
+        "rf_f1": 0.875,
+        "lgb_precision": 0.9481,
+        "lgb_recall": 0.9359,
+        "lgb_f1": 0.9419
+      },
+      "Grapes": {
+        "samples": 125,
+        "rf_precision": 1.0,
+        "rf_recall": 1.0,
+        "rf_f1": 1.0,
+        "lgb_precision": 1.0,
+        "lgb_recall": 1.0,
+        "lgb_f1": 1.0
+      },
+      "Groundnut": {
+        "samples": 177,
+        "rf_precision": 0.8571,
+        "rf_recall": 0.8814,
+        "rf_f1": 0.8691,
+        "lgb_precision": 0.9438,
+        "lgb_recall": 0.9492,
+        "lgb_f1": 0.9465
+      },
+      "Jowar": {
+        "samples": 394,
+        "rf_precision": 0.8758,
+        "rf_recall": 0.9848,
+        "rf_f1": 0.9271,
+        "lgb_precision": 0.9721,
+        "lgb_recall": 0.9721,
+        "lgb_f1": 0.9721
+      },
+      "Maize": {
+        "samples": 350,
+        "rf_precision": 0.9775,
+        "rf_recall": 0.9943,
+        "rf_f1": 0.9858,
+        "lgb_precision": 0.9942,
+        "lgb_recall": 0.9857,
+        "lgb_f1": 0.99
+      },
+      "Masoor": {
+        "samples": 12,
+        "rf_precision": 1.0,
+        "rf_recall": 0.8333,
+        "rf_f1": 0.9091,
+        "lgb_precision": 1.0,
+        "lgb_recall": 1.0,
+        "lgb_f1": 1.0
+      },
+      "Moong": {
+        "samples": 99,
+        "rf_precision": 0.9556,
+        "rf_recall": 0.8687,
+        "rf_f1": 0.9101,
+        "lgb_precision": 1.0,
+        "lgb_recall": 1.0,
+        "lgb_f1": 1.0
+      },
+      "Rice": {
+        "samples": 309,
+        "rf_precision": 0.9934,
+        "rf_recall": 0.9709,
+        "rf_f1": 0.982,
+        "lgb_precision": 1.0,
+        "lgb_recall": 1.0,
+        "lgb_f1": 1.0
+      },
+      "Soybean": {
+        "samples": 45,
+        "rf_precision": 0.9783,
+        "rf_recall": 1.0,
+        "rf_f1": 0.989,
+        "lgb_precision": 1.0,
+        "lgb_recall": 1.0,
+        "lgb_f1": 1.0
+      },
+      "Sugarcane": {
+        "samples": 1010,
+        "rf_precision": 1.0,
+        "rf_recall": 0.998,
+        "rf_f1": 0.999,
+        "lgb_precision": 1.0,
+        "lgb_recall": 1.0,
+        "lgb_f1": 1.0
+      },
+      "Tur": {
+        "samples": 126,
+        "rf_precision": 0.9159,
+        "rf_recall": 0.7778,
+        "rf_f1": 0.8412,
+        "lgb_precision": 0.9286,
+        "lgb_recall": 0.9286,
+        "lgb_f1": 0.9286
+      },
+      "Turmeric": {
+        "samples": 55,
+        "rf_precision": 1.0,
+        "rf_recall": 0.8909,
+        "rf_f1": 0.9423,
+        "lgb_precision": 0.9811,
+        "lgb_recall": 0.9455,
+        "lgb_f1": 0.963
+      },
+      "Urad": {
+        "samples": 99,
+        "rf_precision": 0.9579,
+        "rf_recall": 0.9192,
+        "rf_f1": 0.9381,
+        "lgb_precision": 0.9406,
+        "lgb_recall": 0.9596,
+        "lgb_f1": 0.95
+      },
+      "Wheat": {
+        "samples": 859,
+        "rf_precision": 0.9849,
+        "rf_recall": 0.986,
+        "rf_f1": 0.9855,
+        "lgb_precision": 0.9884,
+        "lgb_recall": 0.9895,
+        "lgb_f1": 0.9889
+      }
+    }
+  },
+  "held_out_district_cv": {
+    "Kolhapur": {
+      "val_samples": 1430,
+      "rf": {
+        "top1": 0.3951,
+        "top3": 0.6231,
+        "macro_f1": 0.1987
+      },
+      "lightgbm": {
+        "top1": 0.3545,
+        "top3": 0.6783,
+        "macro_f1": 0.1622
+      }
+    },
+    "Pune": {
+      "val_samples": 479,
+      "rf": {
+        "top1": 0.6639,
+        "top3": 0.7808,
+        "macro_f1": 0.2656
+      },
+      "lightgbm": {
+        "top1": 0.7161,
+        "top3": 0.7829,
+        "macro_f1": 0.3212
+      }
+    },
+    "Sangli": {
+      "val_samples": 897,
+      "rf": {
+        "top1": 0.4203,
+        "top3": 0.699,
+        "macro_f1": 0.2021
+      },
+      "lightgbm": {
+        "top1": 0.4169,
+        "top3": 0.7503,
+        "macro_f1": 0.1787
+      }
+    },
+    "Satara": {
+      "val_samples": 1000,
+      "rf": {
+        "top1": 0.495,
+        "top3": 0.563,
+        "macro_f1": 0.2047
+      },
+      "lightgbm": {
+        "top1": 0.485,
+        "top3": 0.547,
+        "macro_f1": 0.1759
+      }
+    },
+    "Solapur": {
+      "val_samples": 707,
+      "rf": {
+        "top1": 0.2758,
+        "top3": 0.5969,
+        "macro_f1": 0.141
+      },
+      "lightgbm": {
+        "top1": 0.2815,
+        "top3": 0.5149,
+        "macro_f1": 0.1507
+      }
+    }
+  },
+  "noise_robustness": {
+    "random_forest": {
+      "clean": {
+        "top1": 0.9976,
+        "top3": 1.0
+      },
+      "noise_5pct": {
+        "top1": 0.9069,
+        "top3": 0.996,
+        "stability_vs_clean": 0.9067
+      },
+      "noise_10pct": {
+        "top1": 0.7698,
+        "top3": 0.9652,
+        "stability_vs_clean": 0.7691
+      },
+      "noise_20pct": {
+        "top1": 0.5635,
+        "top3": 0.8702,
+        "stability_vs_clean": 0.5626
+      }
+    },
+    "lightgbm": {
+      "clean": {
+        "top1": 0.9984,
+        "top3": 1.0
+      },
+      "noise_5pct": {
+        "top1": 0.8943,
+        "top3": 0.9883,
+        "stability_vs_clean": 0.8941
+      },
+      "noise_10pct": {
+        "top1": 0.7363,
+        "top3": 0.9431,
+        "stability_vs_clean": 0.7372
+      },
+      "noise_20pct": {
+        "top1": 0.5409,
+        "top3": 0.8349,
+        "stability_vs_clean": 0.5407
+      }
+    }
+  },
+  "real_field_validation_12_records": {
+    "total_records": 12,
+    "rf_top3_hit_rate": 1.0,
+    "lgb_top3_hit_rate": 0.9167,
+    "records": [
+      {
+        "test_id": "REC_01",
+        "district": "Pune",
+        "season": "Rabi",
+        "ground_truth": "Wheat",
+        "rf_top3": [
+          [
+            "Wheat",
+            1.0
+          ],
+          [
+            "Urad",
+            0.0
+          ],
+          [
+            "Turmeric",
+            0.0
+          ]
+        ],
+        "lgb_top3": [
+          [
+            "Wheat",
+            1.0
+          ],
+          [
+            "Gram",
+            0.0
+          ],
+          [
+            "Jowar",
+            0.0
+          ]
+        ],
+        "rf_hit": true,
+        "lgb_hit": true
+      },
+      {
+        "test_id": "REC_02",
+        "district": "Kolhapur",
+        "season": "Kharif",
+        "ground_truth": "Cotton",
+        "rf_top3": [
+          [
+            "Cotton",
+            1.0
+          ],
+          [
+            "Wheat",
+            0.0
+          ],
+          [
+            "Turmeric",
+            0.0
+          ]
+        ],
+        "lgb_top3": [
+          [
+            "Cotton",
+            1.0
+          ],
+          [
+            "Wheat",
+            0.0
+          ],
+          [
+            "Turmeric",
+            0.0
+          ]
+        ],
+        "rf_hit": true,
+        "lgb_hit": true
+      },
+      {
+        "test_id": "REC_03",
+        "district": "Kolhapur",
+        "season": "Whole Year",
+        "ground_truth": "Sugarcane",
+        "rf_top3": [
+          [
+            "Sugarcane",
+            1.0
+          ],
+          [
+            "Wheat",
+            0.0
+          ],
+          [
+            "Turmeric",
+            0.0
+          ]
+        ],
+        "lgb_top3": [
+          [
+            "Sugarcane",
+            1.0
+          ],
+          [
+            "Ginger",
+            0.0
+          ],
+          [
+            "Jowar",
+            0.0
+          ]
+        ],
+        "rf_hit": true,
+        "lgb_hit": true
+      },
+      {
+        "test_id": "REC_04",
+        "district": "Solapur",
+        "season": "Kharif",
+        "ground_truth": "Sugarcane",
+        "rf_top3": [
+          [
+            "Sugarcane",
+            0.907
+          ],
+          [
+            "Rice",
+            0.06
+          ],
+          [
+            "Cotton",
+            0.033
+          ]
+        ],
+        "lgb_top3": [
+          [
+            "Sugarcane",
+            1.0
+          ],
+          [
+            "Cotton",
+            0.0
+          ],
+          [
+            "Rice",
+            0.0
+          ]
+        ],
+        "rf_hit": true,
+        "lgb_hit": true
+      },
+      {
+        "test_id": "REC_05",
+        "district": "Satara",
+        "season": "Kharif",
+        "ground_truth": "Ginger",
+        "rf_top3": [
+          [
+            "Ginger",
+            0.973
+          ],
+          [
+            "Wheat",
+            0.02
+          ],
+          [
+            "Sugarcane",
+            0.007
+          ]
+        ],
+        "lgb_top3": [
+          [
+            "Ginger",
+            1.0
+          ],
+          [
+            "Jowar",
+            0.0
+          ],
+          [
+            "Wheat",
+            0.0
+          ]
+        ],
+        "rf_hit": true,
+        "lgb_hit": true
+      },
+      {
+        "test_id": "REC_06",
+        "district": "Sangli",
+        "season": "Kharif",
+        "ground_truth": "Cotton",
+        "rf_top3": [
+          [
+            "Cotton",
+            0.981
+          ],
+          [
+            "Rice",
+            0.019
+          ],
+          [
+            "Turmeric",
+            0.0
+          ]
+        ],
+        "lgb_top3": [
+          [
+            "Cotton",
+            1.0
+          ],
+          [
+            "Rice",
+            0.0
+          ],
+          [
+            "Wheat",
+            0.0
+          ]
+        ],
+        "rf_hit": true,
+        "lgb_hit": true
+      },
+      {
+        "test_id": "REC_07",
+        "district": "Kolhapur",
+        "season": "Kharif",
+        "ground_truth": "Urad",
+        "rf_top3": [
+          [
+            "Urad",
+            0.933
+          ],
+          [
+            "Gram",
+            0.06
+          ],
+          [
+            "Rice",
+            0.007
+          ]
+        ],
+        "lgb_top3": [
+          [
+            "Urad",
+            1.0
+          ],
+          [
+            "Rice",
+            0.0
+          ],
+          [
+            "Groundnut",
+            0.0
+          ]
+        ],
+        "rf_hit": true,
+        "lgb_hit": true
+      },
+      {
+        "test_id": "REC_08",
+        "district": "Nagpur",
+        "season": "Kharif",
+        "ground_truth": "Orange / Cotton",
+        "rf_top3": [
+          [
+            "Sugarcane",
+            0.507
+          ],
+          [
+            "Cotton",
+            0.313
+          ],
+          [
+            "Grapes",
+            0.127
+          ]
+        ],
+        "lgb_top3": [
+          [
+            "Sugarcane",
+            0.893
+          ],
+          [
+            "Cotton",
+            0.107
+          ],
+          [
+            "Grapes",
+            0.0
+          ]
+        ],
+        "rf_hit": true,
+        "lgb_hit": true
+      },
+      {
+        "test_id": "REC_09",
+        "district": "Nagpur",
+        "season": "Kharif",
+        "ground_truth": "Cotton / Orange",
+        "rf_top3": [
+          [
+            "Sugarcane",
+            0.507
+          ],
+          [
+            "Cotton",
+            0.327
+          ],
+          [
+            "Grapes",
+            0.127
+          ]
+        ],
+        "lgb_top3": [
+          [
+            "Sugarcane",
+            0.865
+          ],
+          [
+            "Cotton",
+            0.135
+          ],
+          [
+            "Grapes",
+            0.0
+          ]
+        ],
+        "rf_hit": true,
+        "lgb_hit": true
+      },
+      {
+        "test_id": "REC_10",
+        "district": "Ahilyanagar",
+        "season": "Kharif",
+        "ground_truth": "Sugarcane / Bajra",
+        "rf_top3": [
+          [
+            "Cotton",
+            0.393
+          ],
+          [
+            "Grapes",
+            0.26
+          ],
+          [
+            "Sugarcane",
+            0.247
+          ]
+        ],
+        "lgb_top3": [
+          [
+            "Cotton",
+            0.941
+          ],
+          [
+            "Sugarcane",
+            0.045
+          ],
+          [
+            "Maize",
+            0.006
+          ]
+        ],
+        "rf_hit": true,
+        "lgb_hit": true
+      },
+      {
+        "test_id": "REC_11",
+        "district": "Nashik",
+        "season": "Kharif",
+        "ground_truth": "Grapes / Soybean",
+        "rf_top3": [
+          [
+            "Cotton",
+            0.44
+          ],
+          [
+            "Grapes",
+            0.253
+          ],
+          [
+            "Sugarcane",
+            0.18
+          ]
+        ],
+        "lgb_top3": [
+          [
+            "Cotton",
+            0.939
+          ],
+          [
+            "Wheat",
+            0.042
+          ],
+          [
+            "Sugarcane",
+            0.017
+          ]
+        ],
+        "rf_hit": true,
+        "lgb_hit": false
+      },
+      {
+        "test_id": "REC_12",
+        "district": "Akola",
+        "season": "Kharif",
+        "ground_truth": "Cotton / Soybean",
+        "rf_top3": [
+          [
+            "Sugarcane",
+            0.373
+          ],
+          [
+            "Cotton",
+            0.34
+          ],
+          [
+            "Grapes",
+            0.287
+          ]
+        ],
+        "lgb_top3": [
+          [
+            "Sugarcane",
+            0.887
+          ],
+          [
+            "Cotton",
+            0.111
+          ],
+          [
+            "Jowar",
+            0.001
+          ]
+        ],
+        "rf_hit": true,
+        "lgb_hit": true
+      }
+    ]
+  }
+}

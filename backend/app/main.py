@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 try:
     from dotenv import load_dotenv
@@ -54,7 +55,9 @@ class SecurityMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, max_upload_size: int = 5_000_000, max_requests: int = 30, window_seconds: int = 60):
         super().__init__(app)
         self.max_upload_size = max_upload_size
-        self.max_requests = int(os.environ.get("RATE_LIMIT_MAX_REQUESTS", "500" if os.environ.get("TESTING") else str(max_requests)))
+        is_test_env = bool(os.environ.get('TESTING') or 'pytest' in sys.modules)
+        default_limit = 1000 if is_test_env else max_requests
+        self.max_requests = int(os.environ.get('RATE_LIMIT_MAX_REQUESTS', str(default_limit)))
         self.window_seconds = window_seconds
         self.ip_records = defaultdict(list)
 
@@ -81,10 +84,14 @@ class SecurityMiddleware(BaseHTTPMiddleware):
 app.add_middleware(SecurityMiddleware)
 
 from .api.soil import soil_router
+from .crop_recommendation import crop_rec_router
 
 # Routes mounted under /api/v1 (primary) and /api (convenience aliases)
 app.include_router(api_router, prefix="/api/v1")
+app.include_router(api_router, prefix="/api")
 app.include_router(soil_router, prefix="/api/v1")
+app.include_router(crop_rec_router, prefix="/api/v1")
+app.include_router(crop_rec_router, prefix="/api")
 app.include_router(copilot_router, prefix="/api")
 app.include_router(rentals_router, prefix="/api/v1")
 app.include_router(rentals_router, prefix="/api")

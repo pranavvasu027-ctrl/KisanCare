@@ -397,7 +397,58 @@ export const api = {
     };
   },
 
-  // 3. Market Price Forecasting API (Trained XGBoost Models & Real Agmarknet Data)
+  // 2b. Upload-first Crop Recommendation API (Soil Report PDF / Image)
+  recommendCropsFromReport: async (
+    file: File,
+    farmId?: string,
+    district?: string,
+    season?: string,
+    phOverride?: number,
+    fallbackPh: number = 7.4
+  ): Promise<{
+    success: boolean;
+    district: string;
+    season: string;
+    climate_source: string;
+    applied_ph?: number;
+    is_ph_baseline_applied?: boolean;
+    extracted_nutrients?: {
+      nitrogen?: number;
+      phosphorus?: number;
+      potassium?: number;
+      ph?: number;
+    };
+    recommendations: Array<{
+      crop: string;
+      rank: number;
+      suitability_label: string;
+      reason: string;
+      local_considerations: string;
+      water_advisory?: string;
+      warning?: string;
+      is_regionally_verified: boolean;
+    }>;
+    general_advisory?: string;
+    warnings: string[];
+  }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (farmId) formData.append('farm_id', farmId);
+    if (district) formData.append('district', district);
+    if (season) formData.append('season', season);
+    if (phOverride !== undefined && phOverride !== null) formData.append('ph_override', phOverride.toString());
+    if (fallbackPh !== undefined && fallbackPh !== null) formData.append('fallback_ph', fallbackPh.toString());
+
+    const data = await fetchAPI('/api/v1/crop-recommendation/recommend-from-report', {
+      method: 'POST',
+      body: formData
+    });
+    return data;
+  },
+
+  // 3. Market Price Forecasting API (XGBoost ML Model & Demo Dataset)
+
+// 3. Market Price Forecasting API (Trained XGBoost Models & Real Agmarknet Data)
   getMarketPrice: async (
     crop: 'Cotton' | 'Tur' = 'Cotton',
     quantity: number = 20,
