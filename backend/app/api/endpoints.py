@@ -63,8 +63,11 @@ class CropRecommendationRequest(BaseModel):
 
 class MarketPriceRequest(BaseModel):
     crop: str = Field(min_length=1, max_length=128)
-    market: str = Field(min_length=1, max_length=128)
-    date: str = Field(min_length=1, max_length=32)
+    market: Optional[str] = None
+    date: Optional[str] = None
+    quantity: Optional[float] = Field(default=20.0, gt=0, le=50000)
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
 
 
 class SymptomsRequest(BaseModel):
@@ -807,21 +810,24 @@ def get_market_price(data: MarketPriceRequest):
                 from ml.market_price.predict import MarketPricePredictor
                 models_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "models"))
                 mp = MarketPricePredictor(models_dir=models_dir)
-                res = mp.predict(data.crop, data.market, data.date)
+                res = mp.predict(
+                    crop=data.crop,
+                    quantity=data.quantity or 20.0,
+                    farmer_lat=data.latitude,
+                    farmer_lon=data.longitude,
+                    selected_market=data.market,
+                    date_str=data.date
+                )
                 if res.get("status") == "error":
                     msg = res.get("message", "Market forecasting error")
-                    code = 404 if "not found" in msg.lower() else (422 if "insufficient" in msg.lower() or "gap" in msg.lower() else 500)
+                    code = 404 if "not found" in msg.lower() else (422 if "insufficient" in msg.lower() or "not supported" in msg.lower() else 500)
                     raise HTTPException(status_code=code, detail=msg)
-                _persist_model_prediction("market_price", "1.0.0", data.model_dump(), res, provenance="TRAINED_XGBOOST")
+                _persist_model_prediction("market_price", "2.0.0", data.model_dump(), res, provenance="TRAINED_XGBOOST")
                 return res
             except Exception as inner:
                 if isinstance(inner, HTTPException):
                     raise inner
-                if os.getenv("ML_MOCK_FALLBACK_ENABLED", "false").lower() == "true":
-                    return _market_mock(data)
                 raise exc
-        if exc.status_code in (502, 503, 504) and os.getenv("ML_MOCK_FALLBACK_ENABLED", "false").lower() == "true":
-            return _market_mock(data)
         raise
 
 

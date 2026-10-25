@@ -76,6 +76,11 @@ export interface RentalListing {
   is_demo?: boolean;
   rating: number;
   review_count: number;
+  upi_id?: string;
+  upi_payee_name?: string;
+  subscription_tier?: string;
+  is_priority?: boolean;
+  distance_km?: number;
   created_at: string;
   updated_at: string;
 }
@@ -198,6 +203,13 @@ export interface RentalBooking {
   payment_status: string;
   status: BookingStatus;
   dispatch_status: DispatchStatus;
+  
+  // Direct UPI Settlement Fields
+  upi_id?: string;
+  upi_payee_name?: string;
+  upi_transaction_ref?: string;
+  upi_paid_at?: string;
+
   cancellation_reason?: string;
   rejection_reason?: string;
   cancelled_by?: string;
@@ -254,3 +266,61 @@ export interface RentalReview {
   review_text: string;
   created_at: string;
 }
+
+// -----------------------------------------------------------------------------
+// Google Places Nearby Discovery & Shopkeeper Subscription Interfaces
+// -----------------------------------------------------------------------------
+export interface NearbyShopPlace {
+  place_id: string;
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  distance_km: number;
+  rating: number;
+  user_ratings_total: number;
+  phone?: string;
+  maps_url?: string;
+  open_now: boolean;
+  categories: string[];
+  rental_accessories: string[];
+  source: 'google_places' | 'osm_places' | 'verified_chc';
+}
+
+export interface NearbyEquipmentDiscoveryResponse {
+  farmer_latitude: number;
+  farmer_longitude: number;
+  farmer_location_name: string;
+  radius_km: number;
+  total_nearby_shops: number;
+  total_registered_listings: number;
+  google_places_shops: NearbyShopPlace[];
+  registered_listings: RentalListing[];
+}
+
+export interface ShopNotification {
+  id: string;
+  provider_id: string;
+  booking_id: string;
+  booking_reference: string;
+  farmer_name: string;
+  farmer_phone: string;
+  listing_title: string;
+  total_amount: number;
+  scheduled_date: string;
+  start_time: string;
+  payment_method: string;
+  status: 'unread' | 'read' | 'actioned';
+  created_at: string;
+}
+
+export interface ShopkeeperSubscriptionPlan {
+  plan_id: string;
+  name: string;
+  price_inr: number;
+  billing_cycle: string;
+  features: string[];
+  priority_level: number;
+  is_active?: boolean;
+}
+

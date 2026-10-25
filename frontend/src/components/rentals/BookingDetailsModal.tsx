@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import {
   X, CheckCircle2, Clock, AlertTriangle, MapPin, Phone, User, Calendar,
-  IndianRupee, ShieldCheck, Printer, LineChart, Star, RotateCcw, Truck, Loader2
+  IndianRupee, ShieldCheck, Printer, LineChart, Star, RotateCcw, Truck, Loader2, QrCode
 } from 'lucide-react';
 import { RentalBooking } from '../../types/rental';
 import { rentalApi } from '../../services/rentalApi';
+import UPIPaymentModal from './UPIPaymentModal';
 
 interface BookingDetailsModalProps {
   booking: RentalBooking;
@@ -25,6 +26,7 @@ export default function BookingDetailsModal({
   const [actionLoading, setActionLoading] = useState(false);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [showUpiModal, setShowUpiModal] = useState<boolean>(false);
 
   // Review states
   const [showReviewPrompt, setShowReviewPrompt] = useState(false);
@@ -264,6 +266,38 @@ export default function BookingDetailsModal({
             </div>
           </div>
 
+          {/* Direct UPI Settlement Panel */}
+          {booking.payment_method === 'online_upi' && (
+            <div className="p-4 bg-purple-50 border border-purple-200 rounded-2xl text-xs space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-purple-900 flex items-center gap-1.5">
+                  <QrCode size={15} />
+                  Direct UPI Payment Settlement
+                </span>
+                <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${
+                  booking.payment_status === 'paid'
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : 'bg-purple-200 text-purple-900'
+                }`}>
+                  {booking.payment_status === 'paid' ? 'Paid / Verified' : 'Awaiting Settlement'}
+                </span>
+              </div>
+              <p className="text-[11px] text-purple-800">
+                {booking.payment_status === 'paid'
+                  ? `Payment of ₹${booking.total_amount} verified via UPI Transaction Ref: ${booking.upi_transaction_ref || 'UPI-CONFIRMED'}.`
+                  : `Settle direct rental payment to the equipment owner's verified UPI ID with zero platform commission.`}
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowUpiModal(true)}
+                className="bg-[#103D2C] hover:bg-[#17643E] text-white font-bold py-2 px-4 rounded-xl transition-colors text-xs flex items-center gap-1.5 shadow-sm"
+              >
+                <QrCode size={13} />
+                <span>{booking.payment_status === 'paid' ? 'View UPI Receipt' : `Pay ₹${booking.total_amount} via UPI`}</span>
+              </button>
+            </div>
+          )}
+
           {/* Farm Economics Sync Card */}
           {booking.status === 'completed' && (
             <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 space-y-2 text-xs">
@@ -422,6 +456,17 @@ export default function BookingDetailsModal({
           </div>
         </div>
       </div>
+
+      {showUpiModal && (
+        <UPIPaymentModal
+          booking={booking}
+          onClose={() => setShowUpiModal(false)}
+          onPaymentSuccess={(updated) => {
+            onUpdate(updated);
+            setShowUpiModal(false);
+          }}
+        />
+      )}
     </div>
   );
 }

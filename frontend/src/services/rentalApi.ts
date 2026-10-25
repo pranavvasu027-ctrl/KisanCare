@@ -14,7 +14,10 @@ import {
   BookingCreatePayload,
   MarketRateBenchmark,
   SmartRecommendationsResponse,
-  RentalReview
+  RentalReview,
+  NearbyEquipmentDiscoveryResponse,
+  ShopNotification,
+  ShopkeeperSubscriptionPlan
 } from '../types/rental';
 
 async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<any> {
@@ -227,5 +230,69 @@ export const rentalApi = {
     const params = new URLSearchParams({ crop, acreage: acreage.toString() });
     if (task) params.append('task', task);
     return await fetchWithAuth(`/api/v1/rentals/recommendations?${params.toString()}`);
+  },
+
+  // 9. Google Maps Places & Nearby Equipment Discovery
+  getNearbyEquipment: async (params: {
+    lat: number;
+    lon: number;
+    radius_km?: number;
+    category?: string;
+    query?: string;
+    location_name?: string;
+  }): Promise<NearbyEquipmentDiscoveryResponse> => {
+    const qs = new URLSearchParams({
+      lat: params.lat.toString(),
+      lon: params.lon.toString(),
+      radius_km: (params.radius_km || 50.0).toString(),
+      location_name: params.location_name || 'Farmer Location'
+    });
+    if (params.category) qs.append('category', params.category);
+    if (params.query) qs.append('query', params.query);
+    return await fetchWithAuth(`/api/v1/rentals/nearby?${qs.toString()}`);
+  },
+
+  // 10. Real UPI Payment Settlement
+  submitUpiPayment: async (
+    bookingId: string,
+    payload: { upi_transaction_ref: string; paid_amount: number; payer_vpa?: string }
+  ): Promise<RentalBooking> => {
+    return await fetchWithAuth(`/api/v1/rentals/bookings/${bookingId}/pay-upi`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+
+  // 11. Shopkeeper In-App Notifications
+  getOwnerNotifications: async (providerId: string = 'PROV_AKOLA_01'): Promise<ShopNotification[]> => {
+    return await fetchWithAuth(`/api/v1/rentals/owner/notifications?provider_id=${providerId}`);
+  },
+
+  markNotificationRead: async (notificationId: string, providerId: string = 'PROV_AKOLA_01'): Promise<any> => {
+    return await fetchWithAuth(`/api/v1/rentals/owner/notifications/${notificationId}/read?provider_id=${providerId}`, {
+      method: 'POST'
+    });
+  },
+
+  // 12. Shopkeeper Subscription & Revenue Generation (Priority Ranking)
+  getSubscriptionPlans: async (): Promise<ShopkeeperSubscriptionPlan[]> => {
+    return await fetchWithAuth('/api/v1/rentals/owner/subscription/plans');
+  },
+
+  getOwnerSubscription: async (providerId: string = 'PROV_AKOLA_01'): Promise<any> => {
+    return await fetchWithAuth(`/api/v1/rentals/owner/subscription?provider_id=${providerId}`);
+  },
+
+  upgradeOwnerSubscription: async (payload: {
+    plan_id: string;
+    duration_months?: number;
+    upi_transaction_ref?: string;
+    provider_id?: string;
+  }): Promise<any> => {
+    return await fetchWithAuth('/api/v1/rentals/owner/subscription/upgrade', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
   }
 };
+

@@ -93,3 +93,6 @@ data/processed/*
 
 # Disease intelligence local evaluation datasets & scratch data
 services/disease_pest_ai/test_data/
+
+# Local backend database and scratch cache
+backend/data/
