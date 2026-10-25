@@ -12,7 +12,9 @@ from disease_pest_ai.api.main import app
 client = TestClient(app)
 
 TEST_DATA_DIR = Path(__file__).resolve().parent.parent / "test_data"
-SAMPLE_IMG = TEST_DATA_DIR / "tomato_early_blight.jpg"
+SAMPLE_IMG = TEST_DATA_DIR / "cotton_field_eval" / "bacterial_blight_1.jpg"
+if not SAMPLE_IMG.exists():
+    SAMPLE_IMG = TEST_DATA_DIR / "cotton_eval" / "bacterial_blight" / "bacterial_blight_1.jpg"
 
 
 def test_root_endpoint():
@@ -44,7 +46,7 @@ def test_diagnose_missing_api_key_rejected():
 
     files = {"file": ("leaf.jpg", buf, "image/jpeg")}
     data = {
-        "crop_name": "Tomato",
+        "crop_name": "Cotton",
         "location_state": "Maharashtra",
         "growth_stage": "fruiting",
         "image_type": "leaf",
@@ -64,7 +66,7 @@ def test_diagnose_invalid_api_key_rejected():
 
     files = {"file": ("leaf.jpg", buf, "image/jpeg")}
     data = {
-        "crop_name": "Tomato",
+        "crop_name": "Cotton",
         "location_state": "Maharashtra",
         "growth_stage": "fruiting",
         "image_type": "leaf",
@@ -77,15 +79,15 @@ def test_diagnose_invalid_api_key_rejected():
 
 
 def test_diagnose_valid_api_key_authorized():
-    """Verify valid API key successfully executes inference and returns diagnosis."""
+    """Verify valid API key successfully executes inference and returns diagnosis for supported crop."""
     assert SAMPLE_IMG.exists()
 
     with open(SAMPLE_IMG, "rb") as f:
         img_bytes = f.read()
 
-    files = {"file": ("tomato_eb.jpg", io.BytesIO(img_bytes), "image/jpeg")}
+    files = {"file": ("cotton_blight.jpg", io.BytesIO(img_bytes), "image/jpeg")}
     data = {
-        "crop_name": "Tomato",
+        "crop_name": "Cotton",
         "location_state": "Maharashtra",
         "growth_stage": "fruiting",
         "image_type": "leaf",
@@ -97,7 +99,7 @@ def test_diagnose_valid_api_key_authorized():
     assert response.status_code == 200
     res_json = response.json()
     assert "disease" in res_json
-    assert res_json["disease"]["condition"] == "Early Blight"
+    assert res_json["disease"]["condition"] == "Bacterial Blight"
     assert res_json["disease"]["crop_match"] is True
     assert "treatment" in res_json
 
@@ -109,9 +111,9 @@ def test_diagnose_bearer_token_authorized():
     with open(SAMPLE_IMG, "rb") as f:
         img_bytes = f.read()
 
-    files = {"file": ("tomato_eb.jpg", io.BytesIO(img_bytes), "image/jpeg")}
+    files = {"file": ("cotton_blight.jpg", io.BytesIO(img_bytes), "image/jpeg")}
     data = {
-        "crop_name": "Tomato",
+        "crop_name": "Cotton",
         "location_state": "Maharashtra",
         "growth_stage": "fruiting",
         "image_type": "leaf",
@@ -122,4 +124,22 @@ def test_diagnose_bearer_token_authorized():
     response = client.post("/api/v1/diagnose", files=files, data=data, headers=headers)
     assert response.status_code == 200
     res_json = response.json()
-    assert res_json["disease"]["condition"] == "Early Blight"
+    assert res_json["disease"]["condition"] == "Bacterial Blight"
+
+
+def test_diagnose_unsupported_crop_rejected():
+    """Verify unsupported crops return 422 even with valid credentials."""
+    img = Image.new("RGB", (200, 200), color="green")
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG")
+    buf.seek(0)
+
+    files = {"file": ("tomato.jpg", buf, "image/jpeg")}
+    data = {
+        "crop_name": "Tomato",
+        "location_state": "Maharashtra",
+    }
+    headers = {API_KEY_NAME: API_KEY}
+
+    response = client.post("/api/v1/diagnose", files=files, data=data, headers=headers)
+    assert response.status_code == 422

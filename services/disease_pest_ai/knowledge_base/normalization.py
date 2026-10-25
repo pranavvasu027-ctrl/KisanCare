@@ -137,6 +137,29 @@ CANONICAL_CONDITIONS = {
     ("cotton", "american bollworm"): ("Cotton Bollworm Infestation", "Helicoverpa armigera", ConditionType.PEST),
     ("cotton", "pink bollworm"): ("Cotton Bollworm Infestation", "Pectinophora gossypiella", ConditionType.PEST),
 
+    # COTTON FOLIAR DISEASES (FarmGuard DenseNet-121)
+    ("cotton", "bacterial blight"): ("Bacterial Blight", "Xanthomonas citri pv. malvacearum", ConditionType.DISEASE),
+    ("cotton", "cotton leaf curl virus"): ("Cotton Leaf Curl Virus", "Cotton leaf curl virus (CLCuV)", ConditionType.DISEASE),
+    ("cotton", "leaf curl virus"): ("Cotton Leaf Curl Virus", "Cotton leaf curl virus (CLCuV)", ConditionType.DISEASE),
+    ("cotton", "curl virus"): ("Cotton Leaf Curl Virus", "Cotton leaf curl virus (CLCuV)", ConditionType.DISEASE),
+    ("cotton", "fusarium wilt"): ("Fusarium Wilt", "Fusarium oxysporum f. sp. vasinfectum", ConditionType.DISEASE),
+    ("cotton", "fussarium wilt"): ("Fusarium Wilt", "Fusarium oxysporum f. sp. vasinfectum", ConditionType.DISEASE),
+    ("cotton", "healthy foliage"): ("Healthy Foliage", "Normal Plant Tissue", ConditionType.HEALTHY),
+    ("cotton", "healthy"): ("Healthy Foliage", "Normal Plant Tissue", ConditionType.HEALTHY),
+
+    # SOYBEAN FOLIAR DISEASES (ixrbhii ConvNeXt-Small)
+    ("soybean", "frogeye leaf spot"): ("Frogeye Leaf Spot", "Cercospora sojina", ConditionType.DISEASE),
+    ("soybean", "frogeye spot"): ("Frogeye Leaf Spot", "Cercospora sojina", ConditionType.DISEASE),
+    ("soybean", "asian soybean rust"): ("Asian Soybean Rust", "Phakopsora pachyrhizi", ConditionType.DISEASE),
+    ("soybean", "rust"): ("Asian Soybean Rust", "Phakopsora pachyrhizi", ConditionType.DISEASE),
+    ("soybean", "downy mildew"): ("Downy Mildew", "Peronospora manshurica", ConditionType.DISEASE),
+    ("soybean", "soybean mosaic virus"): ("Soybean Mosaic Virus", "Soybean mosaic virus (SMV)", ConditionType.DISEASE),
+    ("soybean", "mosaic virus"): ("Soybean Mosaic Virus", "Soybean mosaic virus (SMV)", ConditionType.DISEASE),
+    ("soybean", "brown spot septoria"): ("Brown Spot (Septoria)", "Septoria glycines", ConditionType.DISEASE),
+    ("soybean", "septoria brown spot"): ("Brown Spot (Septoria)", "Septoria glycines", ConditionType.DISEASE),
+    ("soybean", "brown spot"): ("Brown Spot (Septoria)", "Septoria glycines", ConditionType.DISEASE),
+    ("soybean", "healthy foliage"): ("Healthy Foliage", "Normal Plant Tissue", ConditionType.HEALTHY),
+
     # BASELINE HEALTHY
     ("blueberry", "healthy"): ("Healthy", "Normal Plant Tissue", ConditionType.HEALTHY),
     ("raspberry", "healthy"): ("Healthy", "Normal Plant Tissue", ConditionType.HEALTHY),

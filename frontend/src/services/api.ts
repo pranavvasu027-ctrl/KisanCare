@@ -404,7 +404,8 @@ export const api = {
     latitude?: number | null,
     longitude?: number | null,
     market?: string,
-    date?: string
+    date?: string,
+    forceRefresh?: boolean
   ): Promise<any> => {
     const normalizedCrop = crop.toLowerCase().includes('tur') ? 'Tur' : 'Cotton';
     return await fetchAPI('/api/v1/market-price', {
@@ -416,7 +417,8 @@ export const api = {
         latitude: latitude !== undefined ? latitude : undefined,
         longitude: longitude !== undefined ? longitude : undefined,
         market: market || undefined,
-        date: date || new Date().toISOString().split('T')[0]
+        date: date || new Date().toISOString().split('T')[0],
+        force_refresh: !!forceRefresh
       })
     });
   },
@@ -453,7 +455,8 @@ export const api = {
         const err = await res.json().catch(() => ({ detail: res.statusText }));
         throw new Error(err.detail || ('Server returned ' + res.status));
       }
-      const data = await res.json();
+      const json = await res.json();
+      const data = (json && json.data) ? json.data : json;
       return { data, isDemo: false };
     }
 
@@ -467,11 +470,12 @@ export const api = {
     if (options?.sampleId) payload.sample_id = options.sampleId;
     if (options?.imageBase64) payload.image_base64 = options.imageBase64;
 
-    const data = await fetchAPI('/api/v1/disease-detection', {
+    const json = await fetchAPI('/api/v1/disease-detection', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
+    const data = (json && json.data) ? json.data : json;
 
     return { data, isDemo: false };
   },

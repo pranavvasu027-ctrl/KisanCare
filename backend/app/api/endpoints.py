@@ -83,8 +83,21 @@ class SimulationRequest(BaseModel):
 class CropRecommendationRequest(BaseModel):
     district: str = Field(min_length=1, max_length=128)
     season: str = Field(min_length=1, max_length=32)
-    water_availability: str = Field(min_length=1, max_length=32)
+    water_availability: Optional[str] = Field(default="Medium", max_length=32)
+    water_access: Optional[str] = None
     top_k: int = Field(default=5, ge=1, le=20)
+    N: Optional[float] = None
+    P: Optional[float] = None
+    K: Optional[float] = None
+    ph: Optional[float] = None
+    temperature: Optional[float] = None
+    humidity: Optional[float] = None
+    rainfall: Optional[float] = None
+    nitrogen: Optional[float] = None
+    phosphorus: Optional[float] = None
+    potassium: Optional[float] = None
+    soil_ph: Optional[float] = None
+    state: Optional[str] = None
 
 
 class MarketPriceRequest(BaseModel):
@@ -94,6 +107,7 @@ class MarketPriceRequest(BaseModel):
     quantity: Optional[float] = Field(default=20.0, gt=0, le=50000)
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    force_refresh: Optional[bool] = False
 
 
 class SymptomsRequest(BaseModel):
@@ -141,9 +155,9 @@ def _ml_service_url() -> str:
 
 def _ml_timeout_seconds() -> float:
     try:
-        return max(0.1, float(os.getenv("ML_SERVICE_TIMEOUT_SECONDS", "8")))
+        return max(0.1, float(os.getenv("ML_SERVICE_TIMEOUT_SECONDS", "15")))
     except ValueError:
-        return 8.0
+        return 15.0
 
 
 
@@ -784,25 +798,39 @@ def get_weather_forecast(
 
 @router.post("/crop-recommendation")
 def predict_crop(data: CropRecommendationRequest):
+    payload = data.model_dump(exclude_none=True)
+    has_soil_inputs = (
+        (data.N is not None or data.nitrogen is not None) and
+        (data.P is not None or data.phosphorus is not None) and
+        (data.K is not None or data.potassium is not None) and
+        (data.ph is not None or data.soil_ph is not None)
+    )
+
     try:
-        return _proxy_to_ml("/api/v1/crop-recommendation", data.model_dump())
+        return _proxy_to_ml("/api/v1/crop-recommendation", payload)
     except HTTPException as exc:
-        if exc.status_code == 503:
-            # Fall back to real in-process Model 1 pipeline
+        if exc.status_code in (502, 503, 504):
+            # Fall back to real in-process pipeline
             try:
-                from ml.crop_recommendation.predict import PredictionPipeline
-                p = PredictionPipeline()
-                result = p.recommend(
-                    district=data.district.upper(),
-                    season=data.season,
-                    water_availability=data.water_availability,
-                    top_k=data.top_k
-                )
-                if result.get("status") == "ERROR":
-                    raise HTTPException(status_code=404 if "Unknown district" in result.get("reason", "") else 422,
-                                        detail=result.get("reason", "Inference error"))
-                _persist_model_prediction("crop_recommendation", "2.0.0", data.model_dump(), result, provenance="TRAINED_RANDOM_FOREST")
-                return result
+                if has_soil_inputs:
+                    from ml.crop_recommendation.hf_predict import predict_crop_from_dict
+                    result = predict_crop_from_dict(payload)
+                    _persist_model_prediction("crop_recommendation", "2.0.0", payload, result, provenance="HUGGINGFACE_DUAL_MODEL")
+                    return result
+                else:
+                    from ml.crop_recommendation.predict import PredictionPipeline
+                    p = PredictionPipeline()
+                    result = p.recommend(
+                        district=data.district.upper(),
+                        season=data.season,
+                        water_availability=data.water_availability or "Medium",
+                        top_k=data.top_k
+                    )
+                    if result.get("status") == "ERROR":
+                        raise HTTPException(status_code=404 if "Unknown district" in result.get("reason", "") else 422,
+                                            detail=result.get("reason", "Inference error"))
+                    _persist_model_prediction("crop_recommendation", "2.0.0", payload, result, provenance="TRAINED_RANDOM_FOREST")
+                    return result
             except Exception as inner_exc:
                 if isinstance(inner_exc, HTTPException):
                     raise inner_exc
@@ -817,7 +845,7 @@ def get_market_price(data: MarketPriceRequest):
     try:
         return _proxy_to_ml("/api/v1/models/market-price", data.model_dump())
     except HTTPException as exc:
-        if exc.status_code == 503:
+        if exc.status_code in (503, 504):
             try:
                 from ml.market_price.predict import MarketPricePredictor
                 models_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "models"))
@@ -828,7 +856,8 @@ def get_market_price(data: MarketPriceRequest):
                     farmer_lat=data.latitude,
                     farmer_lon=data.longitude,
                     selected_market=data.market,
-                    date_str=data.date
+                    date_str=data.date,
+                    force_refresh=data.force_refresh or False
                 )
                 if res.get("status") == "error":
                     msg = res.get("message", "Market forecasting error")
