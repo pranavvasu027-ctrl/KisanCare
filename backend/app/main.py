@@ -2,7 +2,13 @@ import os
 from pathlib import Path
 try:
     from dotenv import load_dotenv
+    import sys
     _repo_root = Path(__file__).resolve().parent.parent.parent
+    if str(_repo_root) not in sys.path:
+        sys.path.insert(0, str(_repo_root))
+    _services_path = _repo_root / "services"
+    if str(_services_path) not in sys.path:
+        sys.path.insert(0, str(_services_path))
     _env_file = _repo_root / ".env"
     if _env_file.exists():
         load_dotenv(dotenv_path=_env_file)
@@ -98,3 +104,24 @@ def health_check():
             "configured": configured
         }
     }
+
+@app.on_event("startup")
+def preload_models():
+    import threading
+    def _warmup():
+        try:
+            from .fertilizer.model_adapter import fertilizer_model_adapter
+            fertilizer_model_adapter._ensure_loaded()
+        except Exception:
+            pass
+        try:
+            from services.disease_pest_ai.api.routes.diagnose import get_pipeline
+            get_pipeline()
+        except Exception:
+            pass
+        try:
+            from services.disease_pest_ai.validation.image_validator import get_image_validator
+            get_image_validator()._ensure_models_loaded()
+        except Exception:
+            pass
+    threading.Thread(target=_warmup, daemon=True).start()

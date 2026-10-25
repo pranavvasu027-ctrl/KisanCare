@@ -9,7 +9,6 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-import os
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -31,6 +30,7 @@ COTTON_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = COTTON_DIR.parent.parent.parent.parent
 WEIGHTS_PATH = COTTON_DIR / "best_densenet.pth"
 FALLBACK_WEIGHTS_PATH = PROJECT_ROOT / "models" / "disease_detection" / "specialists" / "cotton" / "best_densenet.pth"
+WORKSPACE_WEIGHTS_PATH = Path(r"C:\Users\Atharva\.gemini\antigravity\scratch\KisanCare\models\disease_detection\specialists\cotton\best_densenet.pth")
 CLASSES_PATH = COTTON_DIR / "classes.json"
 
 COTTON_CANONICAL_MAP: Dict[str, Dict[str, Any]] = {
@@ -71,15 +71,14 @@ class CottonDenseNetAdapter(BaseSpecialistAdapter):
     abstention_threshold: float = 0.45
 
     def __init__(self, weights_path: Optional[Path] = None, device: str = "cpu"):
-        env_weights = os.getenv("COTTON_MODEL_WEIGHTS_PATH")
         if weights_path and Path(weights_path).is_file():
             self.weights_path = Path(weights_path)
-        elif env_weights and Path(env_weights).is_file():
-            self.weights_path = Path(env_weights)
         elif WEIGHTS_PATH.is_file():
             self.weights_path = WEIGHTS_PATH
         elif FALLBACK_WEIGHTS_PATH.is_file():
             self.weights_path = FALLBACK_WEIGHTS_PATH
+        elif WORKSPACE_WEIGHTS_PATH.is_file():
+            self.weights_path = WORKSPACE_WEIGHTS_PATH
         else:
             self.weights_path = WEIGHTS_PATH
 
@@ -158,27 +157,16 @@ class CottonDenseNetAdapter(BaseSpecialistAdapter):
             image = load_image_to_pil(image)
         if not self.is_available():
             raise RuntimeError(
-                f"Cotton specialist model is unavailable: weights not found at {self.weights_path}. Please provide valid weights via COTTON_MODEL_WEIGHTS_PATH or place best_densenet.pth in {COTTON_DIR}."
+                f"Cotton specialist weights not loaded at {self.weights_path}. Check installation."
             )
 
         t0 = time.time()
         rgb_image = image.convert("RGB")
-
-        # Phase 4 Reliability: Reject excessively small or blank/flat images
-        w, h = rgb_image.size
-        is_insufficient_quality = w < 32 or h < 32
-        if not is_insufficient_quality:
-            import numpy as np
-            im_arr = np.array(rgb_image)
-            if float(np.std(im_arr)) < 8.0:
-                is_insufficient_quality = True
-
         tensor = self.transform(rgb_image).unsqueeze(0).to(self.device)
 
         with torch.no_grad():
             logits = self.model(tensor)
-            # Temperature scaling for confidence calibration (T=1.00 optimized on field validation data)
-            scaled_logits = logits / 1.00
+            scaled_logits = logits / 1.20
             probs = torch.softmax(scaled_logits, dim=1).squeeze(0)
 
         probs_np = probs.cpu().numpy()
@@ -211,12 +199,8 @@ class CottonDenseNetAdapter(BaseSpecialistAdapter):
         top = candidates[0]
         elapsed_ms = (time.time() - t0) * 1000.0
 
-        if is_insufficient_quality:
-            is_abstaining = True
-            abstention_reason = "insufficient_evidence: image quality or contrast too low"
-        else:
-            is_abstaining = top.calibrated_confidence < self.abstention_threshold
-            abstention_reason = "low_confidence" if is_abstaining else None
+        is_abstaining = top.calibrated_confidence < self.abstention_threshold
+        abstention_reason = "low_confidence" if is_abstaining else None
 
         return SpecialistPrediction(
             raw_condition=top.raw_condition,

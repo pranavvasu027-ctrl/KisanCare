@@ -35,7 +35,13 @@ async function fetchAPI(endpoint: string, options?: RequestInit) {
       // Ignore if supabase offline
     }
 
-    const response = await fetch(endpoint, {
+    const baseUrl = import.meta.env.VITE_API_BASE_URL;
+    let targetUrl = endpoint;
+    if (baseUrl && endpoint.startsWith('/') && typeof window !== 'undefined' && !window.location.origin.includes('localhost') && !window.location.origin.includes('127.0.0.1')) {
+      targetUrl = `${baseUrl.replace(/\/+$/, '')}${endpoint}`;
+    }
+
+    const response = await fetch(targetUrl, {
       ...options,
       headers
     });
@@ -227,6 +233,14 @@ export const api = {
       attribution: "Weather data by Open-Meteo.com (CC BY 4.0)",
       isDemo: true
     };
+  },
+
+  // Farmer Onboarding API
+  submitOnboarding: async (onboardingData: any) => {
+    return await fetchAPI('/api/v1/onboarding', {
+      method: 'POST',
+      body: JSON.stringify(onboardingData)
+    });
   },
 
   // Farms Listing API

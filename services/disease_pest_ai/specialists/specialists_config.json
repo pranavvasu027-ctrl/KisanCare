@@ -1,8 +1,6 @@
 {
-  "version": "2.1.0",
-  "system": "KisanCare Focused Two-Model Crop Disease Intelligence Platform",
-  "focus": "Cotton & Soybean Specialized Neural Diagnostics",
-  "supported_crops": ["Cotton", "Soybean"],
+  "version": "2.0.0",
+  "system": "KisanCare Multi-Crop Disease Intelligence Platform",
   "specialists": {
     "soybean": {
       "model_id": "ixrbhii/soybean-disease-convnext",
@@ -153,8 +151,204 @@
       "abstention_threshold": 0.45,
       "calibration": {
         "method": "temperature_scaling",
-        "temperature": 1.20
+        "temperature": 1.2
       }
+    },
+    "tomato": {
+      "model_id": "BiernyVR/crop-disease-classifier#tomato",
+      "version": "1.0.0",
+      "status": "active",
+      "crop": "Tomato",
+      "architecture": "EfficientNetV2-S (torchvision)",
+      "framework": "pytorch",
+      "checkpoint_relpath": "models/disease_detection/weights/efficientnet_v2_s_best.pth",
+      "license": "MIT",
+      "provenance": {
+        "author": "BiernyVR",
+        "huggingface_repo": "https://huggingface.co/BiernyVR/crop-disease-classifier"
+      },
+      "abstention_threshold": 0.40,
+      "class_count": 10
+    },
+    "potato": {
+      "model_id": "BiernyVR/crop-disease-classifier#potato",
+      "version": "1.0.0",
+      "status": "active",
+      "crop": "Potato",
+      "architecture": "EfficientNetV2-S (torchvision)",
+      "framework": "pytorch",
+      "checkpoint_relpath": "models/disease_detection/weights/efficientnet_v2_s_best.pth",
+      "license": "MIT",
+      "abstention_threshold": 0.40,
+      "class_count": 3
+    },
+    "corn": {
+      "model_id": "BiernyVR/crop-disease-classifier#corn",
+      "version": "1.0.0",
+      "status": "active",
+      "crop": "Corn",
+      "architecture": "EfficientNetV2-S (torchvision)",
+      "framework": "pytorch",
+      "checkpoint_relpath": "models/disease_detection/weights/efficientnet_v2_s_best.pth",
+      "license": "MIT",
+      "abstention_threshold": 0.40,
+      "class_count": 4
+    },
+    "grape": {
+      "model_id": "BiernyVR/crop-disease-classifier#grape",
+      "version": "1.0.0",
+      "status": "active",
+      "crop": "Grape",
+      "architecture": "EfficientNetV2-S (torchvision)",
+      "framework": "pytorch",
+      "checkpoint_relpath": "models/disease_detection/weights/efficientnet_v2_s_best.pth",
+      "license": "MIT",
+      "abstention_threshold": 0.40,
+      "class_count": 4
+    },
+    "apple": {
+      "model_id": "BiernyVR/crop-disease-classifier#apple",
+      "version": "1.0.0",
+      "status": "active",
+      "crop": "Apple",
+      "architecture": "EfficientNetV2-S (torchvision)",
+      "framework": "pytorch",
+      "checkpoint_relpath": "models/disease_detection/weights/efficientnet_v2_s_best.pth",
+      "license": "MIT",
+      "abstention_threshold": 0.40,
+      "class_count": 4
+    },
+    "chilli": {
+      "model_id": "BiernyVR/crop-disease-classifier#pepper",
+      "version": "1.0.0",
+      "status": "active",
+      "crop": "Chilli",
+      "architecture": "EfficientNetV2-S (torchvision)",
+      "framework": "pytorch",
+      "checkpoint_relpath": "models/disease_detection/weights/efficientnet_v2_s_best.pth",
+      "license": "MIT",
+      "abstention_threshold": 0.40,
+      "class_count": 2
+    },
+    "yolo_multicrop": {
+      "model_id": "JK-TK/PlantDiseaseDetection",
+      "version": "1.0.0",
+      "status": "active",
+      "crop": "Multi-Crop",
+      "architecture": "YOLOv11x (Ultralytics)",
+      "framework": "ultralytics",
+      "role": "spatial_lesion_detector_and_candidate_generator",
+      "checkpoint_relpath": "PlantDiseaseDetection.pt",
+      "license": "MIT",
+      "provenance": {
+        "author": "JK-TK",
+        "huggingface_repo": "https://huggingface.co/JK-TK/PlantDiseaseDetection"
+      },
+      "class_count": 116,
+      "abstention_threshold": 0.20
+    },
+    "yolo_pest": {
+      "model_id": "underdogquality/yolo11s-pest-detection",
+      "version": "1.0.0",
+      "status": "active",
+      "crop": "All",
+      "architecture": "YOLO11s (Ultralytics)",
+      "framework": "ultralytics",
+      "role": "pest_object_detector",
+      "checkpoint_relpath": "best.pt",
+      "license": "MIT / AGPL-3.0",
+      "provenance": {
+        "author": "underdogquality",
+        "huggingface_repo": "https://huggingface.co/underdogquality/yolo11s-pest-detection"
+      },
+      "class_count": 102,
+      "abstention_threshold": 0.25
+    },
+    "rice": {
+      "model_id": "haiderAI/vision-model-Vit-rice-leaf-disease-detection",
+      "version": "1.0.0",
+      "status": "planned",
+      "crop": "Rice",
+      "architecture": "ViT-Base-Patch16-224 (HuggingFace)",
+      "framework": "pytorch",
+      "license": "Apache-2.0",
+      "provenance": {
+        "author": "haiderAI",
+        "huggingface_repo": "https://huggingface.co/haiderAI/vision-model-Vit-rice-leaf-disease-detection"
+      },
+      "class_mapping": [
+        {
+          "index": 0,
+          "raw": "Bacterial leaf blight",
+          "canonical_condition": "Bacterial Blight",
+          "canonical_label": "rice::Bacterial blight",
+          "category": "disease",
+          "scientific_name": "Xanthomonas oryzae pv. oryzae"
+        },
+        {
+          "index": 1,
+          "raw": "Brown spot",
+          "canonical_condition": "Brown Spot",
+          "canonical_label": "rice::Brown spot",
+          "category": "disease",
+          "scientific_name": "Bipolaris oryzae"
+        },
+        {
+          "index": 2,
+          "raw": "Leaf smut",
+          "canonical_condition": "Leaf Smut",
+          "canonical_label": "rice::Leaf smut",
+          "category": "disease",
+          "scientific_name": "Entyloma oryzae"
+        }
+      ]
+    },
+    "wheat": {
+      "model_id": "horshe/agrisentry-wheat-disease-classifier",
+      "version": "1.0.0",
+      "status": "planned",
+      "crop": "Wheat",
+      "architecture": "CNN (Keras/TensorFlow)",
+      "framework": "tensorflow",
+      "license": "MIT",
+      "provenance": {
+        "author": "horshe",
+        "huggingface_repo": "https://huggingface.co/horshe/agrisentry-wheat-disease-classifier"
+      },
+      "class_mapping": [
+        {
+          "index": 0,
+          "raw": "healthy",
+          "canonical_condition": "Healthy Foliage",
+          "canonical_label": "wheat::Healthy",
+          "category": "healthy",
+          "scientific_name": null
+        },
+        {
+          "index": 1,
+          "raw": "brown_rust",
+          "canonical_condition": "Brown (Leaf) Rust",
+          "canonical_label": "wheat::Brown (leaf) rust",
+          "category": "disease",
+          "scientific_name": "Puccinia triticina"
+        },
+        {
+          "index": 2,
+          "raw": "yellow_rust",
+          "canonical_condition": "Yellow (Stripe) Rust",
+          "canonical_label": "wheat::Yellow (stripe) rust",
+          "category": "disease",
+          "scientific_name": "Puccinia striiformis"
+        },
+        {
+          "index": 3,
+          "raw": "septoria",
+          "canonical_condition": "Septoria Leaf Blotch",
+          "canonical_label": "wheat::Septoria",
+          "category": "disease",
+          "scientific_name": "Zymoseptoria tritici"
+        }
+      ]
     }
   }
 }

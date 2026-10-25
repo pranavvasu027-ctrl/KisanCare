@@ -76,6 +76,7 @@ data/raw/*
 data/processed/*
 *.h5
 *.onnx
+*.pt
 
 # ML Models & Artifacts default ignore, with whitelisted lightweight runtime models
 *.joblib
