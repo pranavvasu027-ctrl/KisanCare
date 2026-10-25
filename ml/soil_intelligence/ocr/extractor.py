@@ -87,28 +87,39 @@ class LabReportExtractor:
             r"(?:field)[\s:=|]+([A-Za-z0-9\-_]+(?:\s+[A-Za-z0-9\-_]+)*?)(?=\s+(?:collection|farmer|village|date|district|owner|crop|document|\b)|$)"
         ],
         "pH": [
-            r"(?:soil\s+reaction(?:\s*\([^\)]*\))?|soil\s+ph|ph|p\.h\.)[\s:=|]+([0-9]+(?:\.[0-9]+)?)",
-            r"\bpH[\s:=|]+([0-9]+(?:\.[0-9]+)?)"
+            r"(?:soil\s+reaction(?:\s*\([^\)]*\))?|soil\s+ph)(?:\s*\((?:1:2(?:\.5)?|soil-water|suspension|[^\)]*)\))*[\s:=|~-]+([0-9]+(?:[\.,][0-9]+)?)",
+            r"(?:\bph\b|\bp\.h\.?\b|\bph\s+value\b)(?:\s*\((?:1:2(?:\.5)?|soil-water|suspension|[^\)]*)\))*[\s:=|~-]+([0-9]+(?:[\.,][0-9]+)?)",
+            r"(?:\bph\b|\bp\.h\.?\b)\s*(?:index|scale)?[\s:=|~-]+([0-9]+(?:[\.,][0-9]+)?)",
+            r"\b(?:ph|p\.h\.?)\b[^\n\r0-9]{1,25}?([0-9]+(?:[\.,][0-9]+)?)(?:\s*(?:phindex|index|scale|\b))"
         ],
         "EC": [
-            r"(?:electrical\s+conductivity(?:\s*\([^\)]*\))?|e\.c\.|ec)[\s:=|]+([0-9]+(?:\.[0-9]+)?)",
-            r"\bEC[\s:=|]+([0-9]+(?:\.[0-9]+)?)"
+            r"(?:electrical\s+conductivity(?:\s*\([^\)]*\))?|e\.c\.|ec)[\s:=|~-]+([0-9]+(?:[\.,][0-9]+)?)",
+            r"\bEC[\s:=|~-]+([0-9]+(?:[\.,][0-9]+)?)"
         ],
         "OC": [
-            r"(?:organic\s+carbon(?:\s*\([^\)]*\))?|o\.c\.|oc)[\s:=|]+([0-9]+(?:\.[0-9]+)?)",
-            r"\bOC[\s:=|]+([0-9]+(?:\.[0-9]+)?)"
+            r"(?:organic\s+c[ao]rbon(?:\s*\([^\)]*\))?|o\.c\.|oc)[\s:=|~-]+([0-9]+(?:[\.,][0-9]+)?)",
+            r"\bOC[\s:=|~-]+([0-9]+(?:[\.,][0-9]+)?)"
         ],
         "N": [
-            r"(?:available\s+nitrogen(?:\s*\([^\)]*\))?|nitrogen(?:\s*\([^\)]*\))?|avail\s+n(?:\s*\([^\)]*\))?)[\s:=|]+([0-9]+(?:\.[0-9]+)?)",
-            r"\bN\b[\s:=|]+([0-9]+(?:\.[0-9]+)?)"
+            r"(?:available|avail[aoe]ble|avallable)\s+(?:nitrogen|n)(?:\s*\((?:as|os)?\s*n\))?(?:\s*\([^\)]*\))?[\s:=|~-]+([0-9]+(?:[\.,][0-9]+)?)",
+            r"(?:nitrogen)(?:\s*\((?:as|os)?\s*n\))?(?:\s*\([^\)]*\))?[\s:=|~-]+([0-9]+(?:[\.,][0-9]+)?)",
+            r"\bN\b(?:\s*\([^)]*\))?[\s:=|~-]+([0-9]+(?:[\.,][0-9]+)?)",
+            r"(?:nitrogen|\bn\b)[^\n\r0-9]{1,35}?([0-9]+(?:[\.,][0-9]+)?)\s*(?:kg/ha|kgyha|koyha|kg\.ha|ko/ha|mg/kg|ppm)"
         ],
         "P": [
-            r"(?:available\s+phosphorus(?:\s*\([^\)]*\))?|phosphorus(?:\s*\([^\)]*\))?|available\s+p2[o0]5(?:\s*\([^\)]*\))?|avail\s+p(?:\s*\([^\)]*\))?|p2[o0]5|p₂o₅)[\s:=|]+([0-9]+(?:\.[0-9]+)?)",
-            r"\bP\b[\s:=|]+([0-9]+(?:\.[0-9]+)?)"
+            r"(?:available|avail[aoe]ble|avallable|avalleble|avol[lo]ble)\s+(?:phosphorus|p2[o0]5|p₂o₅|phosphate|p)(?:\s*\((?:as|os|o9|ios)?\s*p[2o0]*\))?(?:\s*\([^\)]*\))?[\s:=|~-]+([0-9]+(?:[\.,][0-9]+)?)",
+            r"(?:phosphorus|phosphate)(?:\s*\((?:as|os|o9|ios)?\s*p[2o0]*\))?(?:\s*\([^\)]*\))?[\s:=|~-]+([0-9]+(?:[\.,][0-9]+)?)",
+            r"(?:p2[o0]5|p₂o₅)(?:\s*\([^\)]*\))?[\s:=|~-]+([0-9]+(?:[\.,][0-9]+)?)",
+            r"\bP\b(?:\s*\([^)]*\))?[\s:=|~-]+([0-9]+(?:[\.,][0-9]+)?)",
+            r"(?:phosphorus|phosphate|p2[o0]5|p₂o₅|\bp\b)[^\n\r0-9]{1,35}?([0-9]+(?:[\.,][0-9]+)?)\s*(?:kg/ha|kgyha|koyha|kg\.ha|ko/ha|mg/kg|ppm)"
         ],
         "K": [
-            r"(?:available\s+potassium(?:\s*\([^\)]*\))?|potassium(?:\s*\([^\)]*\))?|available\s+k2[o0](?:\s*\([^\)]*\))?|avail\s+k(?:\s*\([^\)]*\))?|potash|k2[o0]|k₂o)[\s:=|]+([0-9]+(?:\.[0-9]+)?)",
-            r"\bK\b[\s:=|]+([0-9]+(?:\.[0-9]+)?)"
+            r"(?:available|avail[aoe]ble|avallable|avalleble|avaltoble|avateble)\s+(?:potassium|pot[ao]ss[il1u]um[k]?|potash|k[2o0]*)(?:\s*\((?:as|os)?\s*k[2o0]*\))?(?:\s*\([^\)]*\))?[\s:=|~-]+([0-9]+(?:[\.,][0-9]+)?)",
+            r"(?:potassium|pot[ao]ss[il1u]um[k]?|potash)(?:\s*\((?:as|os)?\s*k[2o0]*\))?(?:\s*\([^\)]*\))?[\s:=|~-]+([0-9]+(?:[\.,][0-9]+)?)",
+            r"(?:available|avail[aoe]ble|avail)\s+k[2o0]*(?:\s*\([^\)]*\))?[\s:=|~-]+([0-9]+(?:[\.,][0-9]+)?)",
+            r"\bK\b(?:\s*\([^)]*\))?[\s:=|~-]+([0-9]+(?:[\.,][0-9]+)?)",
+            r"(?:k2[o0]|k₂o)(?:\s*\([^\)]*\))?[\s:=|~-]+([0-9]+(?:[\.,][0-9]+)?)",
+            r"(?:potassium|pot[ao]ss[il1u]um[k]?|potash|\bk\b)[^\n\r0-9]{1,35}?([0-9]+(?:[\.,][0-9]+)?)\s*(?:kg/ha|kgyha|koyha|kg\.ha|ko/ha|mg/kg|ppm)"
         ]
     }
 
@@ -212,22 +223,36 @@ class LabReportExtractor:
             field_confidences["plot_id"] = 0.50
 
         PARAM_LABELS = {
-            "pH": r"^(?:soil\s+reaction|soil\s+ph|ph|p\.h\.)(?:\s*\([^\)]*\))?$",
+            "pH": r"^(?:soil\s+reaction|soil\s+ph|ph\s+value|ph|p\.h\.)(?:\s*\([^\)]*\))*$",
             "EC": r"^(?:electrical\s+conductivity|ec|e\.c\.)(?:\s*\([^\)]*\))?$",
-            "OC": r"^(?:organic\s+carbon|oc|o\.c\.)(?:\s*\([^\)]*\))?$",
-            "N": r"^(?:available\s+nitrogen|nitrogen|avail\s+n)(?:\s*\([^\)]*\))?$",
-            "P": r"^(?:available\s+phosphorus|phosphorus|avail\s+p|available\s+p2[o0]5|p2[o0]5|p₂o₅)(?:\s*\([^\)]*\))?$",
-            "K": r"^(?:available\s+potassium|potassium|avail\s+k|available\s+k2[o0]|potash|k2[o0]|k₂o)(?:\s*\([^\)]*\))?$"
+            "OC": r"^(?:organic\s+c[ao]rbon|oc|o\.c\.)(?:\s*\([^\)]*\))?$",
+            "N": r"^(?:available\s+nitrogen|avail[aoe]ble\s+nitrogen|nitrogen|avail\s+n|\bn\b)(?:\s*\([^\)]*\))?$",
+            "P": r"^(?:available\s+phosphorus|avail[aoe]ble\s+phosphorus|phosphorus|avail\s+p|available\s+p2[o0]5|p2[o0]5|p₂o₅|\bp\b)(?:\s*\([^\)]*\))?$",
+            "K": r"^(?:available\s+potassium|avail[aoe]ble\s+pot[ao]ss[il1u]um[k]?|avail[aoe]ble\s+potash|available\s+k2[o0]|potassium|potash|avail\s+k|k2[o0]|k₂o|\bk\b)(?:\s*\([^\)]*\))?$"
         }
 
         # Helper to extract and normalize a parameter
         def extract_param(param_key: str, patterns: List[str]) -> Tuple[Optional[FieldNormalizationResult], float]:
-            # Strategy 1: Search in flat text / lines with robust regex
+            # Strategy 1: Search line-by-line first (highest accuracy on table rows, eliminates cross-line bleed)
+            for line in lines:
+                for pat in patterns:
+                    m = re.search(pat, line, re.IGNORECASE)
+                    if m:
+                        raw_val = m.group(1)
+                        res = ReportFieldNormalizer.normalize_nutrient_field(
+                            nutrient=param_key,
+                            raw_val_str=raw_val,
+                            surrounding_text=line
+                        )
+                        if res.measurement:
+                            conf = 0.98 if res.is_plausible else 0.70
+                            return res, conf
+
+            # Strategy 2: Search in flat text with robust regex
             for pat in patterns:
                 m = re.search(pat, flat_text, re.IGNORECASE)
                 if m:
                     raw_val = m.group(1)
-                    # Grab surrounding text for unit/chemical form context
                     start = max(0, m.start() - 25)
                     end = min(len(flat_text), m.end() + 35)
                     surrounding = flat_text[start:end]
@@ -236,10 +261,11 @@ class LabReportExtractor:
                         raw_val_str=raw_val,
                         surrounding_text=surrounding
                     )
-                    conf = 0.95 if res.is_plausible else 0.65
-                    return res, conf
+                    if res.measurement:
+                        conf = 0.95 if res.is_plausible else 0.65
+                        return res, conf
 
-            # Strategy 2: Multi-line adjacent check (line i has label, line i+1 or i+2 has number)
+            # Strategy 3: Multi-line adjacent check (line i has label, line i+1 or i+2 has number)
             lbl_pat = PARAM_LABELS.get(param_key)
             if lbl_pat:
                 for idx, line in enumerate(lines):
@@ -249,7 +275,7 @@ class LabReportExtractor:
                                 cand_line = lines[idx + offset].strip()
                                 if re.search(r"^(?:reported|value|unit|form|method|parameter|table)", cand_line, re.IGNORECASE):
                                     continue
-                                m_num = re.search(r"^([0-9]+(?:\.[0-9]+)?)\b", cand_line)
+                                m_num = re.search(r"^([0-9]+(?:[\.,][0-9]+)?)\b", cand_line)
                                 if m_num:
                                     raw_val = m_num.group(1)
                                     ctx = " ".join(lines[max(0, idx - 1):min(len(lines), idx + 4)])
@@ -258,8 +284,9 @@ class LabReportExtractor:
                                         raw_val_str=raw_val,
                                         surrounding_text=ctx
                                     )
-                                    conf = 0.90 if res.is_plausible else 0.60
-                                    return res, conf
+                                    if res.measurement:
+                                        conf = 0.90 if res.is_plausible else 0.60
+                                        return res, conf
 
             return None, 0.0
 

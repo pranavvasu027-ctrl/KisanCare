@@ -241,9 +241,30 @@ class DiseasePestPipeline:
         disease_section: DiseaseSection
         disease_latency_ms: float = 0.0
 
+        validation_result = None
         if is_foliar_eligible:
-            t0_dis = time.perf_counter()
-            vision_result = self.predict_vision_only(
+            # STRICT PLANT / LEAF VALIDATION GATE (BEFORE ANY DISEASE CLASSIFIER CALL)
+            from disease_pest_ai.inference.validator import get_plant_validator
+            validator = get_plant_validator()
+            t0_val = time.perf_counter()
+            validation_result = validator.validate(input_payload.plant_image)
+            latency_breakdown["validation_ms"] = round((time.perf_counter() - t0_val) * 1000, 2)
+
+            if not validation_result.is_valid_plant_image:
+                # Image failed validation: DISEASE MODEL MUST NEVER BE CALLED!
+                aggregated_warnings.append(validation_result.message)
+                disease_section = DiseaseSection(
+                    condition="Invalid Photo - Plant Leaf Not Detected",
+                    condition_type=ConditionType.UNKNOWN,
+                    score=0.0,
+                    top_predictions=[],
+                    crop_match=False,
+                    status="INVALID_IMAGE",
+                )
+                run_pest_detection = False
+            else:
+                t0_dis = time.perf_counter()
+                vision_result = self.predict_vision_only(
                 plant_image=input_payload.plant_image,
                 crop_name=input_payload.crop_name,
                 location_state=input_payload.location_state,
@@ -441,6 +462,9 @@ class DiseasePestPipeline:
             except Exception:
                 pass
 
+        if validation_result and not validation_result.is_valid_plant_image:
+            generate_visual_explanation = False
+
         if generate_visual_explanation:
             t0_exp = time.perf_counter()
             explainability_outputs = generate_explainability(
@@ -477,6 +501,7 @@ class DiseasePestPipeline:
 
         pipeline_ctx = {
             "version": "4.0.0",
+            "validation": validation_result.to_dict() if validation_result else None,
             "location_state": input_payload.location_state,
             "growth_stage": str(input_payload.growth_stage),
             "image_type": str(input_payload.image_type),

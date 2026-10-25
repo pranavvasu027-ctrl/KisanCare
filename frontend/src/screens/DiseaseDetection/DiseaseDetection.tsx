@@ -79,6 +79,13 @@ export default function DiseaseDetection() {
   const [isDemo, setIsDemo] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [result, setResult] = useState<DiagnosisResult | null>(null);
+  const [invalidPhoto, setInvalidPhoto] = useState<{
+    status: 'INVALID_IMAGE';
+    reason: string;
+    message: string;
+    plantConfidence?: number;
+    leafConfidence?: number;
+  } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -140,8 +147,32 @@ export default function DiseaseDetection() {
         });
       }
 
-      const data = response.data;
+      const rawData = response.data;
       setIsDemo(response.isDemo);
+
+      // Check if image failed plant/leaf validation gate
+      if (
+        rawData?.status === 'INVALID_IMAGE' ||
+        rawData?.is_valid_plant_image === false ||
+        rawData?.data?.status === 'INVALID_IMAGE' ||
+        rawData?.data?.is_valid_plant_image === false
+      ) {
+        const failureData = rawData?.status === 'INVALID_IMAGE' ? rawData : (rawData?.data || rawData);
+        setInvalidPhoto({
+          status: 'INVALID_IMAGE',
+          reason: failureData.reason || 'NO_PLANT_DETECTED',
+          message: failureData.message || 'Invalid photo. Please upload a clear photo of a plant leaf.',
+          plantConfidence: failureData.plant_confidence,
+          leafConfidence: failureData.leaf_confidence,
+        });
+        setResult(null);
+        return;
+      }
+
+      // Successful validation: clear invalid photo state
+      setInvalidPhoto(null);
+
+      const data = rawData?.data || rawData;
 
       const conditionName = data.condition || data.prediction || 'Unknown Foliar Condition';
       const sciName = data.scientific_name || `${targetCrop} foliar pathological disorder`;
@@ -215,8 +246,14 @@ export default function DiseaseDetection() {
     setSelectedFile(null);
     setSampleId(null);
     setResult(null);
+    setInvalidPhoto(null);
     setErrorMessage(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleUploadAnother = () => {
+    handleReset();
+    fileInputRef.current?.click();
   };
 
   return (
@@ -474,6 +511,50 @@ export default function DiseaseDetection() {
               <Loader2 className="w-8 h-8 text-[#17643E] animate-spin mx-auto mb-3" />
               <h4 className="font-bold text-[#103D2C]">Executing Deep Learning Vision Model</h4>
               <p className="text-xs text-[#292B26]/60 mt-1">Cross-referencing EfficientNetV2-S 38 pathology classes & CIB&RC treatments...</p>
+            </div>
+          ) : invalidPhoto ? (
+            <div className="bg-white p-6 sm:p-8 rounded-2xl border border-amber-300 shadow-sm text-center space-y-4">
+              <div className="w-16 h-16 bg-amber-100 text-amber-700 rounded-2xl flex items-center justify-center mx-auto shadow-xs">
+                <AlertTriangle size={36} className="text-amber-600" />
+              </div>
+
+              <div className="space-y-1">
+                <h3 className="text-xl font-serif font-bold text-[#103D2C]">Invalid Photo</h3>
+                <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">
+                  {invalidPhoto.reason === 'IMAGE_TOO_BLURRY' ? 'Image is too blurry' :
+                   invalidPhoto.reason === 'IMAGE_TOO_DARK' ? 'Image is too dark' :
+                   invalidPhoto.reason === 'LOW_IMAGE_QUALITY' ? 'Image quality is too low' :
+                   invalidPhoto.reason === 'NO_LEAF_DETECTED' ? 'No plant leaf detected' :
+                   invalidPhoto.reason === 'UNRELATED_IMAGE' ? 'Non-agricultural image detected' :
+                   'No plant leaf was detected'}
+                </p>
+              </div>
+
+              <div className="bg-amber-50/70 border border-amber-200 rounded-xl p-4 text-xs text-[#292B26]/80 text-left space-y-2">
+                <p className="font-medium text-amber-950">
+                  {invalidPhoto.message || 'No plant leaf was detected in the uploaded image.'}
+                </p>
+                <p className="text-[11px] text-[#292B26]/70 leading-relaxed">
+                  Please upload a clear photo of an agricultural plant leaf for disease detection.
+                </p>
+                {typeof invalidPhoto.plantConfidence === 'number' && (
+                  <div className="pt-2 border-t border-amber-200/60 flex items-center justify-between text-[11px] text-[#292B26]/60">
+                    <span>Plant presence confidence:</span>
+                    <span className="font-mono font-bold text-amber-900">{Math.round(invalidPhoto.plantConfidence * 100)}% (threshold: 70%)</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={handleUploadAnother}
+                  className="bg-[#103D2C] hover:bg-[#17643E] text-white font-medium py-2.5 px-6 rounded-xl text-xs transition-all flex items-center justify-center gap-2 mx-auto cursor-pointer shadow-xs hover:shadow-md"
+                >
+                  <Upload size={14} />
+                  <span>Upload Another Photo</span>
+                </button>
+              </div>
             </div>
           ) : result ? (
             <div className="space-y-4">
