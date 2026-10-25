@@ -3,7 +3,7 @@ import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const FRONTEND_ROOT = path.resolve('frontend');
+const FRONTEND_ROOT = fs.existsSync(path.resolve('src')) ? path.resolve('.') : path.resolve('frontend');
 const SRC_ROOT = path.join(FRONTEND_ROOT, 'src');
 
 test('ONBOARDING-01: Onboarding route is registered in App.tsx', () => {
