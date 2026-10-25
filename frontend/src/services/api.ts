@@ -390,7 +390,8 @@ export const api = {
     latitude?: number | null,
     longitude?: number | null,
     market?: string,
-    date?: string
+    date?: string,
+    forceRefresh?: boolean
   ): Promise<any> => {
     const normalizedCrop = crop.toLowerCase().includes('tur') ? 'Tur' : 'Cotton';
     return await fetchAPI('/api/v1/market-price', {
@@ -402,7 +403,8 @@ export const api = {
         latitude: latitude !== undefined ? latitude : undefined,
         longitude: longitude !== undefined ? longitude : undefined,
         market: market || undefined,
-        date: date || new Date().toISOString().split('T')[0]
+        date: date || new Date().toISOString().split('T')[0],
+        force_refresh: !!forceRefresh
       })
     });
   },

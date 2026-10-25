@@ -68,6 +68,7 @@ class MarketPriceRequest(BaseModel):
     quantity: Optional[float] = Field(default=20.0, gt=0, le=50000)
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    force_refresh: Optional[bool] = False
 
 
 class SymptomsRequest(BaseModel):
@@ -115,9 +116,9 @@ def _ml_service_url() -> str:
 
 def _ml_timeout_seconds() -> float:
     try:
-        return max(0.1, float(os.getenv("ML_SERVICE_TIMEOUT_SECONDS", "8")))
+        return max(0.1, float(os.getenv("ML_SERVICE_TIMEOUT_SECONDS", "15")))
     except ValueError:
-        return 8.0
+        return 15.0
 
 
 
@@ -805,7 +806,7 @@ def get_market_price(data: MarketPriceRequest):
     try:
         return _proxy_to_ml("/api/v1/models/market-price", data.model_dump())
     except HTTPException as exc:
-        if exc.status_code == 503:
+        if exc.status_code in (503, 504):
             try:
                 from ml.market_price.predict import MarketPricePredictor
                 models_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "models"))
@@ -816,7 +817,8 @@ def get_market_price(data: MarketPriceRequest):
                     farmer_lat=data.latitude,
                     farmer_lon=data.longitude,
                     selected_market=data.market,
-                    date_str=data.date
+                    date_str=data.date,
+                    force_refresh=data.force_refresh or False
                 )
                 if res.get("status") == "error":
                     msg = res.get("message", "Market forecasting error")

@@ -16,6 +16,13 @@ import { WorkflowFooter } from '../../components/workflow/WorkflowFooter';
 // Scope: Strictly Cotton and Tur
 export type SupportedCrop = 'Cotton' | 'Tur';
 
+interface SupportingWebsite {
+  name: string;
+  url: string;
+  description: string;
+  badge: string;
+}
+
 interface MarketData {
   name: string;
   district: string;
@@ -29,6 +36,11 @@ interface MarketData {
   distance_display: string;
   price_type: string;
   current_price: number;
+  min_price?: number;
+  max_price?: number;
+  price_source?: string;
+  is_live?: boolean;
+  source_portal?: string;
   transport_cost_per_qtl: number;
   net_price_per_qtl: number;
   expected_gross_amount: number;
@@ -58,6 +70,16 @@ interface MarketApiResponse {
   crop_display: string;
   price_type: string;
   quantity_quintals: number;
+  data_source?: {
+    type: string;
+    server_status: string;
+    provider: string;
+    api_endpoint: string;
+    portal_url: string;
+    last_synced: string;
+    live_reporting_mandis: number;
+    supporting_websites: SupportingWebsite[];
+  };
   farmer_location: {
     latitude: number;
     longitude: number;
@@ -87,14 +109,18 @@ interface MarketApiResponse {
 
 // Regional Agricultural Hub Presets for rapid zero-friction selection
 const REGIONAL_DISTRICT_HUBS = [
+  { name: 'Pune (पुणे)', coords: [18.4636, 73.8682] as [number, number] },
+  { name: 'Nashik (नाशिक)', coords: [20.0120, 73.7920] as [number, number] },
   { name: 'Akola (अकोला)', coords: [20.7002, 77.0082] as [number, number] },
   { name: 'Amravati (अमरावती)', coords: [20.9320, 77.7523] as [number, number] },
+  { name: 'Baramati (बारामती)', coords: [18.1519, 74.5770] as [number, number] },
+  { name: 'Latur (लातूर)', coords: [18.4088, 76.5604] as [number, number] },
+  { name: 'Solapur (सोलापूर)', coords: [17.6599, 75.9064] as [number, number] },
+  { name: 'Ahmednagar (अहमदनगर)', coords: [19.0950, 74.7490] as [number, number] },
   { name: 'Wardha (वर्धा)', coords: [20.7453, 78.6022] as [number, number] },
   { name: 'Yavatmal (यवतमाळ)', coords: [20.3888, 78.1204] as [number, number] },
   { name: 'Washim (वाशीम)', coords: [20.1090, 77.1350] as [number, number] },
-  { name: 'Latur (लातूर)', coords: [18.4088, 76.5604] as [number, number] },
   { name: 'Jalna (जालना)', coords: [19.8347, 75.8816] as [number, number] },
-  { name: 'Baramati (बारामती)', coords: [18.1519, 74.5770] as [number, number] },
 ];
 
 // Leaflet custom marker generator
@@ -139,47 +165,60 @@ export default function MarketIntelligence() {
   // 1. Farmer Inputs (Only 3 essential questions)
   const [crop, setCrop] = useState<SupportedCrop>('Cotton');
   const [quantity, setQuantity] = useState<number>(20);
-  const [customLocationName, setCustomLocationName] = useState<string>('Akola, Maharashtra');
 
-  // GPS / Location state
+  // GPS / Location state: Only discover when requested by farmer or if active farm profile has coordinates
+  const hasFarmLocation = Boolean(activeFarm?.latitude && activeFarm?.longitude);
+  const [locationFetched, setLocationFetched] = useState<boolean>(hasFarmLocation);
+  const [customLocationName, setCustomLocationName] = useState<string>(() => {
+    return activeFarm?.location || 'Live GPS Location Required';
+  });
+
   const [farmerCoords, setFarmerCoords] = useState<[number, number]>(() => {
     if (activeFarm?.latitude && activeFarm?.longitude) {
       return [activeFarm.latitude, activeFarm.longitude];
     }
-    return [20.7002, 77.0082]; // Default Akola farm center
+    return [18.4636, 73.8682]; // Default centroid (Pune / Western Maharashtra)
   });
 
   // UI & Data State
   const [data, setData] = useState<MarketApiResponse | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedMarketName, setSelectedMarketName] = useState<string | null>(null);
   const [gpsLoading, setGpsLoading] = useState<boolean>(false);
+  const [showSourcesModal, setShowSourcesModal] = useState<boolean>(false);
 
   // Sync with activeFarm coordinates if updated
   useEffect(() => {
     if (activeFarm?.latitude && activeFarm?.longitude) {
       setFarmerCoords([activeFarm.latitude, activeFarm.longitude]);
+      setLocationFetched(true);
       if (activeFarm.location) {
         setCustomLocationName(activeFarm.location);
       }
     }
   }, [activeFarm]);
 
-  // Fetch recommendations whenever crop, quantity, or coordinates change
+  // Fetch recommendations whenever crop, quantity, or coordinates change ONLY IF location has been fetched
   useEffect(() => {
-    loadMarketIntelligence();
-  }, [crop, quantity, farmerCoords]);
+    if (locationFetched) {
+      loadMarketIntelligence(false, farmerCoords);
+    }
+  }, [crop, quantity, farmerCoords, locationFetched]);
 
-  const loadMarketIntelligence = async () => {
+  const loadMarketIntelligence = async (forceRefresh: boolean = false, coordsOverride?: [number, number]) => {
+    const coords = coordsOverride || farmerCoords;
     setLoading(true);
     setError(null);
     try {
       const res = await api.getMarketPrice(
         crop,
         quantity,
-        farmerCoords[0],
-        farmerCoords[1]
+        coords[0],
+        coords[1],
+        undefined,
+        undefined,
+        forceRefresh
       );
       if (res && res.status === 'success') {
         setData(res);
@@ -200,26 +239,46 @@ export default function MarketIntelligence() {
       return;
     }
     setGpsLoading(true);
+    setError(null);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      async (pos) => {
         const lat = Number(pos.coords.latitude.toFixed(4));
         const lon = Number(pos.coords.longitude.toFixed(4));
-        setFarmerCoords([lat, lon]);
-        setCustomLocationName(`GPS (${lat.toFixed(2)}, ${lon.toFixed(2)})`);
+        const newCoords: [number, number] = [lat, lon];
+        setFarmerCoords(newCoords);
+        setLocationFetched(true);
+        setCustomLocationName(`GPS (${lat.toFixed(2)}°, ${lon.toFixed(2)}°)`);
+        
+        // Reverse-geocode for human-readable locality
+        try {
+          const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+          if (resp.ok) {
+            const geodata = await resp.json();
+            const locality = geodata.address?.suburb || geodata.address?.village || geodata.address?.town || geodata.address?.city || 'Your Farm';
+            const district = geodata.address?.state_district || geodata.address?.county || geodata.address?.state || '';
+            const resolved = district ? `${locality}, ${district}` : locality;
+            setCustomLocationName(`GPS: ${resolved}`);
+          }
+        } catch {
+          // ignore reverse geocode error
+        }
         setGpsLoading(false);
+        loadMarketIntelligence(false, newCoords);
       },
       (err) => {
         console.warn('GPS location error:', err);
         setGpsLoading(false);
-        alert('Could not detect GPS location. You can select your district from the presets below.');
+        alert('Could not detect GPS location. You can select your district from the regional presets below.');
       },
-      { timeout: 8000 }
+      { timeout: 10000, enableHighAccuracy: true }
     );
   };
 
   const handleSelectDistrict = (hubName: string, coords: [number, number]) => {
     setFarmerCoords(coords);
     setCustomLocationName(hubName);
+    setLocationFetched(true);
+    loadMarketIntelligence(false, coords);
   };
 
   // Find currently highlighted market in map
@@ -237,25 +296,40 @@ export default function MarketIntelligence() {
       {/* Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-[#103D2C] to-[#17643E] p-6 rounded-3xl text-white shadow-lg">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-[#FBF7EF] text-xs font-semibold mb-2">
-            <Sparkles size={14} className="text-[#F1A93B]" />
-            <span>Smart Mandi Decision Engine</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
             Market Intelligence (बाजार भाव)
           </h1>
-          <p className="text-[#FBF7EF]/80 text-sm mt-1 max-w-2xl">
-            Where and when should you sell your harvest to make the maximum money in your pocket after transport.
-          </p>
+
+          {/* Real-time Server Link Badge & Source Links */}
+          <div className="flex flex-wrap items-center gap-2 mt-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-100 text-xs font-medium">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>
+                {data?.data_source?.type === 'LIVE_AGMARKNET_SERVER' || data?.data_source?.server_status?.includes('ONLINE')
+                  ? 'Connected to Live Agmarknet Server (data.gov.in)'
+                  : 'Agmarknet APMC Market Bulletin'}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowSourcesModal(true)}
+              className="inline-flex items-center gap-1 text-xs text-[#F1A93B] hover:text-white font-semibold underline underline-offset-2 transition"
+            >
+              <Info size={13} />
+              <span>Official Market Servers & APIs</span>
+            </button>
+          </div>
         </div>
 
         <button
-          onClick={loadMarketIntelligence}
+          onClick={() => loadMarketIntelligence(true)}
           disabled={loading}
-          className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2.5 rounded-2xl text-xs font-semibold transition self-start sm:self-center border border-white/20"
+          className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2.5 rounded-2xl text-xs font-semibold transition self-start sm:self-center border border-white/20 shadow-sm"
+          title="Force refresh prices directly from real market servers"
         >
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-          <span>Refresh Prices</span>
+          <span>Refresh Live Rates</span>
         </button>
       </div>
 
@@ -309,9 +383,6 @@ export default function MarketIntelligence() {
                 </div>
               </button>
             </div>
-            <p className="text-[11px] text-[#292B26]/60">
-              Prices benchmarked directly from official Agmarknet APMC mandi auctions.
-            </p>
           </div>
 
           {/* Question 2: Harvest Quantity */}
@@ -352,32 +423,46 @@ export default function MarketIntelligence() {
             </div>
           </div>
 
-          {/* Question 3: Farmer Location with GPS & District Hub Presets */}
+          {/* Question 3: Farmer Location with Dynamic GPS Discovery */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold uppercase tracking-wider text-[#103D2C] flex items-center gap-1.5">
                 <span>📍</span> Step 3: Farm Location
               </label>
+              {locationFetched && (
+                <button
+                  type="button"
+                  onClick={handleUseCurrentGPS}
+                  disabled={gpsLoading}
+                  className="text-[11px] font-bold text-[#17643E] hover:underline flex items-center gap-1"
+                >
+                  <Compass size={12} className={gpsLoading ? 'animate-spin' : ''} />
+                  <span>{gpsLoading ? 'Locating...' : 'Re-fetch GPS'}</span>
+                </button>
+              )}
+            </div>
+
+            {!locationFetched ? (
               <button
                 type="button"
                 onClick={handleUseCurrentGPS}
                 disabled={gpsLoading}
-                className="text-[11px] font-bold text-[#17643E] hover:underline flex items-center gap-1"
+                className="w-full p-3.5 bg-gradient-to-r from-[#17643E] to-[#103D2C] hover:opacity-95 text-white rounded-2xl flex items-center justify-center gap-2 text-xs font-bold shadow-md transition transform active:scale-95"
               >
-                <Compass size={12} className={gpsLoading ? 'animate-spin' : ''} />
-                <span>{gpsLoading ? 'Locating...' : 'Use My GPS'}</span>
+                <Compass size={16} className={gpsLoading ? 'animate-spin text-[#F1A93B]' : 'text-[#F1A93B]'} />
+                <span>{gpsLoading ? 'Acquiring GPS Satellite Fix...' : '📍 Fetch My Location (GPS)'}</span>
               </button>
-            </div>
-
-            <div className="p-3 bg-[#FBF7EF] border border-[#E5DDCF] rounded-2xl flex items-center justify-between text-xs font-semibold text-[#103D2C]">
-              <div className="flex items-center gap-2 truncate">
-                <MapPin size={16} className="text-[#17643E] shrink-0" />
-                <span className="truncate">{customLocationName}</span>
+            ) : (
+              <div className="p-3 bg-[#E8F3ED] border-2 border-[#17643E]/30 rounded-2xl flex items-center justify-between text-xs font-semibold text-[#103D2C]">
+                <div className="flex items-center gap-2 truncate">
+                  <MapPin size={16} className="text-[#17643E] shrink-0" />
+                  <span className="truncate font-bold">{customLocationName}</span>
+                </div>
+                <span className="text-[10px] bg-white px-2 py-0.5 rounded-full border border-[#17643E]/20 text-[#292B26]/70 shrink-0 ml-2">
+                  {farmerCoords[0].toFixed(2)}°, {farmerCoords[1].toFixed(2)}°
+                </span>
               </div>
-              <span className="text-[10px] bg-white px-2 py-0.5 rounded-full border border-[#E5DDCF] text-[#292B26]/60 shrink-0">
-                {farmerCoords[0].toFixed(2)}°, {farmerCoords[1].toFixed(2)}°
-              </span>
-            </div>
+            )}
 
             {/* Quick District Presets */}
             <div className="space-y-1">
@@ -391,7 +476,7 @@ export default function MarketIntelligence() {
                     type="button"
                     onClick={() => handleSelectDistrict(hub.name, hub.coords)}
                     className={`text-[10px] px-2 py-0.5 rounded-lg border transition ${
-                      farmerCoords[0] === hub.coords[0] && farmerCoords[1] === hub.coords[1]
+                      locationFetched && farmerCoords[0] === hub.coords[0] && farmerCoords[1] === hub.coords[1]
                         ? 'bg-[#17643E] text-white border-[#17643E] font-bold'
                         : 'bg-white border-[#E5DDCF] text-[#292B26]/70 hover:bg-[#FBF7EF]'
                     }`}
@@ -414,19 +499,57 @@ export default function MarketIntelligence() {
         </div>
       )}
 
+      {/* LOCATION DISCOVERY HERO CARD (When farmer has not fetched location yet) */}
+      {!locationFetched && !loading && (
+        <div className="bg-gradient-to-br from-[#103D2C] via-[#14533C] to-[#17643E] rounded-3xl text-white p-6 sm:p-8 shadow-xl relative overflow-hidden border border-[#E5DDCF]/20 text-center space-y-4">
+          <div className="max-w-md mx-auto">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
+              Discover Nearby APMC Mandis
+            </h2>
+          </div>
+
+          <div className="flex justify-center">
+            <button
+              type="button"
+              onClick={handleUseCurrentGPS}
+              disabled={gpsLoading}
+              className="px-8 py-3.5 rounded-2xl bg-[#F1A93B] hover:bg-[#e09828] text-[#103D2C] font-extrabold text-sm shadow-md transition transform active:scale-95 flex items-center justify-center gap-2"
+            >
+              <Compass size={18} className={gpsLoading ? 'animate-spin' : ''} />
+              <span>{gpsLoading ? 'Acquiring GPS Fix...' : 'Fetch My Location (GPS)'}</span>
+            </button>
+          </div>
+
+          <div className="pt-3 border-t border-white/10 max-w-xl mx-auto">
+            <span className="text-[11px] text-[#FBF7EF]/70 font-semibold uppercase tracking-wider block mb-2">
+              Or Select District Hub:
+            </span>
+            <div className="flex flex-wrap justify-center gap-1.5">
+              {REGIONAL_DISTRICT_HUBS.map((hub) => (
+                <button
+                  key={hub.name}
+                  type="button"
+                  onClick={() => handleSelectDistrict(hub.name, hub.coords)}
+                  className="text-xs px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white font-medium transition"
+                >
+                  {hub.name.split(' ')[0]}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* LOADING SKELETON */}
       {loading && !data && (
-        <div className="p-12 text-center bg-white rounded-3xl border border-[#E5DDCF] space-y-3">
-          <RefreshCw size={32} className="animate-spin text-[#17643E] mx-auto" />
-          <h3 className="text-base font-bold text-[#103D2C]">Analyzing Mandi Prices & Calculating Hauling Costs...</h3>
-          <p className="text-xs text-[#292B26]/60 max-w-md mx-auto">
-            Evaluating real APMC arrival prices, road distances, and trained XGBoost price forecasts for {crop}.
-          </p>
+        <div className="p-10 text-center bg-white rounded-3xl border border-[#E5DDCF] space-y-2">
+          <RefreshCw size={28} className="animate-spin text-[#17643E] mx-auto" />
+          <h3 className="text-sm font-bold text-[#103D2C]">Discovering Nearby Mandis & Rates...</h3>
         </div>
       )}
 
       {/* SECTION 2: THE CORE DECISION ENGINE HERO CARD */}
-      {data && (
+      {data && locationFetched && (
         <div className="bg-gradient-to-br from-[#103D2C] via-[#14533C] to-[#17643E] rounded-3xl text-white p-6 sm:p-8 shadow-xl relative overflow-hidden border border-[#E5DDCF]/20">
           <div className="absolute top-0 right-0 translate-x-8 -translate-y-8 w-64 h-64 bg-white/5 rounded-full blur-2xl pointer-events-none" />
 
@@ -515,35 +638,18 @@ export default function MarketIntelligence() {
 
             </div>
 
-            {/* Why This Mandi? Plain Language Explanation */}
-            <div className="bg-black/20 p-4 rounded-2xl border border-white/10 flex items-start gap-3 text-xs leading-relaxed">
-              <Info size={18} className="text-[#F1A93B] shrink-0 mt-0.5" />
-              <div>
-                <strong className="text-white block mb-0.5">Why this recommendation?</strong>
-                <span className="text-white/90">{data.why_recommendation}</span>
-                <span className="block text-[11px] text-white/60 mt-1">
-                  {data.confidence_description}
-                </span>
-              </div>
-            </div>
-
           </div>
         </div>
       )}
 
       {/* SECTION 3: PRICE TREND FORECASTING (7, 14, 28 DAYS) */}
-      {data && (
+      {data && locationFetched && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-bold text-[#103D2C] flex items-center gap-2">
-                <TrendingUp size={18} className="text-[#17643E]" />
-                <span>Price Trend Outlook (किंमतीचा अंदाज)</span>
-              </h2>
-              <p className="text-xs text-[#292B26]/60">
-                Trained time-series XGBoost models based on 5,500+ daily Agmarknet APMC records with zero data leakage.
-              </p>
-            </div>
+            <h2 className="text-lg font-bold text-[#103D2C] flex items-center gap-2">
+              <TrendingUp size={18} className="text-[#17643E]" />
+              <span>Price Trend Outlook (किंमतीचा अंदाज)</span>
+            </h2>
             <span className="text-[11px] bg-[#E8F3ED] text-[#17643E] px-2.5 py-1 rounded-full font-bold">
               Base Price: ₹{data.current_price.toLocaleString('en-IN')}/q
             </span>
@@ -640,21 +746,16 @@ export default function MarketIntelligence() {
       )}
 
       {/* SECTION 4: NEARBY MANDIS COMPARISON & ACTUAL MAP */}
-      {data && (
+      {data && locationFetched && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
           {/* Left Column: Mandi Comparison Cards (7 cols) */}
           <div className="lg:col-span-7 space-y-3">
             <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-bold text-[#103D2C] flex items-center gap-2">
-                  <Scale size={18} className="text-[#17643E]" />
-                  <span>Compare Nearby Markets (बाजार तुलना)</span>
-                </h2>
-                <p className="text-xs text-[#292B26]/60">
-                  Sorted by net in-hand payout after deducting hauling costs.
-                </p>
-              </div>
+              <h2 className="text-lg font-bold text-[#103D2C] flex items-center gap-2">
+                <Scale size={18} className="text-[#17643E]" />
+                <span>Compare Nearby Markets (बाजार तुलना)</span>
+              </h2>
               <span className="text-xs text-[#292B26]/50">
                 {data.markets.length} Mandis Available
               </span>
@@ -680,7 +781,7 @@ export default function MarketIntelligence() {
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <h3 className="font-bold text-sm text-[#103D2C]">{m.name}</h3>
                           {isRecommended && (
                             <span className="bg-[#17643E] text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">
@@ -697,15 +798,25 @@ export default function MarketIntelligence() {
                               📍 CLOSEST
                             </span>
                           )}
+                          {m.is_live && (
+                            <span className="bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                              <span>Live Server Rate</span>
+                            </span>
+                          )}
                         </div>
                         <p className="text-xs text-[#292B26]/60 mt-0.5">
                           {m.district}, {m.state} • ~{m.estimated_road_km} km road ({m.straight_line_km} km air)
                         </p>
-                        <div className="text-[10px] text-[#292B26]/50 mt-1 flex items-center gap-2">
+                        <div className="text-[10px] text-[#292B26]/50 mt-1 flex items-center gap-2 flex-wrap">
                           <span className="bg-[#FBF7EF] px-1.5 py-0.5 rounded border border-[#E5DDCF]">
                             {m.data_freshness_label}
                           </span>
-                          <span>• Modal Price</span>
+                          {m.min_price && m.max_price && (
+                            <span className="text-[#103D2C] font-semibold">
+                              Auction Range: ₹{Math.round(m.min_price).toLocaleString('en-IN')} – ₹{Math.round(m.max_price).toLocaleString('en-IN')}/q
+                            </span>
+                          )}
                         </div>
                       </div>
 
@@ -724,21 +835,34 @@ export default function MarketIntelligence() {
                     </div>
 
                     {/* Bottom Action Footer for Each Mandi */}
-                    <div className="mt-3 pt-2.5 border-t border-[#E5DDCF]/60 flex items-center justify-between text-xs">
-                      <span className="text-[11px] text-[#292B26]/60">
-                        Freight cost: ₹{m.transport_cost_per_qtl}/q
+                    <div className="mt-3 pt-2.5 border-t border-[#E5DDCF]/60 flex flex-col sm:flex-row sm:items-center justify-between text-xs gap-1.5">
+                      <span className="text-[11px] text-[#292B26]/70">
+                        Freight deduction: ₹{m.transport_cost_per_qtl}/q (~{m.estimated_road_km} km @ ₹3.50/q/km)
                       </span>
-                      <a
-                        href={m.google_maps_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="text-[#17643E] hover:underline font-bold flex items-center gap-1"
-                      >
-                        <Navigation size={12} />
-                        <span>Google Maps Directions</span>
-                        <ExternalLink size={10} />
-                      </a>
+                      <div className="flex items-center gap-3">
+                        <a
+                          href={m.source_portal?.startsWith('http') ? m.source_portal : 'https://agmarknet.gov.in'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-[#F1A93B] hover:underline text-[11px] font-bold flex items-center gap-1"
+                          title="Official Agmarknet Market Bulletin"
+                        >
+                          <span>Agmarknet Portal</span>
+                          <ExternalLink size={10} />
+                        </a>
+                        <a
+                          href={m.google_maps_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-[#17643E] hover:underline font-bold flex items-center gap-1"
+                        >
+                          <Navigation size={12} />
+                          <span>Google Maps</span>
+                          <ExternalLink size={10} />
+                        </a>
+                      </div>
                     </div>
                   </div>
                 );
@@ -829,7 +953,160 @@ export default function MarketIntelligence() {
               </MapContainer>
             </div>
           </div>
+        </div>
+      )}
 
+      {/* Supporting Real Market Servers Modal */}
+      {showSourcesModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 space-y-5 border border-[#E5DDCF] shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold mb-1.5">
+                  <ShieldCheck size={13} />
+                  <span>Verified Government Market APIs</span>
+                </div>
+                <h3 className="text-xl font-bold text-[#103D2C]">
+                  Official Real Market Sources & APIs
+                </h3>
+                <p className="text-xs text-[#292B26]/70 mt-0.5">
+                  KisanCare fetches real-time auction rates directly from Ministry of Agriculture & Farmers Welfare servers.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSourcesModal(false)}
+                className="w-8 h-8 rounded-full bg-[#FBF7EF] hover:bg-[#E5DDCF] flex items-center justify-center text-gray-500 hover:text-black font-bold transition"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+              {/* Agmarknet */}
+              <div className="p-4 rounded-2xl border border-[#E5DDCF] bg-[#FBF7EF]/50 flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-sm text-[#103D2C]">Agmarknet Portal (agmarknet.gov.in)</span>
+                    <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      Official Bulletin
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#292B26]/70">
+                    Directorate of Marketing & Inspection (DMI), Ministry of Agriculture and Farmers Welfare. Publishes daily spot modal, minimum, and maximum auction rates across all Indian APMC market yards.
+                  </p>
+                </div>
+                <a
+                  href="https://agmarknet.gov.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 text-xs font-bold text-[#17643E] hover:underline flex items-center gap-1 mt-1 bg-white px-3 py-1.5 rounded-xl border border-[#E5DDCF]"
+                >
+                  <span>Portal</span>
+                  <ExternalLink size={12} />
+                </a>
+              </div>
+
+              {/* data.gov.in */}
+              <div className="p-4 rounded-2xl border border-[#E5DDCF] bg-[#FBF7EF]/50 flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-sm text-[#103D2C]">Open Government Data (data.gov.in)</span>
+                    <span className="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      REST JSON API
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#292B26]/70">
+                    Live API Resource <code className="text-[11px] bg-white px-1.5 py-0.5 rounded border border-[#E5DDCF]">9ef84268-d588-465a-a308-a864a43d0070</code>: "Current Daily Price of Various Commodities from Various Markets (Mandi)". Real-time programmatic feed.
+                  </p>
+                </div>
+                <a
+                  href="https://data.gov.in/resource/current-daily-price-various-commodities-various-markets-mandi"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 text-xs font-bold text-[#17643E] hover:underline flex items-center gap-1 mt-1 bg-white px-3 py-1.5 rounded-xl border border-[#E5DDCF]"
+                >
+                  <span>API Docs</span>
+                  <ExternalLink size={12} />
+                </a>
+              </div>
+
+              {/* e-NAM */}
+              <div className="p-4 rounded-2xl border border-[#E5DDCF] bg-[#FBF7EF]/50 flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-sm text-[#103D2C]">e-NAM (enam.gov.in)</span>
+                    <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      Pan-India E-Trading
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#292B26]/70">
+                    National Agriculture Market pan-India electronic trading portal integrating 1,361+ wholesale APMC mandis for online transparent price bidding.
+                  </p>
+                </div>
+                <a
+                  href="https://enam.gov.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 text-xs font-bold text-[#17643E] hover:underline flex items-center gap-1 mt-1 bg-white px-3 py-1.5 rounded-xl border border-[#E5DDCF]"
+                >
+                  <span>e-NAM</span>
+                  <ExternalLink size={12} />
+                </a>
+              </div>
+
+              {/* Kisan Suvidha */}
+              <div className="p-4 rounded-2xl border border-[#E5DDCF] bg-[#FBF7EF]/50 flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-sm text-[#103D2C]">Kisan Suvidha (kisansuvidha.gov.in)</span>
+                    <span className="bg-purple-100 text-purple-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      Farmer Advisory
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#292B26]/70">
+                    Farmer advisory portal by Department of Agriculture & Farmers Welfare providing live mandi rates, MSP procurement prices, and weather alerts.
+                  </p>
+                </div>
+                <a
+                  href="https://kisansuvidha.gov.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 text-xs font-bold text-[#17643E] hover:underline flex items-center gap-1 mt-1 bg-white px-3 py-1.5 rounded-xl border border-[#E5DDCF]"
+                >
+                  <span>Kisan Suvidha</span>
+                  <ExternalLink size={12} />
+                </a>
+              </div>
+            </div>
+
+            {/* Dynamic Real-Market Calculation Engine */}
+            <div className="p-4 rounded-2xl bg-[#E8F3ED] border border-[#17643E]/30 text-xs text-[#103D2C] space-y-1.5">
+              <div className="font-bold flex items-center gap-1.5 text-[#17643E]">
+                <Scale size={15} />
+                <span>Dynamic Real-World Freight Realization Calculation</span>
+              </div>
+              <p className="text-[11px] text-[#103D2C]/80 leading-relaxed">
+                Rather than hardcoding static calculations, KisanCare pulls real modal auction prices directly from government market servers and calculates:
+              </p>
+              <div className="font-mono text-[11px] bg-white/70 p-2 rounded-xl border border-[#17643E]/20 space-y-0.5">
+                <div>• Road Distance = Air Distance (GPS haversine) × 1.20 road winding factor</div>
+                <div>• Haulage Cost = Road Distance (km) × ₹3.50/quintal/km standard rural freight</div>
+                <div>• In-Hand Net Price = Modal Auction Rate − Haulage Cost per quintal</div>
+                <div>• Total Payout = Harvest Quantity (q) × In-Hand Net Price</div>
+              </div>
+            </div>
+
+            <div className="text-right pt-1">
+              <button
+                type="button"
+                onClick={() => setShowSourcesModal(false)}
+                className="bg-[#17643E] hover:bg-[#103D2C] text-white px-6 py-2 rounded-2xl text-xs font-bold transition shadow-sm"
+              >
+                Close & Return
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
