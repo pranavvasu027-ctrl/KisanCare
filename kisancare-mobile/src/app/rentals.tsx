@@ -351,8 +351,8 @@ export default function RentalsScreen() {
             </View>
           )}
 
-          {/* Error State */}
-          {isListingsError && (
+          {/* Error State - only block if no listings are available at all */}
+          {isListingsError && (!listings || listings.length === 0) && (
             <Card variant="outlined" style={[styles.errorCard, { borderColor: theme.error }]}>
               <View style={styles.errorHeader}>
                 <Ionicons name="cloud-offline" size={24} color={theme.error} />
@@ -362,7 +362,7 @@ export default function RentalsScreen() {
               </View>
               <Text style={[styles.errorMessage, { color: theme.textSecondary }]}>
                 {listingsError?.userFriendlyMessage ||
-                  'Could not connect to the rental service endpoint.'}
+                  'Could not connect to the rental service endpoint. Ensure backend is running.'}
               </Text>
               <Button
                 title="Retry Connection"
@@ -375,8 +375,21 @@ export default function RentalsScreen() {
             </Card>
           )}
 
+          {/* Subtle error notice when fallback listings are shown */}
+          {isListingsError && listings && listings.length > 0 && (
+            <View style={{ backgroundColor: '#FEF3C7', padding: 10, borderRadius: 8, marginBottom: 12, flexDirection: 'row', alignItems: 'center' }}>
+              <Ionicons name="information-circle" size={20} color="#D97706" style={{ marginRight: 8 }} />
+              <Text style={{ fontSize: 13, color: '#92400E', flex: 1 }}>
+                Offline mode: Displaying verified equipment catalog. Tap below to retry live sync.
+              </Text>
+              <TouchableOpacity onPress={() => refetchListings()} style={{ padding: 4 }}>
+                <Ionicons name="refresh" size={18} color="#92400E" />
+              </TouchableOpacity>
+            </View>
+          )}
+
           {/* Empty State */}
-          {!isListingsLoading && !isListingsError && listings && listings.length === 0 && (
+          {!isListingsLoading && listings && listings.length === 0 && (
             <EmptyState
               icon="construct-outline"
               title="No Equipment Listings Found"
@@ -387,7 +400,7 @@ export default function RentalsScreen() {
           )}
 
           {/* Verified Listings List */}
-          {!isListingsLoading && !isListingsError && listings && listings.length > 0 && (
+          {!isListingsLoading && listings && listings.length > 0 && (
             <View>
               {listings.map((item) => (
                 <Card key={item.id} variant="elevated" style={styles.listingCard}>
