@@ -2,7 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import AppShell from './components/layout/AppShell';
 import { AuthProvider, useAuth } from './hooks/useAuth';
-import { IS_DEMO_MODE } from './config/demo';
+import { FarmerProfileProvider, useFarmerProfile } from './context/FarmerProfileContext';
+import { FarmProvider } from './context/FarmContext';
 
 // Pages
 import Login from './screens/Auth/Login';
@@ -29,18 +30,16 @@ import PostHarvestLoss from './screens/PostHarvestLoss/PostHarvestLoss';
 import RentalMarketplace from './screens/Rentals/RentalMarketplace';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { session, loading, isDemoMode } = useAuth();
-
-  if (isDemoMode) {
-    return <>{children}</>;
-  }
+  const { session, loading } = useAuth();
+  const { isOnboarded } = useFarmerProfile();
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-[#FBF7EF]">Loading...</div>;
   }
 
-  if (!session) {
-    return <Navigate to="/login" replace />;
+  // If farmer has not completed onboarding and is not authenticated, start at the onboarding & login page
+  if (!isOnboarded && !session) {
+    return <Navigate to="/onboarding" replace />;
   }
 
   return <>{children}</>;
@@ -49,40 +48,49 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/onboarding" element={<Onboarding />} />
+      <FarmerProfileProvider>
+        <FarmProvider>
+          <Router>
+            <Routes>
+              {/* Starting Entry Pages: Onboarding & Login */}
+              <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/login" element={<Login />} />
 
-          <Route path="/" element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
-            <Route index element={<Dashboard />} />
-            <Route path="farm-setup" element={<FarmSetup />} />
-            <Route path="digital-twin" element={<DigitalTwin />} />
-            <Route path="crop-recommendation" element={<CropRecommendation />} />
-            <Route path="crop-comparison" element={<CropComparison />} />
-            <Route path="post-harvest" element={<PostHarvestLoss />} />
-            <Route path="simulator" element={<WhatIfSimulator />} />
-            <Route path="recommendations" element={<AiRecommendation />} />
-            <Route path="soil" element={<SoilIntelligence />} />
-            <Route path="soil-intelligence" element={<SoilIntelligence />} />
-            <Route path="disease" element={<DiseaseDetection />} />
-            <Route path="fertilizer" element={<FertilizerAdvisory />} />
-            <Route path="fertilizer-advisory" element={<FertilizerAdvisory />} />
-            <Route path="irrigation" element={<IrrigationClimate />} />
-            <Route path="economics" element={<FarmEconomics />} />
-            <Route path="market" element={<MarketIntelligence />} />
-            <Route path="memory" element={<FarmMemory />} />
-            <Route path="copilot" element={<Copilot />} />
-            <Route path="schemes" element={<GovernmentSchemes />} />
-            <Route path="documents" element={<Documents />} />
-            <Route path="settings" element={<Settings />} />
+              {/* Main Application with Subsequent Dashboard */}
+              <Route path="/" element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
+                <Route index element={<Dashboard />} />
+                <Route path="farm-setup" element={<FarmSetup />} />
+                <Route path="digital-twin" element={<DigitalTwin />} />
+                <Route path="crop-recommendation" element={<CropRecommendation />} />
+                <Route path="crop-comparison" element={<CropComparison />} />
+                <Route path="post-harvest" element={<PostHarvestLoss />} />
+                <Route path="simulator" element={<WhatIfSimulator />} />
+                <Route path="recommendations" element={<AiRecommendation />} />
+                <Route path="soil" element={<SoilIntelligence />} />
+                <Route path="soil-intelligence" element={<SoilIntelligence />} />
+                <Route path="disease" element={<DiseaseDetection />} />
+                <Route path="fertilizer" element={<FertilizerAdvisory />} />
+                <Route path="fertilizer-advisory" element={<FertilizerAdvisory />} />
+                <Route path="irrigation" element={<IrrigationClimate />} />
+                <Route path="economics" element={<FarmEconomics />} />
+                <Route path="market" element={<MarketIntelligence />} />
+                <Route path="memory" element={<FarmMemory />} />
+                <Route path="copilot" element={<Copilot />} />
+                <Route path="schemes" element={<GovernmentSchemes />} />
+                <Route path="documents" element={<Documents />} />
+                <Route path="settings" element={<Settings />} />
 
-            {/* Agricultural Equipment, Vehicle & Labour Rental Marketplace */}
-            <Route path="rentals" element={<RentalMarketplace />} />
-            <Route path="rentals/:section" element={<RentalMarketplace />} />
-          </Route>
-        </Routes>
-      </Router>
+                {/* Agricultural Equipment, Vehicle & Labour Rental Marketplace */}
+                <Route path="rentals" element={<RentalMarketplace />} />
+                <Route path="rentals/:section" element={<RentalMarketplace />} />
+              </Route>
+
+              {/* Catch-all redirect to home */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Router>
+        </FarmProvider>
+      </FarmerProfileProvider>
     </AuthProvider>
   );
 }

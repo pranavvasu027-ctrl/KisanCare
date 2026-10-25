@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
+import { useFarmerProfile } from '../../context/FarmerProfileContext';
 import { api } from '../../services/api';
 import { translateDynamic } from '../../i18n/translateHelper';
 import { WorkflowStepper } from '../../components/workflow/WorkflowStepper';
@@ -70,15 +71,18 @@ const AlertRow = ({ title, desc, severity, onClick }: { title: string, desc: str
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { profile } = useFarmerProfile();
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language || 'en';
 
-  const farmerName = user?.user_metadata?.name || 'Pranav Vasu';
+  const farmerName = profile?.name || user?.user_metadata?.name || 'Pranav Vasu';
   const [selectedField, setSelectedField] = useState('Field A (Cotton - 3.0 ac)');
   const [weather, setWeather] = useState<any>(null);
 
   useEffect(() => {
-    api.getCurrentWeather(20.7002, 77.0082).then(setWeather).catch(console.error);
+    const lat = profile?.weather?.latitude || 20.7002;
+    const lon = profile?.weather?.longitude || 77.0082;
+    api.getCurrentWeather(lat, lon).then(setWeather).catch(console.error);
   }, []);
 
   return (
@@ -119,10 +123,10 @@ export default function Dashboard() {
             {/* Quick Metadata Chips */}
             <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
               <span className="px-3 py-1 rounded-xl bg-white/10 backdrop-blur-md border border-white/15 text-white flex items-center gap-1.5 font-medium">
-                <MapPin className="w-3.5 h-3.5 text-emerald-400" /> Takli Bu, Akola &bull; गट क्र. 142/1, 142/2
+                <MapPin className="w-3.5 h-3.5 text-emerald-400" /> {profile?.weather?.location_name || 'Takli Bu, Akola'} &bull; GPS: {profile?.weather?.latitude?.toFixed(2)}°N, {profile?.weather?.longitude?.toFixed(2)}°E
               </span>
               <span className="px-3 py-1 rounded-xl bg-white/10 backdrop-blur-md border border-white/15 text-white flex items-center gap-1.5 font-medium">
-                <Layers className="w-3.5 h-3.5 text-amber-300" /> 10.0 Acres Registered (Regur Black Soil)
+                <Layers className="w-3.5 h-3.5 text-amber-300" /> {profile?.total_area || 12.0} Acres ({profile?.soil_report?.soil_type || 'Regur Black Soil'})
               </span>
               <span className="px-3 py-1 rounded-xl bg-emerald-500/20 backdrop-blur-md border border-emerald-400/30 text-emerald-200 font-semibold flex items-center gap-1.5">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Aadhaar e-KYC Verified
@@ -131,6 +135,12 @@ export default function Dashboard() {
 
             {/* Quick Actions */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
+              <button
+                onClick={() => navigate('/onboarding')}
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-stone-950 text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer"
+              >
+                <Sparkles className="w-4 h-4 text-amber-950" /> Farmer Profile &amp; Soil NPK Report
+              </button>
               <button
                 onClick={() => navigate('/digital-twin')}
                 className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-[#05261B] text-xs font-bold transition-all shadow-md shadow-emerald-950/30 flex items-center gap-2 cursor-pointer"
@@ -182,7 +192,7 @@ export default function Dashboard() {
             <div className="bg-[#F8FAF7] rounded-xl p-2.5 border border-[#E6ECE3] space-y-1.5 text-[11px]">
               <div className="flex justify-between items-center">
                 <span className="text-[#19241B]/60">Total Landholding:</span>
-                <span className="font-bold text-[#103D2C]">10.0 Acres</span>
+                <span className="font-bold text-[#103D2C]">{profile?.total_area || 12.0} Acres</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-[#19241B]/60">7/12 गट क्रमांक:</span>
@@ -190,7 +200,7 @@ export default function Dashboard() {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-[#19241B]/60">Primary Kharif Crop:</span>
-                <span className="font-semibold text-emerald-800">Cotton (Godavari)</span>
+                <span className="font-semibold text-emerald-800">{profile?.current_crop || 'Cotton'} &bull; {profile?.primary_field_name || 'Field 1'}</span>
               </div>
             </div>
 
@@ -208,6 +218,89 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* ONBOARDED SOIL REPORT & CROP INTELLIGENCE LINKAGE CARD */}
+      {profile && (
+        <div className="agri-card p-6 bg-gradient-to-br from-[#0A2E22] via-[#103D2C] to-[#164B35] text-white shadow-xl relative overflow-hidden">
+          <div className="absolute right-0 top-0 w-80 h-80 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 pb-5 border-b border-white/15">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider bg-emerald-400/20 text-emerald-300 px-3 py-1 rounded-full border border-emerald-400/30">
+                  Onboarded Soil Report &amp; Crop Intelligence Link
+                </span>
+                <span className="text-xs text-emerald-200">
+                  GPS: {profile.weather?.district || 'Akola'}, Maharashtra
+                </span>
+              </div>
+              <h3 className="text-2xl font-heading font-extrabold text-white flex items-center gap-2">
+                <Sprout className="w-6 h-6 text-emerald-400" />
+                <span>Recommended Sustainable Crop: {profile.crop_intelligence?.top_recommended_crop || profile.current_crop || 'Cotton'}</span>
+              </h3>
+              <p className="text-xs text-emerald-100/90 max-w-2xl leading-relaxed">
+                Calculated by combining your lab Soil Report NPK ({profile.soil_report?.nitrogen}:{profile.soil_report?.phosphorus}:{profile.soil_report?.potassium} kg/ha, pH {profile.soil_report?.ph}) with GPS weather telemetry ({profile.weather?.temperature}°C, {profile.weather?.weather_condition}) and {profile.water?.water_availability?.toLowerCase()} water availability ({profile.water?.irrigation_source} irrigation).
+              </p>
+            </div>
+
+            <div className="flex items-center gap-4 shrink-0 bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/15">
+              <div className="text-center">
+                <span className="text-3xl font-extrabold font-heading text-emerald-300">
+                  {profile.crop_intelligence?.suitability_score || 94}%
+                </span>
+                <span className="block text-[9px] uppercase font-bold tracking-wider text-emerald-200">
+                  Suitability Score
+                </span>
+              </div>
+              <div className="h-10 w-px bg-white/20"></div>
+              <div className="text-center">
+                <span className="text-3xl font-extrabold font-heading text-amber-300">
+                  {profile.crop_intelligence?.npk_match_pct || 92}%
+                </span>
+                <span className="block text-[9px] uppercase font-bold tracking-wider text-amber-200">
+                  NPK Match
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-5">
+            <div className="bg-white/10 backdrop-blur-sm p-3.5 rounded-xl border border-white/10">
+              <span className="text-[10px] text-emerald-200 block font-semibold mb-0.5">Soil NPK Parameters</span>
+              <span className="text-sm font-bold text-white block">
+                N:{profile.soil_report?.nitrogen} &bull; P:{profile.soil_report?.phosphorus} &bull; K:{profile.soil_report?.potassium} kg/ha
+              </span>
+              <span className="text-[10px] text-emerald-300 block mt-0.5">pH: {profile.soil_report?.ph} ({profile.soil_report?.soil_type})</span>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm p-3.5 rounded-xl border border-white/10">
+              <span className="text-[10px] text-emerald-200 block font-semibold mb-0.5">GPS Weather Telemetry</span>
+              <span className="text-sm font-bold text-white block">
+                {profile.weather?.temperature}°C &bull; {profile.weather?.humidity}% RH
+              </span>
+              <span className="text-[10px] text-emerald-300 block mt-0.5">{profile.weather?.weather_condition} ({profile.weather?.district})</span>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm p-3.5 rounded-xl border border-white/10">
+              <span className="text-[10px] text-emerald-200 block font-semibold mb-0.5">Water &amp; Irrigation</span>
+              <span className="text-sm font-bold text-white block">
+                {profile.water?.water_availability} Availability
+              </span>
+              <span className="text-[10px] text-emerald-300 block mt-0.5">{profile.water?.irrigation_source} Irrigation</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => navigate('/crop-recommendation')}
+                className="flex-1 py-3 px-3 bg-emerald-400 hover:bg-emerald-300 text-[#05261B] rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md"
+              >
+                <span>Run Crop Intelligence</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 2. SEASONAL LIFECYCLE WORKFLOW STEPPER */}
       <div className="agri-card p-6 bg-white">

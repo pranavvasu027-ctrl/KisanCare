@@ -12,6 +12,7 @@ import {
   FertilizerAdvisoryResult,
 } from '../../services/api';
 import { translateDynamic } from '../../i18n/translateHelper';
+import { useFarmerProfile } from '../../context/FarmerProfileContext';
 
 const CROPS_LIST = [
   { value: 'Corn', label: 'Corn (Maize) — Core Model Class' },
@@ -28,6 +29,7 @@ const CROPS_LIST = [
 ];
 
 export default function FertilizerAdvisory() {
+  const { profile } = useFarmerProfile();
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language || 'en';
   const location = useLocation();
@@ -59,7 +61,26 @@ export default function FertilizerAdvisory() {
   const [result, setResult] = useState<FertilizerAdvisoryResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Auto-run if routed from disease detection with crop
+// Sync parameters from active onboarding soil report
+  useEffect(() => {
+    if (profile) {
+      if (profile.soil_report) {
+        setPh(profile.soil_report.ph ?? 7.2);
+        setSoilMoisture(profile.soil_report.moisture ?? 22.0);
+      }
+      if (profile.weather) {
+        setDistrict(profile.weather.district || 'Akola');
+      }
+      if (profile.primary_field_area) {
+        setFieldSize(profile.primary_field_area);
+      }
+      if (profile.current_crop && !navState.crop) {
+        setCrop(profile.current_crop as any);
+      }
+    }
+  }, [profile]);
+
+    // Auto-run if routed from disease detection with crop
   useEffect(() => {
     if (navState.crop) {
       handleCalculate();

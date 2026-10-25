@@ -8,6 +8,7 @@ import {
   ChevronRight, Info, Lock, AlertCircle, FileCheck, FileUp, Trash2
 } from 'lucide-react';
 import { api } from '../../services/api';
+import { useFarmerProfile } from '../../context/FarmerProfileContext';
 import { WorkflowStepper } from '../../components/workflow/WorkflowStepper';
 import { WorkflowFooter } from '../../components/workflow/WorkflowFooter';
 import {
@@ -55,6 +56,7 @@ type TabType = 'overview' | 'upload' | 'baseline' | 'timeline' | 'compare';
 
 export default function SoilIntelligence() {
   const { t, i18n } = useTranslation();
+  const { profile } = useFarmerProfile();
   const currentLang = i18n.language || 'en';
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [plotId, setPlotId] = useState<string>('PLOT_MH_LAT_881');
@@ -122,6 +124,20 @@ export default function SoilIntelligence() {
   const [retestAccred, setRetestAccred] = useState<boolean>(true);
   const [comparisonResult, setComparisonResult] = useState<ComparisonResponse | null>(null);
   const [comparingLoading, setComparingLoading] = useState<boolean>(false);
+
+  // Sync baseline parameters from active onboarding soil report
+  useEffect(() => {
+    if (profile?.soil_report) {
+      setBaseN(profile.soil_report.nitrogen ?? 210.0);
+      setBaseP(profile.soil_report.phosphorus ?? 32.0);
+      setBaseK(profile.soil_report.potassium ?? 320.0);
+      setBasePh(profile.soil_report.ph ?? 7.80);
+      setBaseOc(profile.soil_report.organic_carbon ?? 0.58);
+      if (profile.soil_report.certificate_no) {
+        setBaseCertNo(profile.soil_report.certificate_no);
+      }
+    }
+  }, [profile]);
 
   // Initial Data Load
   useEffect(() => {

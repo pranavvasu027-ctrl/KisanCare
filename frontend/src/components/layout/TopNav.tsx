@@ -3,9 +3,13 @@ import { Search, Bell, ShieldCheck, MapPin, Globe, LogOut, Sparkles } from 'luci
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
 import { changeLanguage, SupportedLanguage } from '../../i18n';
+import { useNavigate } from 'react-router-dom';
+import { useFarmerProfile } from '../../context/FarmerProfileContext';
 
 const TopNav = () => {
+  const navigate = useNavigate();
   const { signOut, user, role, isDemoMode } = useAuth();
+  const { profile } = useFarmerProfile();
   const { t, i18n } = useTranslation();
 
   const currentLang = (['en', 'mr', 'hi'].includes(i18n.language) ? i18n.language : 'en') as SupportedLanguage;
@@ -15,7 +19,7 @@ const TopNav = () => {
     changeLanguage(selected);
   };
 
-  const farmerName = isDemoMode ? 'Pranav Vasu' : user?.user_metadata?.name || user?.email?.split('@')[0] || 'Pranav Vasu';
+  const farmerName = profile?.name || (isDemoMode ? 'Pranav Vasu' : user?.user_metadata?.name || user?.email?.split('@')[0] || 'Pranav Vasu');
 
   return (
     <header className="h-16 bg-white/95 backdrop-blur-md border-b border-[#E6ECE3] flex items-center justify-between px-6 shrink-0 z-30 sticky top-0 shadow-[0_1px_4px_rgba(16,61,44,0.03)]">
@@ -56,7 +60,7 @@ const TopNav = () => {
           <div className="text-left text-xs">
             <span className="text-[10px] block text-[#19241B]/50 font-medium">{t('nav.currentFarm', 'Active Plot')}</span>
             <select className="bg-transparent font-semibold text-[#103D2C] focus:outline-none text-xs cursor-pointer p-0">
-              <option>Takli Bu, Akola (10.0 Ac)</option>
+              <option>{profile?.farm_name || 'Pranav Vasu Farm'} &bull; {profile?.weather?.district || 'Akola'} ({profile?.total_area || 12.0} Ac)</option>
               <option>Field A &bull; Cotton (3.0 Ac)</option>
               <option>Field B &bull; Cotton (2.0 Ac)</option>
             </select>
@@ -85,6 +89,16 @@ const TopNav = () => {
         >
           <Bell size={17} />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-amber-500 rounded-full ring-2 ring-white"></span>
+        </button>
+
+        {/* Quick Farm Profile / Soil NPK Button */}
+        <button
+          onClick={() => navigate('/onboarding')}
+          title="Edit Farmer Profile, Farm Details & Soil Report"
+          className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#103D2C] border border-emerald-300 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+        >
+          <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
+          <span>Farm Profile &amp; Soil NPK</span>
         </button>
 
         {/* User Profile */}

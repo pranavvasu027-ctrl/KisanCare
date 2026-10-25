@@ -21,6 +21,7 @@ import { api } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 
 import { supabase } from '../../services/supabase';
+import { useFarmerProfile } from '../../context/FarmerProfileContext';
 
 interface FieldOption {
 
@@ -95,6 +96,7 @@ export default function CropRecommendation() {
   const navigate = useNavigate();
 
   const { user } = useAuth();
+  const { profile } = useFarmerProfile();
 
   const isAuthenticated = Boolean(user);
 
@@ -237,6 +239,35 @@ export default function CropRecommendation() {
     }
 
   };
+
+  // Sync state from active farmer profile and soil report
+  useEffect(() => {
+    if (profile) {
+      if (profile.soil_report) {
+        setNitrogen(profile.soil_report.nitrogen ?? 210);
+        setPhosphorus(profile.soil_report.phosphorus ?? 32);
+        setPotassium(profile.soil_report.potassium ?? 320);
+        setSoilPh(profile.soil_report.ph ?? 7.8);
+        setSoilType(profile.soil_report.soil_type || 'Black Cotton Soil / Medium Clay');
+      }
+      if (profile.weather) {
+        setDistrict(profile.weather.district || 'Akola');
+        setTemperature(profile.weather.temperature ?? 32.5);
+        setHumidity(profile.weather.humidity ?? 42.0);
+        setRainfall(profile.weather.rainfall ?? 720.0);
+      }
+      if (profile.water) {
+        setWaterAvailability(profile.water.water_availability || 'Medium');
+      }
+      if (profile.primary_field_name) {
+        setFields([
+          { id: 'field-onboarded', name: `${profile.primary_field_name} (${profile.farm_name})`, area: profile.primary_field_area, crop: profile.current_crop },
+          { id: 'field-2', name: 'Field 2 (South Parcel)', area: 5.5, crop: 'Cotton' }
+        ]);
+        setSelectedFieldId('field-onboarded');
+      }
+    }
+  }, [profile]);
 
   // Initial recommendation run on mount
 
@@ -591,6 +622,38 @@ export default function CropRecommendation() {
 
         </div>
 
+      )}
+
+      {/* Active Farmer Profile & Soil Report Linkage Banner */}
+      {profile && (
+        <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-300 rounded-2xl p-4.5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-xs text-emerald-950 shadow-2xs">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-[#103D2C] text-white flex items-center justify-center shrink-0 shadow-md">
+              <Sprout className="w-6 h-6 text-emerald-300" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-sm text-[#103D2C]">
+                  Linked to {profile.name}'s Farm Profile &amp; Soil Health Card
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-200/90 text-emerald-900 text-[10px] font-extrabold uppercase tracking-wider">
+                  Live Onboarding Sync
+                </span>
+              </div>
+              <p className="text-[11px] text-emerald-800 mt-0.5">
+                Farm: <strong>{profile.farm_name}</strong> &bull; GPS: <strong>{district}</strong> ({profile.weather?.latitude?.toFixed(2)}°N, {profile.weather?.longitude?.toFixed(2)}°E) &bull; Soil NPK: <strong className="text-[#103D2C]">{nitrogen}-{phosphorus}-{potassium}</strong> kg/ha &bull; pH: <strong>{soilPh}</strong> ({soilType})
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate('/onboarding')}
+            className="px-3.5 py-2 bg-white border border-emerald-300 hover:bg-emerald-100 text-[#103D2C] font-bold rounded-xl text-xs transition-colors shadow-2xs shrink-0 flex items-center gap-1.5"
+          >
+            <FlaskConical className="w-3.5 h-3.5 text-[#17643E]" />
+            <span>Update Profile / Soil NPK</span>
+          </button>
+        </div>
       )}
 
       {/* WORKFLOW BAR: Step 1 to 4 Input Context */}
