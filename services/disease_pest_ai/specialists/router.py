@@ -27,6 +27,8 @@ from disease_pest_ai.specialists.registry import specialist_registry
 
 logger = logging.getLogger("kisancare.specialists.router")
 
+SUPPORTED_CROPS = {"Cotton", "Soybean"}
+
 
 @dataclass
 class FusedDiagnosticResult:

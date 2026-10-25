@@ -19,11 +19,22 @@ import zlib
 logger = logging.getLogger(__name__)
 
 
-def _extract_text_from_pdf_bytes(file_bytes: bytes) -> str:
-    """Pure-Python robust extraction of uncompressed, FlateDecode, and ASCII85Decode PDF streams."""
-    extracted_lines: List[str] = []
+from ml.soil_intelligence.ocr.engine import DocumentOCREngine
 
-    # Strategy 1: pypdf if available
+_global_ocr_engine = DocumentOCREngine()
+
+
+def _extract_text_from_pdf_bytes(file_bytes: bytes) -> str:
+    """Robust extraction of digital and scanned PDF reports with multi-pass OCR and stream decompression fallback."""
+    try:
+        res = _global_ocr_engine.extract_pdf_with_ocr_fallback(file_bytes)
+        text = res.reconstructed_text or res.raw_text
+        if text and len(text.strip()) >= 10:
+            return text
+    except Exception as exc:
+        logger.debug("Primary PDF extraction failed: %s", exc)
+
+    extracted_lines: List[str] = []
     try:
         import pypdf
         reader = pypdf.PdfReader(io.BytesIO(file_bytes))
@@ -35,7 +46,6 @@ def _extract_text_from_pdf_bytes(file_bytes: bytes) -> str:
         pass
 
     if not extracted_lines:
-        # Strategy 2: Direct uncompressed Tj strings
         uncomp = re.findall(rb"\(((?:\\.|[^\\()])*)\)\s*Tj", file_bytes)
         if uncomp:
             for s in uncomp:
@@ -43,7 +53,6 @@ def _extract_text_from_pdf_bytes(file_bytes: bytes) -> str:
                 if clean:
                     extracted_lines.append(clean)
 
-        # Strategy 3: Compressed streams (FlateDecode, ASCII85Decode)
         for m in re.finditer(rb"<<(?P<dict>.*?)>>\s*stream[\r\n]*(?P<body>.*?)[\r\n]*endstream", file_bytes, re.DOTALL):
             d_meta = m.group("dict")
             body = m.group("body").strip()
@@ -72,76 +81,9 @@ def _extract_text_from_pdf_bytes(file_bytes: bytes) -> str:
 
 
 def _extract_text_from_image_bytes(file_bytes: bytes) -> str:
-    """Extracts text from images using Pillow preprocessing and spatial word clustering."""
-    from PIL import Image, ImageFilter
-    raw_img = Image.open(io.BytesIO(file_bytes))
-
-    if raw_img.mode != "RGB":
-        raw_img = raw_img.convert("RGB")
-
-    # Preprocessing: upscale with LANCZOS to ensure decimal dots and characters are crisp
-    w, h = raw_img.size
-    scale_factor = max(1.0, 1800.0 / float(max(w, h)))
-    if scale_factor > 1.0:
-        new_w = int(w * scale_factor)
-        new_h = int(h * scale_factor)
-        proc_img = raw_img.resize((new_w, new_h), Image.Resampling.LANCZOS)
-    else:
-        proc_img = raw_img
-
-    proc_img = proc_img.filter(ImageFilter.SHARPEN)
-
-    raw_text = ""
-    try:
-        import winocr
-        res = winocr.recognize_pil_sync(proc_img, "en")
-
-        words_list = []
-        for line in res.get("lines", []):
-            for w_obj in line.get("words", []):
-                r = w_obj.get("bounding_rect", {})
-                if "x" in r and "y" in r and "height" in r:
-                    words_list.append({
-                        "text": w_obj.get("text", ""),
-                        "x": float(r["x"]),
-                        "y": float(r["y"]),
-                        "w": float(r.get("width", 0)),
-                        "h": float(r.get("height", 0)),
-                        "cy": float(r["y"]) + float(r.get("height", 0)) / 2.0
-                    })
-
-        if words_list:
-            # Sort top-to-bottom by vertical center
-            words_list.sort(key=lambda w: w["cy"])
-            clusters: List[List[Dict[str, Any]]] = []
-            for w_item in words_list:
-                matched = False
-                for cluster in clusters:
-                    avg_cy = sum(item["cy"] for item in cluster) / len(cluster)
-                    avg_h = sum(item["h"] for item in cluster) / len(cluster)
-                    if abs(w_item["cy"] - avg_cy) <= max(14.0, avg_h * 0.7):
-                        cluster.append(w_item)
-                        matched = True
-                        break
-                if not matched:
-                    clusters.append([w_item])
-
-            clusters.sort(key=lambda c: sum(item["cy"] for item in c) / len(c))
-            reconstructed_lines = []
-            for c in clusters:
-                c.sort(key=lambda item: item["x"])
-                reconstructed_lines.append(" ".join(item["text"] for item in c))
-            raw_text = "\n".join(reconstructed_lines)
-        else:
-            raw_text = res.get("text", "")
-    except Exception:
-        try:
-            import pytesseract
-            raw_text = pytesseract.image_to_string(proc_img)
-        except Exception:
-            raw_text = ""
-
-    return raw_text
+    """Extracts text from faint, blurry, rotated, or low-contrast images using multi-variant enhancement and OCR."""
+    res = _global_ocr_engine.recognize_image_bytes(file_bytes)
+    return res.reconstructed_text or res.raw_text
 
 from ml.soil_intelligence.schemas import (
     ProvenanceType,
@@ -270,12 +212,13 @@ class SoilIntelligenceService:
         elif ext in [".jpg", ".jpeg", ".png"]:
             raw_text = _extract_text_from_image_bytes(file_bytes)
 
-        # Safe development/debug logging of raw OCR text as requested
-        print(f"\n================ RAW OCR TEXT [{filename}] ================\n{raw_text}\n===================================================\n")
-        logger.info(
+        # Safe development/debug logging of raw OCR text with ASCII replacement for Windows consoles
+        safe_preview = raw_text.encode("ascii", errors="replace").decode("ascii")
+        logger.info("Extracted %d characters of OCR text from %s", len(raw_text), filename)
+        logger.debug(
             "\n================ RAW OCR TEXT [%s] ================\n%s\n===================================================",
             filename,
-            raw_text
+            safe_preview
         )
 
         # If extracted text is insufficient or unreadable, return graceful review-queued response

@@ -91,13 +91,26 @@ def get_metadata():
 
 @app.post("/api/v1/crop-recommendation")
 def recommend_crops_endpoint(req: CropRequest):
+    has_soil_inputs = (
+        (req.N is not None or req.nitrogen is not None) and
+        (req.P is not None or req.phosphorus is not None) and
+        (req.K is not None or req.potassium is not None) and
+        (req.ph is not None or req.soil_ph is not None)
+    )
+    if has_soil_inputs:
+        try:
+            from ml.crop_recommendation.hf_predict import predict_crop_from_dict
+            return predict_crop_from_dict(req.model_dump(exclude_none=True))
+        except Exception as e:
+            raise HTTPException(status_code=422, detail=f"Crop recommendation failure: {e}")
+
     if not pipeline_instance:
         raise HTTPException(status_code=500, detail="Prediction pipeline is not initialized.")
         
     result = pipeline_instance.recommend(
         district=req.district.upper(),
         season=req.season,
-        water_availability=req.water_availability,
+        water_availability=req.water_availability or "Medium",
         top_k=req.top_k
     )
     

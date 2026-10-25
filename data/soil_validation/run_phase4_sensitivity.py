@@ -9,7 +9,7 @@ import pandas as pd
 import sys
 from pathlib import Path
 
-ROOT_DIR = Path(r"C:\Users\Atharva\.gemini\antigravity\scratch\KisanCare")
+ROOT_DIR = Path(__file__).resolve().parents[2]
 api_url = "http://localhost:8000/api/v1/crop-recommendation"
 
 baseline = {

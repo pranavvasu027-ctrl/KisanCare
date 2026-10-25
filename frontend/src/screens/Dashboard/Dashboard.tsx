@@ -11,7 +11,7 @@ import {
   BarChart2, Lightbulb, History, Settings, Sun, CloudRain, Check,
   Wind, MapPin, Plus, ArrowRight, AlertTriangle, ChevronRight, Map,
   FileText, MessageSquare, QrCode, Landmark, Award, Sparkles, ExternalLink,
-  Calendar, Layers, CheckCircle2
+  Calendar, Layers, CheckCircle2, Tractor
 } from 'lucide-react';
 
 const StatCard = ({ title, value, change, isPositive, icon: Icon, suffix = '', subtitle = '' }: any) => {
@@ -146,6 +146,18 @@ export default function Dashboard() {
                 className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-[#05261B] text-xs font-bold transition-all shadow-md shadow-emerald-950/30 flex items-center gap-2 cursor-pointer"
               >
                 <Leaf className="w-4 h-4" /> Open Digital Farm Twin
+              </button>
+              <button
+                onClick={() => navigate('/crop-recommendation')}
+                className="px-5 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/25 text-white text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
+              >
+                <Sprout className="w-4 h-4 text-emerald-300" /> Crop Recommendation
+              </button>
+              <button
+                onClick={() => navigate('/rentals')}
+                className="px-5 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/25 text-white text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
+              >
+                <Tractor className="w-4 h-4 text-emerald-300" /> Equipment Rental
               </button>
               <button
                 onClick={() => navigate('/copilot')}
