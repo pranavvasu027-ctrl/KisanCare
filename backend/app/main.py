@@ -21,7 +21,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
 storage_uri = os.environ.get("RATELIMIT_STORAGE_URL", "memory://")
-limiter = Limiter(key_func=get_remote_address, storage_uri=storage_uri, application_limits=["30/minute"])
+limiter = Limiter(key_func=get_remote_address, storage_uri=storage_uri, application_limits=[os.environ.get("APPLICATION_RATE_LIMIT", "300/minute")])
 
 app = FastAPI(title="KisanCare API", description="AI-powered Farm Decision Intelligence Backend")
 

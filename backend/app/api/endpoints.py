@@ -36,6 +36,11 @@ class FieldBoundaryUpdate(BaseModel):
     metadata: Optional[Dict[str, Any]] = None
 
 
+class FarmCropSelection(BaseModel):
+    crop: str = Field(min_length=1, max_length=128)
+    sowing_date: Optional[str] = Field(default=None, max_length=64)
+
+
 class SimulationRequest(BaseModel):
     farm_id: str = Field(min_length=1, max_length=128)
     changes: Dict[str, Any]
@@ -203,6 +208,25 @@ def _market_mock(payload: MarketPriceRequest) -> Dict[str, Any]:
         ]
     }
 
+# In-memory persistent registry for local / fallback farm parcels
+_fallback_farms: List[Dict[str, Any]] = [
+    {
+        "id": "52120432-c948-4026-87c4-7e2c481a7bf5",
+        "farm_name": "Pranav Vasu Farm",
+        "location": "Takli Bu, Akola, Maharashtra",
+        "latitude": None,
+        "longitude": None,
+        "has_precise_coordinates": False,
+        "total_area": 10.0,
+        "area_unit": "acre",
+        "status": "ACTIVE",
+        "crops": ["Cotton", "Soybean"],
+        "active_crop": "Cotton",
+        "sowing_date": "2026-10-25"
+    }
+]
+
+
 @router.get("/farms")
 def list_farms(authorization: Optional[str] = Header(None)):
     """
@@ -246,22 +270,10 @@ def list_farms(authorization: Optional[str] = Header(None)):
         # Authenticated user but Supabase not configured
         raise HTTPException(status_code=503, detail="Database service not configured")
 
-    # Fallback for unauthenticated/demo mode: return default verified farm
+    # Fallback for unauthenticated/demo mode: return registered fallback/local farms
     return {
-        "farms": [
-            {
-                "id": "52120432-c948-4026-87c4-7e2c481a7bf5",
-                "farm_name": "Pranav Vasu Farm",
-                "location": "Takli Bu, Akola, Maharashtra",
-                "latitude": None,
-                "longitude": None,
-                "has_precise_coordinates": False,
-                "total_area": 10.0,
-                "area_unit": "acre",
-                "status": "ACTIVE"
-            }
-        ],
-        "count": 1,
+        "farms": list(_fallback_farms),
+        "count": len(_fallback_farms),
         "is_mock": not bool(token_user_id)
     }
 
@@ -304,7 +316,87 @@ def create_farm(farm: FarmCreate, authorization: Optional[str] = Header(None)):
                 }
         except Exception:
             pass
-    return {"farm_id": str(uuid.uuid4()), "status": "created", "data": farm.model_dump(), "is_mock": False}
+    # Local fallback persistence
+    new_farm_id = str(uuid.uuid4())
+    record = {
+        "id": new_farm_id,
+        "farm_name": farm.farm_name or f"Farm {farm.location.split(',')[0]}",
+        "location": farm.location,
+        "latitude": farm.latitude,
+        "longitude": farm.longitude,
+        "has_precise_coordinates": farm.latitude is not None and farm.longitude is not None,
+        "area": float(farm.area),
+        "total_area": float(farm.area),
+        "area_unit": "acre",
+        "status": "ACTIVE"
+    }
+    _fallback_farms.append(record)
+    return {"farm_id": new_farm_id, "status": "created", "data": record, "is_mock": False}
+
+
+@router.put("/farms/{farm_id}/crop")
+def assign_farm_crop(
+    farm_id: str,
+    selection: FarmCropSelection,
+    authorization: Optional[str] = Header(None)
+):
+    """
+    Assigns or updates the active crop and planned sowing date for a specified farm parcel.
+    Persists to Supabase if configured, or in-memory fallback farm registry.
+    """
+    clean_crop = selection.crop.strip()
+    if not clean_crop:
+        raise HTTPException(status_code=422, detail="Crop name cannot be empty")
+
+    url = os.environ.get("SUPABASE_URL")
+    key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+
+    if url and key:
+        try:
+            from supabase import create_client
+            sb = create_client(url, key)
+            from backend.app.core.auth import extract_verified_user_id
+            token_user_id = extract_verified_user_id(authorization, required=False)
+
+            farm_q = sb.table("farms").select("id, user_id").eq("id", farm_id)
+            if token_user_id:
+                farm_q = farm_q.eq("user_id", token_user_id)
+            f_res = farm_q.execute()
+
+            if f_res.data:
+                update_payload = {
+                    "active_crop": clean_crop,
+                    "sowing_date": selection.sowing_date
+                }
+                sb.table("farms").update(update_payload).eq("id", farm_id).execute()
+                return {
+                    "status": "success",
+                    "farm_id": farm_id,
+                    "active_crop": clean_crop,
+                    "sowing_date": selection.sowing_date,
+                    "is_mock": False
+                }
+        except Exception as exc:
+            print(f"[AssignFarmCrop] Supabase update failed: {exc}")
+
+    # Fallback registry lookup & update
+    for f in _fallback_farms:
+        if f.get("id") == farm_id:
+            f["active_crop"] = clean_crop
+            f["sowing_date"] = selection.sowing_date
+            if "crops" not in f or not isinstance(f["crops"], list):
+                f["crops"] = []
+            if clean_crop not in f["crops"]:
+                f["crops"].insert(0, clean_crop)
+            return {
+                "status": "success",
+                "farm_id": farm_id,
+                "active_crop": clean_crop,
+                "sowing_date": selection.sowing_date,
+                "is_mock": True
+            }
+
+    raise HTTPException(status_code=404, detail="Farm not found or access denied")
 
 
 @router.put("/farms/{farm_id}/boundaries")
@@ -740,6 +832,23 @@ def get_weather_forecast(
         raise HTTPException(status_code=502, detail=f"Weather forecast service error: {str(exc)}")
 
 
+@router.get("/crop-recommendation/meta")
+def get_crop_recommendation_meta():
+    try:
+        from ml.crop_recommendation.predict import PredictionPipeline
+        p = PredictionPipeline()
+        return {
+            "model_version": p.metadata.get("model_version"),
+            "target": p.metadata.get("target"),
+            "supported_crops": len(p.cat_levels.get("Crop", [])),
+            "supported_seasons": p.cat_levels.get("Season", []),
+            "water_levels": ["Low", "Medium", "High"],
+            "data_source": "APY_2005_2015"
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Crop recommendation metadata unavailable: {exc}")
+
+
 @router.post("/crop-recommendation")
 def predict_crop(data: CropRecommendationRequest):
     try:
@@ -748,9 +857,8 @@ def predict_crop(data: CropRecommendationRequest):
         if exc.status_code == 503:
             # Fall back to real in-process Model 1 pipeline
             try:
-                from ml.crop_recommendation.predict import PredictionPipeline
-                p = PredictionPipeline()
-                result = p.recommend(
+                from ml.crop_recommendation.predict import recommend_crops
+                result = recommend_crops(
                     district=data.district.upper(),
                     season=data.season,
                     water_availability=data.water_availability,
@@ -770,6 +878,18 @@ def predict_crop(data: CropRecommendationRequest):
         raise
 
 
+_market_price_predictor_instance = None
+
+
+def _get_market_price_predictor():
+    global _market_price_predictor_instance
+    if _market_price_predictor_instance is None:
+        from ml.market_price.predict import MarketPricePredictor
+        models_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "models"))
+        _market_price_predictor_instance = MarketPricePredictor(models_dir=models_dir)
+    return _market_price_predictor_instance
+
+
 @router.post("/market-price")
 def get_market_price(data: MarketPriceRequest):
     try:
@@ -777,13 +897,13 @@ def get_market_price(data: MarketPriceRequest):
     except HTTPException as exc:
         if exc.status_code == 503:
             try:
-                from ml.market_price.predict import MarketPricePredictor
-                models_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "models"))
-                mp = MarketPricePredictor(models_dir=models_dir)
+                mp = _get_market_price_predictor()
                 res = mp.predict(data.crop, data.market, data.date)
                 if res.get("status") == "error":
                     msg = res.get("message", "Market forecasting error")
-                    code = 404 if "not found" in msg.lower() else (422 if "insufficient" in msg.lower() or "gap" in msg.lower() else 500)
+                    code = 404 if any(k in msg.lower() for k in ["not found", "no historical data"]) else (
+                        422 if any(k in msg.lower() for k in ["insufficient", "gap", "require at least", "before"]) else 500
+                    )
                     raise HTTPException(status_code=code, detail=msg)
                 _persist_model_prediction("market_price", "1.0.0", data.model_dump(), res, provenance="TRAINED_XGBOOST")
                 return res
