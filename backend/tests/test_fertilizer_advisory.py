@@ -23,7 +23,7 @@ BACKEND_DIR = Path(__file__).resolve().parent.parent
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
-from app.fertilizer.model_adapter import (
+from backend.app.fertilizer.model_adapter import (
     HF_REPO_ID,
     PINNED_REVISION,
     EXPECTED_CHECKSUMS,
@@ -31,11 +31,11 @@ from app.fertilizer.model_adapter import (
     SUPPORTED_TRAINING_CROPS,
     fertilizer_model_adapter,
 )
-from app.fertilizer.schemas import FertilizerInput
-from app.fertilizer.service import fertilizer_service
-from app.fertilizer.store_service import find_matching_stores, build_amazon_discovery_links
+from backend.app.fertilizer.schemas import FertilizerInput
+from backend.app.fertilizer.service import fertilizer_service
+from backend.app.fertilizer.store_service import find_matching_stores, build_amazon_discovery_links
 from fastapi.testclient import TestClient
-from app.main import app
+from backend.app.main import app
 
 
 # 1. MODEL ARTIFACT AND REVISION PINNING
