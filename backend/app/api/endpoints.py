@@ -6,7 +6,16 @@ import uuid
 from typing import Any, Dict, List, Optional
 
 import requests
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Header, Request, File, UploadFile, Form
+import sys
+from pathlib import Path
+
+_repo_root = Path(__file__).resolve().parent.parent.parent.parent
+if str(_repo_root) not in sys.path:
+    sys.path.insert(0, str(_repo_root))
+_services_path = _repo_root / "services"
+if str(_services_path) not in sys.path:
+    sys.path.insert(0, str(_services_path))
 from pydantic import BaseModel, Field
 
 from ..economics.engine import calculate_economics
@@ -805,29 +814,170 @@ def get_market_price(data: MarketPriceRequest):
 
 
 @router.post("/disease-detection")
-def detect_disease(data: SymptomsRequest):
+async def detect_disease(request: Request):
+    content_type = request.headers.get("content-type", "")
+    if "multipart/form-data" in content_type:
+        form = await request.form()
+        uploaded_file = form.get("file")
+        crop = form.get("crop")
+        crop_name = form.get("crop_name")
+        location_state = form.get("location_state") or "Maharashtra"
+        growth_stage = form.get("growth_stage") or "vegetative"
+        image_type = form.get("image_type") or "leaf"
+        symptoms = form.get("symptoms")
+        sample_id = form.get("sample_id")
+
+        from services.disease_pest_ai.api.routes.diagnose import detect_disease_frontend_compat
+        res = await detect_disease_frontend_compat(
+            file=uploaded_file,
+            crop=crop,
+            crop_name=crop_name,
+            location_state=str(location_state),
+            growth_stage=str(growth_stage),
+            image_type=str(image_type),
+            symptoms=str(symptoms) if symptoms else None,
+            sample_id=str(sample_id) if sample_id else None,
+        )
+        if res.get("status") in ("VALID", "success") and res.get("is_valid_plant_image", True) and "data" in res:
+            try:
+                _persist_model_prediction(
+                    "disease_detection",
+                    "EfficientNetV2-S",
+                    {"crop": crop or crop_name, "location_state": str(location_state)},
+                    res["data"],
+                    provenance="MEASURED"
+                )
+            except Exception:
+                pass
+        return res
+
     try:
-        return _proxy_to_ml("/api/v1/models/disease-detection", data.model_dump())
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON or form payload")
+
+    crop_val = body.get("crop")
+    symptoms_val = body.get("symptoms")
+
+    sample_id = body.get("sample_id")
+    img_b64 = body.get("image_base64")
+    if img_b64:
+        import base64
+        import io
+        from starlette.datastructures import UploadFile
+        img_bytes = base64.b64decode(img_b64)
+        uf = UploadFile(filename="uploaded_image.jpg", file=io.BytesIO(img_bytes))
+        from services.disease_pest_ai.api.routes.diagnose import detect_disease_frontend_compat
+        return await detect_disease_frontend_compat(
+            file=uf,
+            crop=crop_val,
+            location_state=body.get("location_state", "Maharashtra"),
+            growth_stage=body.get("growth_stage", "vegetative"),
+            image_type=body.get("image_type", "leaf"),
+            symptoms=symptoms_val,
+            sample_id=sample_id,
+        )
+    if sample_id:
+        from services.disease_pest_ai.api.routes.diagnose import detect_disease_frontend_compat
+        return await detect_disease_frontend_compat(
+            file=None,
+            crop=crop_val,
+            location_state=body.get("location_state", "Maharashtra"),
+            growth_stage=body.get("growth_stage", "vegetative"),
+            image_type=body.get("image_type", "leaf"),
+            symptoms=symptoms_val,
+            sample_id=sample_id,
+        )
+
+    if not crop_val or symptoms_val is None or (isinstance(symptoms_val, list) and len(symptoms_val) == 0):
+        raise HTTPException(status_code=422, detail="Missing required fields: crop, symptoms")
+
+    try:
+        return _proxy_to_ml("/api/v1/models/disease-detection", body)
     except HTTPException as exc:
         if exc.status_code == 503:
             from ml.rule_based.engine import RuleBasedModels
-            res = RuleBasedModels.detect_disease(data.symptoms, data.crop)
+            res = RuleBasedModels.detect_disease(symptoms_val, crop_val)
             res["model_type"] = "RULE_BASED_EXPERT_SYSTEM"
-            _persist_model_prediction("disease_detection", "1.0.0", data.model_dump(), res, provenance="RULE_BASED_EXPERT_SYSTEM")
+            _persist_model_prediction("disease_detection", "1.0.0", body, res, provenance="RULE_BASED_EXPERT_SYSTEM")
             return res
         raise
 
 
 @router.post("/pest-detection")
-def detect_pest(data: SymptomsRequest):
+async def detect_pest(request: Request):
+    content_type = request.headers.get("content-type", "")
+    if "multipart/form-data" in content_type:
+        form = await request.form()
+        uploaded_file = form.get("file")
+        crop = form.get("crop")
+        crop_name = form.get("crop_name")
+        location_state = form.get("location_state") or "Maharashtra"
+        growth_stage = form.get("growth_stage") or "vegetative"
+        image_type = form.get("image_type") or "trap_sticky_sheet"
+        symptoms = form.get("symptoms")
+        sample_id = form.get("sample_id")
+
+        from services.disease_pest_ai.api.routes.diagnose import detect_disease_frontend_compat
+        res = await detect_disease_frontend_compat(
+            file=uploaded_file,
+            crop=crop,
+            crop_name=crop_name,
+            location_state=str(location_state),
+            growth_stage=str(growth_stage),
+            image_type=str(image_type),
+            symptoms=str(symptoms) if symptoms else None,
+            sample_id=str(sample_id) if sample_id else None,
+        )
+        if res.get("status") == "success" and "data" in res:
+            try:
+                _persist_model_prediction(
+                    "pest_detection",
+                    "YOLO11s",
+                    {"crop": crop or crop_name, "location_state": str(location_state)},
+                    res["data"],
+                    provenance="MEASURED"
+                )
+            except Exception:
+                pass
+        return res
+
     try:
-        return _proxy_to_ml("/api/v1/models/pest-detection", data.model_dump())
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON or form payload")
+
+    crop_val = body.get("crop")
+    symptoms_val = body.get("symptoms")
+
+    img_b64 = body.get("image_base64")
+    if img_b64:
+        import base64
+        import io
+        from starlette.datastructures import UploadFile
+        img_bytes = base64.b64decode(img_b64)
+        uf = UploadFile(filename="uploaded_pest.jpg", file=io.BytesIO(img_bytes))
+        from services.disease_pest_ai.api.routes.diagnose import detect_disease_frontend_compat
+        return await detect_disease_frontend_compat(
+            file=uf,
+            crop=crop_val,
+            location_state=body.get("location_state", "Maharashtra"),
+            growth_stage=body.get("growth_stage", "vegetative"),
+            image_type=body.get("image_type", "trap_sticky_sheet"),
+            symptoms=symptoms_val,
+        )
+
+    if not crop_val or symptoms_val is None or (isinstance(symptoms_val, list) and len(symptoms_val) == 0):
+        raise HTTPException(status_code=422, detail="Missing required fields: crop, symptoms")
+
+    try:
+        return _proxy_to_ml("/api/v1/models/pest-detection", body)
     except HTTPException as exc:
         if exc.status_code == 503:
             from ml.rule_based.engine import RuleBasedModels
-            res = RuleBasedModels.detect_pest(data.symptoms, data.crop)
+            res = RuleBasedModels.detect_pest(symptoms_val, crop_val)
             res["model_type"] = "RULE_BASED_EXPERT_SYSTEM"
-            _persist_model_prediction("pest_detection", "1.0.0", data.model_dump(), res, provenance="RULE_BASED_EXPERT_SYSTEM")
+            _persist_model_prediction("pest_detection", "1.0.0", body, res, provenance="RULE_BASED_EXPERT_SYSTEM")
             return res
         raise
 

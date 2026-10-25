@@ -73,6 +73,14 @@ interface DiagnosisResult {
   warnings?: string[];
 }
 
+interface InvalidImageResult {
+  status: 'INVALID_IMAGE';
+  reason: string;
+  message: string;
+  plantConfidence?: number;
+  leafConfidence?: number;
+}
+
 export default function DiseaseDetection() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
@@ -87,6 +95,7 @@ export default function DiseaseDetection() {
   const [isDemo, setIsDemo] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [result, setResult] = useState<DiagnosisResult | null>(null);
+  const [invalidImageResult, setInvalidImageResult] = useState<InvalidImageResult | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -110,6 +119,7 @@ export default function DiseaseDetection() {
       const url = URL.createObjectURL(file);
       setSelectedImage(url);
       setErrorMessage(null);
+      setInvalidImageResult(null);
       runDiagnosisWithFile(file, null, crop);
     }
   };
@@ -120,6 +130,7 @@ export default function DiseaseDetection() {
     setSelectedImage(preset.url);
     setCrop(preset.crop);
     setErrorMessage(null);
+    setInvalidImageResult(null);
     runDiagnosisWithFile(null, preset.id, preset.crop);
   };
 
@@ -129,6 +140,7 @@ export default function DiseaseDetection() {
     targetCrop: string
   ) => {
     setErrorMessage(null);
+    setInvalidImageResult(null);
     setAnalyzing(true);
 
     try {
@@ -148,10 +160,26 @@ export default function DiseaseDetection() {
         });
       }
 
-      const data = response.data;
+      const rawData = response.data;
       setIsDemo(response.isDemo);
 
-      const conditionName = data.condition || data.prediction || 'Unknown Foliar Condition';
+      // Check if the backend flagged this upload as an invalid non-plant image
+      if (rawData.status === 'INVALID_IMAGE' || rawData.is_valid_plant_image === false) {
+        setInvalidImageResult({
+          status: 'INVALID_IMAGE',
+          reason: rawData.reason || 'NO_PLANT_DETECTED',
+          message: rawData.message || 'Invalid photo. Please upload a clear photo of a plant leaf.',
+          plantConfidence: rawData.plant_confidence,
+          leafConfidence: rawData.leaf_confidence,
+        });
+        setResult(null);
+        return;
+      }
+
+      setInvalidImageResult(null);
+      const data = rawData.data || rawData;
+
+      const conditionName = rawData.disease || data.condition || data.prediction || 'Unknown Foliar Condition';
       const sciName = data.scientific_name || `${targetCrop} foliar pathological disorder`;
       const confidenceVal = typeof data.confidence_percent === 'number'
         ? data.confidence_percent
@@ -170,19 +198,45 @@ export default function DiseaseDetection() {
         probability: tp.probability ?? 0,
       }));
 
+      // 1. Safe normalization of severity ('Low' | 'Medium' | 'High')
+      let severityVal: 'Low' | 'Medium' | 'High' = confidenceVal > 80 ? 'High' : 'Medium';
+      if (typeof data.severity === 'string' && ['Low', 'Medium', 'High'].includes(data.severity)) {
+        severityVal = data.severity as 'Low' | 'Medium' | 'High';
+      } else if (typeof response.data?.severity === 'string' && ['Low', 'Medium', 'High'].includes(response.data.severity)) {
+        severityVal = response.data.severity as 'Low' | 'Medium' | 'High';
+      } else if (data.severity && typeof data.severity === 'object' && typeof data.severity.value === 'number') {
+        severityVal = data.severity.value > 50 ? 'High' : data.severity.value > 20 ? 'Medium' : 'Low';
+      }
+
+      // 2. Safe normalization of treatment to string
+      let treatmentVal = 'Consult local agricultural extension officer.';
+      if (typeof data.treatment === 'string' && data.treatment.trim()) {
+        treatmentVal = data.treatment;
+      } else if (chemicals.length > 0) {
+        treatmentVal = `Apply approved CIB&RC formulation (${chemicals[0].chemical_name}${chemicals[0].dosage ? ' - ' + chemicals[0].dosage : ''}) according to official label instructions. Observe pre-harvest interval and wear PPE.`;
+      } else if (typeof data.description === 'string' && data.description.trim()) {
+        treatmentVal = data.description;
+      }
+
+      // 3. Safe normalization of array items to strings
+      const nonChemList: string[] = (Array.isArray(data.non_chemical_options) ? data.non_chemical_options : [])
+        .map((x: any) => typeof x === 'string' ? x : (x?.title || x?.description || JSON.stringify(x)));
+      const prevList: string[] = (Array.isArray(data.preventive_management) ? data.preventive_management : [])
+        .map((x: any) => typeof x === 'string' ? x : (x?.title || x?.description || JSON.stringify(x)));
+
       setResult({
         condition: conditionName,
         scientificName: sciName,
         confidence: confidenceVal,
-        severity: data.severity || (confidenceVal > 80 ? 'High' : 'Medium'),
-        description: data.description || `Evaluated using deep learning vision model for ${targetCrop}.`,
-        treatment: data.treatment || 'Consult local agricultural extension officer.',
-        preventiveManagement: data.preventive_management || [
+        severity: severityVal,
+        description: typeof data.description === 'string' ? data.description : `Evaluated using deep learning vision model for ${targetCrop}.`,
+        treatment: treatmentVal,
+        preventiveManagement: prevList.length > 0 ? prevList : [
           'Maintain recommended plant spacing to facilitate canopy aeration.',
           'Adopt deep summer plowing to expose resting pathogen spores to solar heat.',
           'Rotate with non-host botanical families to disrupt disease cycles.'
         ],
-        nonChemicalOptions: data.non_chemical_options || [
+        nonChemicalOptions: nonChemList.length > 0 ? nonChemList : [
           'Apply bio-fungicides such as Trichoderma harzianum or Bacillus subtilis.',
           'Spray cold-pressed Neem seed kernel extract (NSKE 5%) at first symptom sign.',
           'Prune and destroy heavily blighted lower leaves before secondary sporulation.'
@@ -190,10 +244,10 @@ export default function DiseaseDetection() {
         chemicalTreatments: chemicals,
         topPredictions: topPreds,
         cropMatch: data.crop_match ?? true,
-        cropMismatchWarning: data.crop_mismatch_warning,
-        modelType: data.model_type || 'PyTorch EfficientNetV2-S + CIBRC Regulatory Engine',
-        latencyMs: data.provenance?.latency_ms,
-        warnings: data.warnings || [],
+        cropMismatchWarning: typeof data.crop_mismatch_warning === 'string' ? data.crop_mismatch_warning : undefined,
+        modelType: typeof data.model_type === 'string' ? data.model_type : 'PyTorch EfficientNetV2-S + CIBRC Regulatory Engine',
+        latencyMs: typeof data.provenance?.latency_ms === 'number' ? data.provenance.latency_ms : undefined,
+        warnings: Array.isArray(data.warnings) ? data.warnings.map((w: any) => typeof w === 'string' ? w : String(w)) : [],
       });
     } catch (err: any) {
       console.error('Diagnosis failed:', err);
@@ -223,6 +277,7 @@ export default function DiseaseDetection() {
     setSelectedFile(null);
     setSampleId(null);
     setResult(null);
+    setInvalidImageResult(null);
     setErrorMessage(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
@@ -481,6 +536,33 @@ export default function DiseaseDetection() {
               <Loader2 className="w-8 h-8 text-[#17643E] animate-spin mx-auto mb-3" />
               <h4 className="font-bold text-[#103D2C]">Executing Deep Learning Vision Model</h4>
               <p className="text-xs text-[#292B26]/60 mt-1">Cross-referencing EfficientNetV2-S 38 pathology classes & CIB&RC treatments...</p>
+            </div>
+          ) : invalidImageResult ? (
+            <div className="bg-white rounded-2xl p-8 border-2 border-dashed border-amber-300 text-center flex flex-col items-center justify-center min-h-[360px] shadow-sm space-y-4">
+              <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600 border border-amber-200">
+                <AlertTriangle className="w-8 h-8 text-amber-500" />
+              </div>
+              <div className="space-y-1.5 max-w-sm">
+                <h3 className="font-bold text-xl text-[#103D2C]">Invalid Photo</h3>
+                <span className="inline-block bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-amber-200">
+                  {invalidImageResult.reason.replace(/_/g, ' ')}
+                </span>
+                <p className="text-xs text-[#292B26]/80 leading-relaxed pt-1 font-medium">
+                  {invalidImageResult.message}
+                </p>
+                <p className="text-[11px] text-[#292B26]/60">
+                  No recognizable agricultural plant leaf was detected. The disease classifier cannot evaluate non-plant imagery.
+                </p>
+              </div>
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="bg-[#103D2C] hover:bg-[#17643E] text-white px-5 py-2.5 rounded-xl font-medium text-xs flex items-center gap-2 cursor-pointer shadow-sm transition-all"
+                >
+                  <Upload size={15} /> Upload Another Photo
+                </button>
+              </div>
             </div>
           ) : result ? (
             <div className="space-y-4">
