@@ -13,6 +13,7 @@ import {
 import { api } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../services/supabase';
+import { useFarmerProfile } from '../../context/FarmerProfileContext';
 
 interface FieldOption {
   id: string;
@@ -176,6 +177,7 @@ export default function CropRecommendation() {
   const currentLang = i18n.language || 'en';
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { profile } = useFarmerProfile();
   const isAuthenticated = Boolean(user);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -355,6 +357,22 @@ export default function CropRecommendation() {
   };
 
   // ---------------------------------------------------------------------------
+
+  // Sync state from active farmer profile and soil report
+  useEffect(() => {
+    if (profile) {
+      if (profile.soil_report) {
+        setNitrogen(profile.soil_report.nitrogen ?? 210);
+        setPhosphorus(profile.soil_report.phosphorus ?? 32);
+        setPotassium(profile.soil_report.potassium ?? 320);
+        setSoilPh(profile.soil_report.ph ?? 7.8);
+      }
+      if (profile.weather) {
+        setDistrict(profile.weather.district || 'Akola');
+      }
+    }
+  }, [profile]);
+
   // MANUAL FIELD PARAMETERS STATE (FROM MAIN)
   // ---------------------------------------------------------------------------
   const [fields, setFields] = useState<FieldOption[]>([
@@ -455,6 +473,39 @@ export default function CropRecommendation() {
           </div>
         </div>
       </div>
+
+      
+      {/* Active Farmer Profile & Soil Report Linkage Banner */}
+      {profile && (
+        <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-300 rounded-2xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs text-emerald-950 shadow-2xs mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-[#103D2C] text-white flex items-center justify-center shrink-0 shadow-sm">
+              <Sprout className="w-5 h-5 text-emerald-300" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-sm text-[#103D2C]">
+                  Linked to {profile.name}'s Farm Profile &amp; Soil Report
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-200/90 text-emerald-900 text-[10px] font-extrabold uppercase tracking-wider">
+                  AgriStack Synced
+                </span>
+              </div>
+              <p className="text-[11px] text-emerald-800 mt-0.5">
+                Farm: <strong>{profile.farm_name}</strong> &bull; GPS: <strong>{profile.weather?.district || district}</strong> ({profile.weather?.latitude?.toFixed(2)}°N, {profile.weather?.longitude?.toFixed(2)}°E) &bull; Soil NPK: <strong className="text-[#103D2C]">{profile.soil_report?.nitrogen}-{profile.soil_report?.phosphorus}-{profile.soil_report?.potassium}</strong> kg/ha &bull; pH: <strong>{profile.soil_report?.ph}</strong>
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate('/onboarding')}
+            className="px-3 py-1.5 bg-white border border-emerald-300 hover:bg-emerald-100 text-[#103D2C] font-bold rounded-xl text-xs transition-colors shadow-2xs shrink-0 flex items-center gap-1.5 cursor-pointer"
+          >
+            <FlaskConical className="w-3.5 h-3.5 text-[#17643E]" />
+            <span>Update Profile / Soil NPK</span>
+          </button>
+        </div>
+      )}
 
       {/* Mode Switcher Tabs */}
       <div className="flex border-b border-[#E5DDCF] gap-6 text-xs sm:text-sm font-semibold">

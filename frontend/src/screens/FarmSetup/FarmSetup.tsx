@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from 'react';
 import { Map, Plus, Trash2, Save, CheckCircle2, AlertCircle, Loader2, Navigation, Crosshair, MapPin, Compass, Footprints } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useFarmerProfile } from '../../context/FarmerProfileContext';
 import { supabase } from '../../services/supabase';
 import BoundaryEditorModal from '../../components/map/BoundaryEditorModal';
 import { WorkflowStepper } from '../../components/workflow/WorkflowStepper';
@@ -33,6 +34,7 @@ export default function FarmSetup() {
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language || 'en';
   const { user, isAuthenticated, isDemoMode } = useAuth();
+  const { profile } = useFarmerProfile();
 
   const [farmId, setFarmId] = useState<string | null>(null);
   const [allFarms, setAllFarms] = useState<FarmSummary[]>([]);
@@ -58,6 +60,23 @@ export default function FarmSetup() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+// Initialize with active onboarding profile
+  useEffect(() => {
+    if (profile && (!allFarms || allFarms.length === 0)) {
+      if (profile.farm_name) setFarmName(profile.farm_name);
+      if (profile.total_area) setTotalArea(String(profile.total_area));
+      if (profile.weather?.district) setDistrict(profile.weather.district);
+      if (profile.weather?.latitude) setLatitude(String(profile.weather.latitude));
+      if (profile.weather?.longitude) setLongitude(String(profile.weather.longitude));
+      if (profile.primary_field_name) {
+        setFields([
+          { id: 'field-1', name: profile.primary_field_name, size: String(profile.primary_field_area || 6.5), crop: profile.current_crop || 'Cotton', isNew: true },
+          { id: 'field-2', name: 'Field 2 (South Parcel)', size: '5.5', crop: 'Soybean', isNew: true },
+        ]);
+      }
+    }
+  }, [profile, allFarms]);
 
   // Load persisted farm data on mount or when user changes
   useEffect(() => {
