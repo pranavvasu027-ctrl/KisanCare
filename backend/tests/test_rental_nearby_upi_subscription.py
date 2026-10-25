@@ -2,33 +2,53 @@
 
 import os
 os.environ["TESTING"] = "1"
+import sys
+from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from backend.app.main import app
-from backend.app.rentals.service import rental_service
-from backend.app.rentals.schemas import (
-    BookingCreateRequest,
-    BookingUPIPaymentSubmit,
-    SubscriptionUpgradeRequest
-)
+backend_dir = Path(__file__).resolve().parent.parent
+if str(backend_dir) not in sys.path:
+    sys.path.insert(0, str(backend_dir))
+
+root_dir = backend_dir.parent
+if str(root_dir) not in sys.path:
+    sys.path.insert(0, str(root_dir))
+
+try:
+    from app.main import app
+    from app.rentals.service import rental_service
+    from app.rentals.schemas import (
+        BookingCreateRequest,
+        BookingUPIPaymentSubmit,
+        SubscriptionUpgradeRequest
+    )
+    from app.rentals.seed_data import SEED_INITIAL_BOOKINGS, SEED_LISTINGS, SEED_MARKET_BENCHMARKS, SEED_PROVIDERS
+except ModuleNotFoundError:
+    from backend.app.main import app
+    from backend.app.rentals.service import rental_service
+    from backend.app.rentals.schemas import (
+        BookingCreateRequest,
+        BookingUPIPaymentSubmit,
+        SubscriptionUpgradeRequest
+    )
+    from backend.app.rentals.seed_data import SEED_INITIAL_BOOKINGS, SEED_LISTINGS, SEED_MARKET_BENCHMARKS, SEED_PROVIDERS
 
 client = TestClient(app)
 
 
 @pytest.fixture(autouse=True)
 def clean_test_bookings():
-    """Ensure clean isolated in-memory state before each test run."""
+    """Ensure clean isolated in-memory state before and after each test run."""
     with rental_service._lock:
-        try:
-            from app.rentals.seed_data import SEED_INITIAL_BOOKINGS, SEED_LISTINGS, SEED_MARKET_BENCHMARKS, SEED_PROVIDERS
-        except ModuleNotFoundError:
-            from backend.app.rentals.seed_data import SEED_INITIAL_BOOKINGS, SEED_LISTINGS, SEED_MARKET_BENCHMARKS, SEED_PROVIDERS
         rental_service._bookings = {b["id"]: dict(b) for b in SEED_INITIAL_BOOKINGS}
         rental_service._listings = {l["id"]: dict(l) for l in SEED_LISTINGS}
         rental_service._benchmarks = [dict(b) for b in SEED_MARKET_BENCHMARKS]
         rental_service._notifications = {}
-
+    yield
+    with rental_service._lock:
+        rental_service._bookings = {b["id"]: dict(b) for b in SEED_INITIAL_BOOKINGS}
+        rental_service._notifications = {}
 
 
 def test_discover_nearby_50km_radius():
